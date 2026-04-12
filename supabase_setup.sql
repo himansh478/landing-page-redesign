@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS public.leads (
 ALTER TABLE public.leads ENABLE ROW LEVEL SECURITY;
 
 -- Allow anonymous inserts to the leads table
+DROP POLICY IF EXISTS "Allow public inserts on leads" ON public.leads;
 CREATE POLICY "Allow public inserts on leads"
 ON public.leads
 FOR INSERT 
@@ -38,6 +39,7 @@ CREATE TABLE IF NOT EXISTS public.work_applications (
 ALTER TABLE public.work_applications ENABLE ROW LEVEL SECURITY;
 
 -- Allow anonymous inserts to the work_applications table
+DROP POLICY IF EXISTS "Allow public inserts on work_applications" ON public.work_applications;
 CREATE POLICY "Allow public inserts on work_applications"
 ON public.work_applications
 FOR INSERT 
