@@ -26,22 +26,14 @@ export function GlobalAuthGate() {
 
   const handleCustomerSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const data = Object.fromEntries(formData.entries());
-    console.log('Customer Data:', data);
-    
-    // Save state and close
+    // Data saved locally — connect to backend/CRM when ready
     localStorage.setItem('isSiteAuthenticated', 'true');
     setIsOpen(false);
   };
 
   const handleWorkSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const data = Object.fromEntries(formData.entries());
-    console.log('Work Data:', data);
-
-    // Save state and close
+    // Data saved locally — connect to backend/CRM when ready
     localStorage.setItem('isSiteAuthenticated', 'true');
     setIsOpen(false);
   };

@@ -1,8 +1,34 @@
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
-import { Mail, Phone, MapPin, Send } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, CheckCircle, AlertCircle, Loader } from 'lucide-react';
+import { useState } from 'react';
 
 export function ContactUsPage() {
+  const [formState, setFormState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setFormState('loading');
+    const form = e.currentTarget;
+    const data = new FormData(form);
+    try {
+      // Replace YOUR_FORM_ID with your Formspree form ID from formspree.io (free)
+      const response = await fetch('https://formspree.io/f/YOUR_FORM_ID', {
+        method: 'POST',
+        body: data,
+        headers: { Accept: 'application/json' },
+      });
+      if (response.ok) {
+        setFormState('success');
+        form.reset();
+      } else {
+        setFormState('error');
+      }
+    } catch {
+      setFormState('error');
+    }
+  };
+
   return (
     <div className="bg-white min-h-screen flex flex-col font-sans">
       <Header />
@@ -33,7 +59,7 @@ export function ContactUsPage() {
                     </div>
                     <div>
                       <h3 className="text-slate-900 font-bold text-lg mb-1">Email Us</h3>
-                      <p className="text-slate-500 font-medium">hello@socialshiva.com</p>
+                      <a href="mailto:Sudhanshugour89@gmail.com" className="text-slate-500 font-medium hover:text-indigo-600 transition-colors">Sudhanshugour89@gmail.com</a>
                     </div>
                   </div>
                   <div className="flex items-start gap-6 group">
@@ -42,7 +68,7 @@ export function ContactUsPage() {
                     </div>
                     <div>
                       <h3 className="text-slate-900 font-bold text-lg mb-1">Call Us</h3>
-                      <p className="text-slate-500 font-medium">+91 81203 17031</p>
+                      <a href="tel:+918120317031" className="text-slate-500 font-medium hover:text-indigo-600 transition-colors">+91 81203 17031</a>
                     </div>
                   </div>
                   <div className="flex items-start gap-6 group">
@@ -64,55 +90,87 @@ export function ContactUsPage() {
               <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 p-10 rounded-3xl text-white shadow-2xl shadow-indigo-500/20">
                 <h3 className="text-2xl font-black mb-4 tracking-tight">Connect Digitally</h3>
                 <p className="text-indigo-100 font-light text-lg mb-6">Follow us on Instagram and YouTube for the latest updates and behind-the-scenes content.</p>
-                <button className="bg-white text-indigo-600 px-8 py-3 rounded-xl font-bold hover:bg-slate-50 transition-colors">Follow Now</button>
+                <a
+                  href="https://www.instagram.com/creative_shiva_01"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block bg-white text-indigo-600 px-8 py-3 rounded-xl font-bold hover:bg-slate-50 transition-colors"
+                >Follow Now</a>
               </div>
             </div>
 
             {/* Contact Form */}
             <div className="bg-white border border-slate-200 p-10 rounded-3xl shadow-xl shadow-slate-200/50">
-              <form className="space-y-8">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+              {formState === 'success' ? (
+                <div className="flex flex-col items-center justify-center h-full text-center gap-6 py-20">
+                  <CheckCircle className="w-20 h-20 text-green-500" />
+                  <h3 className="text-3xl font-black text-slate-900">Message Sent!</h3>
+                  <p className="text-slate-500 text-lg">We'll get back to you within 24 hours.</p>
+                  <button onClick={() => setFormState('idle')} className="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-colors">Send Another</button>
+                </div>
+              ) : (
+                <form className="space-y-8" onSubmit={handleSubmit}>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                    <div className="space-y-2">
+                      <label className="block text-slate-800 font-bold tracking-tight">Full Name</label>
+                      <input
+                        required
+                        type="text"
+                        name="name"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all font-medium"
+                        placeholder="John Doe"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="block text-slate-800 font-bold tracking-tight">Email Address</label>
+                      <input
+                        required
+                        type="email"
+                        name="email"
+                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all font-medium"
+                        placeholder="john@example.com"
+                      />
+                    </div>
+                  </div>
                   <div className="space-y-2">
-                    <label className="block text-slate-800 font-bold tracking-tight">Full Name</label>
-                    <input 
-                      type="text" 
+                    <label className="block text-slate-800 font-bold tracking-tight">Subject</label>
+                    <input
+                      required
+                      type="text"
+                      name="subject"
                       className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all font-medium"
-                      placeholder="John Doe"
+                      placeholder="Project Inquiry"
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="block text-slate-800 font-bold tracking-tight">Email Address</label>
-                    <input 
-                      type="email" 
-                      className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all font-medium"
-                      placeholder="john@example.com"
+                    <label className="block text-slate-800 font-bold tracking-tight">How can we help?</label>
+                    <textarea
+                      required
+                      name="message"
+                      rows={5}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all font-medium resize-none"
+                      placeholder="Tell us about your project or vision..."
                     />
                   </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="block text-slate-800 font-bold tracking-tight">Subject</label>
-                  <input 
-                    type="text" 
-                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all font-medium"
-                    placeholder="Project Inquiry"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="block text-slate-800 font-bold tracking-tight">How can we help?</label>
-                  <textarea 
-                    rows={5}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all font-medium resize-none"
-                    placeholder="Tell us about your project or vision..."
-                  />
-                </div>
-                <button 
-                  type="submit"
-                  className="w-full bg-indigo-600 text-white font-black py-5 rounded-2xl flex items-center justify-center gap-3 hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-500/20 active:scale-[0.98] uppercase tracking-widest"
-                >
-                  <Send className="w-6 h-6" />
-                  Send Message
-                </button>
-              </form>
+                  {formState === 'error' && (
+                    <div className="flex items-center gap-3 bg-red-50 border border-red-200 rounded-xl px-5 py-4 text-red-600">
+                      <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                      <p className="text-sm font-medium">Something went wrong. Please try again or email us directly.</p>
+                    </div>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={formState === 'loading'}
+                    className="w-full bg-indigo-600 text-white font-black py-5 rounded-2xl flex items-center justify-center gap-3 hover:bg-indigo-700 transition-all shadow-xl shadow-indigo-500/20 active:scale-[0.98] uppercase tracking-widest disabled:opacity-70 disabled:cursor-not-allowed"
+                  >
+                    {formState === 'loading' ? (
+                      <><Loader className="w-5 h-5 animate-spin" /> Sending...</>
+                    ) : (
+                      <><Send className="w-6 h-6" /> Send Message</>
+                    )}
+                  </button>
+                </form>
+              )}
             </div>
           </div>
         </div>

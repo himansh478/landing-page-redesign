@@ -2,4 +2,4 @@ User-agent: *
 Disallow: /admin/
 Disallow: /api/
 Allow: /
-Sitemap: https://landing-page-redesign-beta.vercel.app/sitemap.xml
+Sitemap: https://cwaya.in/sitemap.xml

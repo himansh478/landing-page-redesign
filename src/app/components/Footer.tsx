@@ -61,28 +61,28 @@ export function Footer() {
             <h3 className="text-slate-900 font-bold mb-4 text-sm sm:text-base tracking-wide uppercase">Services</h3>
             <ul className="space-y-2 sm:space-y-3">
               <li>
-                <a href="#" className="text-slate-500 hover:text-indigo-600 transition-colors text-sm sm:text-base">
+                <a href="/masterful-editing" className="text-slate-500 hover:text-indigo-600 transition-colors text-sm sm:text-base">
                   Video Editing
                 </a>
               </li>
               <li>
-                <a href="#" className="text-slate-500 hover:text-indigo-600 transition-colors text-sm sm:text-base">
+                <a href="/professional-shoots" className="text-slate-500 hover:text-indigo-600 transition-colors text-sm sm:text-base">
                   Professional Shoots
                 </a>
               </li>
               <li>
-                <a href="#" className="text-slate-500 hover:text-indigo-600 transition-colors text-sm sm:text-base">
+                <a href="/social-media-management" className="text-slate-500 hover:text-indigo-600 transition-colors text-sm sm:text-base">
                   Social Media Management
                 </a>
               </li>
               <li>
-                <a href="#" className="text-slate-500 hover:text-indigo-600 transition-colors text-sm sm:text-base">
+                <a href="/technical-solutions" className="text-slate-500 hover:text-indigo-600 transition-colors text-sm sm:text-base">
                   Web Development / AI bots
                 </a>
               </li>
               <li>
-                <a href="#" className="text-slate-500 hover:text-indigo-600 transition-colors">
-                  AI services
+                <a href="/theam-based" className="text-slate-500 hover:text-indigo-600 transition-colors">
+                  Theme Based Shoots
                 </a>
               </li>
             </ul>
@@ -93,22 +93,17 @@ export function Footer() {
             <h3 className="text-slate-900 font-bold mb-4 text-sm sm:text-base tracking-wide uppercase">Company</h3>
             <ul className="space-y-2 sm:space-y-3">
               <li>
-                <a href="#" className="text-slate-500 hover:text-indigo-600 transition-colors">
-                  "Budget-Friendly Solutions, Professional Standards"
-                </a>
-              </li>
-              <li>
-                <a href="#portfolio" className="text-slate-500 hover:text-indigo-600 transition-colors">
+                <a href="/wedding-portfolio" className="text-slate-500 hover:text-indigo-600 transition-colors">
                   Portfolio
                 </a>
               </li>
               <li>
-                <a href="#pricing" className="text-slate-500 hover:text-indigo-600 transition-colors">
-                  Pricing
+                <a href="/packages" className="text-slate-500 hover:text-indigo-600 transition-colors">
+                  Pricing & Packages
                 </a>
               </li>
               <li>
-                <a href="#membership" className="text-slate-500 hover:text-indigo-600 transition-colors">
+                <a href="/packages" className="text-slate-500 hover:text-indigo-600 transition-colors">
                   Membership
                 </a>
               </li>
@@ -136,7 +131,7 @@ export function Footer() {
             <ul className="space-y-3">
               <li className="flex items-start gap-3 text-slate-500">
                 <Mail className="w-5 h-5 mt-0.5 flex-shrink-0 text-indigo-500" />
-                <span>Sudhanshugour89@gmail.com </span>
+                <a href="mailto:Sudhanshugour89@gmail.com" className="hover:text-indigo-600 transition-colors">Sudhanshugour89@gmail.com</a>
               </li>
               <li className="flex items-start gap-3 text-slate-500">
                 <Phone className="w-5 h-5 mt-0.5 flex-shrink-0 text-indigo-500" />
@@ -153,7 +148,7 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="pt-6 sm:pt-8 border-t border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left relative z-10">
           <p className="text-slate-400 text-xs sm:text-sm">
-            ©All rights reserved.
+            © {new Date().getFullYear()} Cwaya Creative Studio. All rights reserved.
           </p>
           <div className="flex gap-4 sm:gap-6 text-xs sm:text-sm flex-wrap justify-center">
             <a href="/privacy-policy" className="text-slate-400 hover:text-indigo-600 transition-colors">
@@ -162,7 +157,7 @@ export function Footer() {
             <a href="/terms-conditions" className="text-slate-400 hover:text-indigo-600 transition-colors">
               Terms & Conditions
             </a>
-            <a href="#" className="text-slate-400 hover:text-indigo-600 transition-colors">
+            <a href="/privacy-policy#cookies" className="text-slate-400 hover:text-indigo-600 transition-colors">
               Cookie Policy
             </a>
           </div>
