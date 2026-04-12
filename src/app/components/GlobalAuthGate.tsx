@@ -92,7 +92,7 @@ export function GlobalAuthGate() {
             <DialogTitle className="text-3xl font-black text-slate-900 text-center tracking-tight">
               {mode === 'select' && 'Welcome '}
               {mode === 'customer' && 'Login as Customer'}
-              {mode === 'work' && 'Login for Work'}
+              {mode === 'work' && 'Work Applications'}
             </DialogTitle>
             <DialogDescription className="text-center text-slate-500 font-medium">
               {mode === 'select' && 'Please identify yourself to continue accessing the website.'}
@@ -133,7 +133,7 @@ export function GlobalAuthGate() {
                       <Briefcase className="w-6 h-6" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-slate-900 group-hover:text-indigo-700">Login for Work</h3>
+                      <h3 className="font-bold text-slate-900 group-hover:text-indigo-700">Work Applications</h3>
                       <p className="text-sm text-slate-500">I am a professional looking to collaborate.</p>
                     </div>
                   </div>
