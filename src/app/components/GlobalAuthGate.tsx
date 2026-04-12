@@ -46,8 +46,9 @@ export function GlobalAuthGate() {
     const { error: dbError } = await supabase.from('leads').insert([data]);
     setIsLoading(false);
     if (dbError) {
-      // Table may not exist yet — still let user proceed
       console.error('Supabase insert error (leads):', dbError.message);
+      setError(dbError.message);
+      return;
     }
     localStorage.setItem('isSiteAuthenticated', 'true');
     setIsOpen(false);
@@ -72,6 +73,8 @@ export function GlobalAuthGate() {
     setIsLoading(false);
     if (dbError) {
       console.error('Supabase insert error (work_applications):', dbError.message);
+      setError(dbError.message);
+      return;
     }
     localStorage.setItem('isSiteAuthenticated', 'true');
     setIsOpen(false);
@@ -147,6 +150,11 @@ export function GlobalAuthGate() {
                 exit={{ opacity: 0, x: -20 }}
                 className="space-y-4"
               >
+                {error && (
+                  <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm font-medium">
+                    {error}
+                  </div>
+                )}
                 <div className="space-y-4">
                   <div className="relative">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
@@ -198,6 +206,11 @@ export function GlobalAuthGate() {
                 exit={{ opacity: 0, x: -20 }}
                 className="space-y-4"
               >
+                {error && (
+                  <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm font-medium">
+                    {error}
+                  </div>
+                )}
                 <div className="space-y-3 max-h-[50vh] overflow-y-auto px-1 -mx-1 pb-2">
                   <div className="relative">
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
