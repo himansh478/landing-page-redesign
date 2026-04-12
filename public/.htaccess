@@ -1,0 +1,14 @@
+# Frontend SPA Routing — React Router Fix for Hostinger
+# This makes sure all routes (like /masterful-editing) work on direct browser URL access
+
+Options -MultiViews
+RewriteEngine On
+
+# Handle SSL
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# If the request is NOT a real file or directory, serve index.html
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.html [L]
