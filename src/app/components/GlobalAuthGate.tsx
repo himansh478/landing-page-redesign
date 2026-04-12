@@ -2,12 +2,15 @@ import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { User, Briefcase, Mail, Phone, MapPin, Wrench, Camera, Link as LinkIcon, Map, Building } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { supabase } from '../../lib/supabase';
 
 type LoginMode = 'select' | 'customer' | 'work';
 
 export function GlobalAuthGate() {
   const [isOpen, setIsOpen] = useState(false);
   const [mode, setMode] = useState<LoginMode>('select');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // Check if user is already authenticated
@@ -24,16 +27,45 @@ export function GlobalAuthGate() {
     return () => clearTimeout(timer);
   }, []);
 
-  const handleCustomerSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleCustomerSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Data saved locally — connect to backend/CRM when ready
+    setIsLoading(true);
+    setError(null);
+    const form = e.currentTarget;
+    const data = {
+      email: (form.elements.namedItem('email') as HTMLInputElement).value,
+      phone: (form.elements.namedItem('phone') as HTMLInputElement).value,
+    };
+    const { error: dbError } = await supabase.from('leads').insert([data]);
+    setIsLoading(false);
+    if (dbError) {
+      // Table may not exist yet — still let user proceed
+      console.error('Supabase insert error (leads):', dbError.message);
+    }
     localStorage.setItem('isSiteAuthenticated', 'true');
     setIsOpen(false);
   };
 
-  const handleWorkSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleWorkSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Data saved locally — connect to backend/CRM when ready
+    setIsLoading(true);
+    setError(null);
+    const form = e.currentTarget;
+    const data = {
+      full_name: (form.elements.namedItem('fullName') as HTMLInputElement).value,
+      whatsapp: (form.elements.namedItem('whatsapp') as HTMLInputElement).value,
+      location: (form.elements.namedItem('location') as HTMLInputElement).value,
+      state: (form.elements.namedItem('state') as HTMLInputElement).value,
+      district: (form.elements.namedItem('district') as HTMLInputElement).value,
+      skills: (form.elements.namedItem('skills') as HTMLInputElement).value,
+      equipment: (form.elements.namedItem('equipment') as HTMLInputElement).value,
+      portfolio: (form.elements.namedItem('portfolio') as HTMLInputElement).value,
+    };
+    const { error: dbError } = await supabase.from('work_applications').insert([data]);
+    setIsLoading(false);
+    if (dbError) {
+      console.error('Supabase insert error (work_applications):', dbError.message);
+    }
     localStorage.setItem('isSiteAuthenticated', 'true');
     setIsOpen(false);
   };
@@ -141,9 +173,10 @@ export function GlobalAuthGate() {
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-4 rounded-xl font-bold transition-colors shadow-lg shadow-purple-500/30"
+                    className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-4 rounded-xl font-bold transition-colors shadow-lg shadow-purple-500/30 disabled:opacity-60"
+                   disabled={isLoading}
                   >
-                    Continue to Site
+                    {isLoading ? 'Saving...' : 'Continue to Site'}
                   </button>
                 </div>
               </motion.form>
@@ -205,9 +238,10 @@ export function GlobalAuthGate() {
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-xl font-bold transition-colors shadow-lg shadow-indigo-500/30"
+                    className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-xl font-bold transition-colors shadow-lg shadow-indigo-500/30 disabled:opacity-60"
+                   disabled={isLoading}
                   >
-                    Apply & Login
+                    {isLoading ? 'Submitting...' : 'Apply & Login'}
                   </button>
                 </div>
               </motion.form>

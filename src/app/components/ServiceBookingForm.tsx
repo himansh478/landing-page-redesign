@@ -6,6 +6,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from './ui/dialog';
+import { supabase } from '../../lib/supabase';
 
 interface ServiceBookingFormProps {
   isOpen: boolean;
@@ -13,7 +14,6 @@ interface ServiceBookingFormProps {
   selectedService: string;
 }
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://overflowing-generosity-production-2445.up.railway.app/api';
 
 export function ServiceBookingForm({
   isOpen,
@@ -61,6 +61,9 @@ export function ServiceBookingForm({
     referenceVideoLink: '',
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
   // Update form when selectedService changes
   useEffect(() => {
     if (isOpen && selectedService) {
@@ -80,77 +83,57 @@ export function ServiceBookingForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    const commonData = {
+      name: formData.name,
+      email: formData.email,
+      whatsapp_number: formData.whatsappNumber,
+      location: formData.location,
+      budget: formData.budget,
+      timeline: formData.timeline,
+      reference_video_link: formData.referenceVideoLink || null,
+    };
 
     try {
-      let endpoint = `${API_URL}/bookings/`;
-      let bookingData: any = {
-        name: formData.name,
-        email: formData.email,
-        whatsapp_number: formData.whatsappNumber,
-        location: formData.location,
-        budget: formData.budget,
-        timeline: formData.timeline,
-        reference_video_link: formData.referenceVideoLink,
-      };
-
-      // Different handling for shoot bookings vs editing service bookings
       if (isShootBooking) {
-        // Shoot booking - send to separate endpoint
-        endpoint = `${API_URL}/shoot-bookings/`;
-        bookingData = {
-          ...bookingData,
+        const { error } = await supabase.from('shoot_bookings').insert([{
+          ...commonData,
           shoot_type: formData.editingOption,
           event_details: formData.description,
-        };
+        }]);
+        if (error) throw error;
       } else {
-        // Editing service booking - send to original endpoint
-        bookingData = {
-          ...bookingData,
+        const { error } = await supabase.from('bookings').insert([{
+          ...commonData,
           service_type: formData.editingOption,
           project_title: formData.projectTitle,
           description: formData.description,
-        };
+        }]);
+        if (error) throw error;
       }
 
-      // Submit to backend API
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(bookingData),
+      // Reset form on success
+      setFormData({
+        name: '',
+        email: '',
+        whatsappNumber: '',
+        location: '',
+        editingOption: selectedService || '',
+        projectTitle: '',
+        description: '',
+        budget: '',
+        timeline: '',
+        referenceVideoLink: '',
       });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        // Reset form
-        setFormData({
-          name: '',
-          email: '',
-          whatsappNumber: '',
-          location: '',
-          editingOption: selectedService || '',
-          projectTitle: '',
-          description: '',
-          budget: '',
-          timeline: '',
-          referenceVideoLink: '',
-        });
-
-        // Close modal
-        onOpenChange(false);
-
-        // Show success message
-        alert(`✅ ${isShootBooking ? 'Shoot' : 'Service'} booking saved! Booking ID: ${data.booking_id}`);
-      } else {
-        // Error response from server
-        const errorMessage = data.detail || data.message || 'Failed to save booking';
-        alert(`❌ Error: ${errorMessage}`);
-      }
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      alert(`❌ Error: Failed to connect to backend\n\n⚠️ Is the backend server running?\nRun: python manage.py runserver`);
+      onOpenChange(false);
+      alert(`✅ ${isShootBooking ? 'Shoot' : 'Service'} booking saved successfully!`);
+    } catch (error: any) {
+      console.error('Supabase booking error:', error);
+      setSubmitError(error.message || 'Something went wrong. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -424,11 +407,15 @@ export function ServiceBookingForm({
           </div>
 
           {/* Submit Button */}
+          {submitError && (
+            <p className="text-red-500 text-sm font-medium text-center">{submitError}</p>
+          )}
           <button
             type="submit"
-            className="w-full bg-slate-900 hover:bg-indigo-600 text-white px-8 py-5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-slate-200 mt-6 active:scale-95"
+            disabled={isSubmitting}
+            className="w-full bg-slate-900 hover:bg-indigo-600 text-white px-8 py-5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-slate-200 mt-6 active:scale-95 disabled:opacity-60"
           >
-            Save Booking
+            {isSubmitting ? 'Saving...' : 'Save Booking'}
           </button>
         </form>
       </DialogContent>

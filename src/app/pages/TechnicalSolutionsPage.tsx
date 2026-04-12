@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { Bot, Code, Zap, MessageSquare, ArrowRight, X, Check } from 'lucide-react';
 import { useState } from 'react';
+import { supabase } from '../../lib/supabase';
 
 interface TechnicalService {
   id: number;
@@ -93,61 +94,32 @@ function TechnicalSolutionForm({
     e.preventDefault();
     setIsLoading(true);
 
-    try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-      
-      // Transform camelCase to snake_case for backend
-      const backendData = {
-        name: formData.name,
-        whatsapp_number: formData.whatsappNumber,
-        location: formData.location,
-        service_type: formData.serviceType,
-        description: formData.description,
-        message: formData.message,
-      };
-      
-      const response = await fetch(
-        `${API_URL}/technical-solution-bookings/`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(backendData),
-        }
-      );
+    const { error } = await supabase.from('technical_bookings').insert([{
+      name: formData.name,
+      whatsapp_number: formData.whatsappNumber,
+      location: formData.location,
+      service_type: formData.serviceType,
+      description: formData.description,
+      message: formData.message,
+    }]);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Backend error:', errorData);
-        throw new Error('Failed to submit booking');
-      }
+    setIsLoading(false);
 
-      const result = await response.json();
-      console.log('Booking submitted successfully:', result);
-      
-      setIsLoading(false);
-      setIsSubmitted(true);
-
-      // Close modal after 3 seconds
-      setTimeout(() => {
-        onClose();
-        setIsSubmitted(false);
-        // Reset form
-        setFormData({
-          name: '',
-          whatsappNumber: '',
-          location: '',
-          serviceType: service.title,
-          description: '',
-          message: ''
-        });
-      }, 3000);
-    } catch (error) {
-      console.error('Error submitting booking:', error);
-      setIsLoading(false);
+    if (error) {
+      console.error('Supabase technical booking error:', error);
       alert('Failed to submit booking. Please try again.');
+      return;
     }
+
+    setIsSubmitted(true);
+    setTimeout(() => {
+      onClose();
+      setIsSubmitted(false);
+      setFormData({
+        name: '', whatsappNumber: '', location: '',
+        serviceType: service.title, description: '', message: ''
+      });
+    }, 3000);
   };
 
   return (

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { supabase } from '../../lib/supabase';
 
 interface InnerCircleModalProps {
   isOpen: boolean;
@@ -23,12 +24,11 @@ export function InnerCircleModal({ isOpen, onClose }: InnerCircleModalProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
-    // Transform form data to match backend field names
     const submitData = {
       name: formData.name,
       age: parseInt(formData.age),
@@ -39,47 +39,26 @@ export function InnerCircleModal({ isOpen, onClose }: InnerCircleModalProps) {
       location: formData.location,
       whatsapp_number: formData.whatsappNumber,
       gmail: formData.gmail,
-      portfolio_link: formData.portfolioLink
+      portfolio_link: formData.portfolioLink,
     };
 
-    // Send data to backend API
-    const apiUrl = `${import.meta.env.VITE_API_URL}/inner-circle-applications/`;
-    
-    fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(submitData)
-    })
-      .then(response => {
-        if (!response.ok) {
-          return response.json().then(err => Promise.reject(err));
-        }
-        return response.json();
-      })
-      .then(() => {
-        // Success — reset and close
-        onClose();
-        setFormData({
-          name: '',
-          age: '',
-          achievement: '',
-          topSkill: '',
-          state: '',
-          district: '',
-          location: '',
-          whatsappNumber: '',
-          gmail: '',
-          portfolioLink: ''
-        });
-      })
-      .catch(() => {
-        setError('Failed to submit application. Please try again.');
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    const { error: dbError } = await supabase
+      .from('inner_circle_applications')
+      .insert([submitData]);
+
+    setLoading(false);
+
+    if (dbError) {
+      setError('Failed to submit application. Please try again.');
+      return;
+    }
+
+    onClose();
+    setFormData({
+      name: '', age: '', achievement: '', topSkill: '',
+      state: '', district: '', location: '',
+      whatsappNumber: '', gmail: '', portfolioLink: ''
+    });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
