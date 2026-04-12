@@ -67,6 +67,14 @@ export function Header() {
               Blog
             </Link>
 
+            {/* Connect Button */}
+            <button
+              onClick={() => window.dispatchEvent(new Event('open-auth-gate'))}
+              className="relative text-slate-700 hover:text-indigo-600 px-4 py-2 font-semibold transition-colors flex items-center justify-center"
+            >
+              Connect
+            </button>
+
             {/* My Packages Button */}
             <Link
               to="/packages"
@@ -125,6 +133,15 @@ export function Header() {
                 >
                   Blog
                 </Link>
+                <button
+                  onClick={() => {
+                    window.dispatchEvent(new Event('open-auth-gate'));
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full bg-slate-50 hover:bg-indigo-50 text-slate-700 px-6 py-3 rounded-lg transition-all font-semibold border border-slate-200 text-base flex items-center justify-center gap-2"
+                >
+                  Connect
+                </button>
                 <Link
                   to="/packages"
                   onClick={() => setMobileMenuOpen(false)}

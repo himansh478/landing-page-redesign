@@ -13,10 +13,14 @@ export function GlobalAuthGate() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Listen for custom event to open manually
+    const handleOpen = () => setIsOpen(true);
+    window.addEventListener('open-auth-gate', handleOpen);
+
     // Check if user is already authenticated
     const isAuth = localStorage.getItem('isSiteAuthenticated');
     if (isAuth === 'true') {
-      return;
+      return () => window.removeEventListener('open-auth-gate', handleOpen);
     }
 
     // Pop up after 1 minute (60,000ms)
@@ -24,7 +28,10 @@ export function GlobalAuthGate() {
       setIsOpen(true);
     }, 60000);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('open-auth-gate', handleOpen);
+    };
   }, []);
 
   const handleCustomerSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
