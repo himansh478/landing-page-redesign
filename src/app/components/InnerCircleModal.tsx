@@ -58,9 +58,8 @@ export function InnerCircleModal({ isOpen, onClose }: InnerCircleModalProps) {
         }
         return response.json();
       })
-      .then(data => {
-        console.log('Form submitted successfully:', data);
-        alert('Application submitted successfully! We\'ll be in touch soon.');
+      .then(() => {
+        // Success — reset and close
         onClose();
         setFormData({
           name: '',
@@ -75,8 +74,7 @@ export function InnerCircleModal({ isOpen, onClose }: InnerCircleModalProps) {
           portfolioLink: ''
         });
       })
-      .catch(err => {
-        console.error('Error submitting form:', err);
+      .catch(() => {
         setError('Failed to submit application. Please try again.');
       })
       .finally(() => {

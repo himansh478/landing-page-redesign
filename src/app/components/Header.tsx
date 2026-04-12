@@ -10,23 +10,23 @@ export function Header() {
   const handleShare = async () => {
     const websiteUrl = window.location.origin;
     const shareData = {
-      title: 'Creative Shiva - Premium Creative & Tech Services',
-      text: 'Check out Creative Shiva for premium video editing, photography, social media management, and AI solutions!',
+      title: 'Cwaya — Premium Creative & Tech Services',
+      text: 'Check out Cwaya for premium video editing, photography, social media management, and AI solutions!',
       url: websiteUrl,
     };
 
     if (navigator.share) {
       try {
         await navigator.share(shareData);
-      } catch (err) {
-        console.log('Share cancelled or failed');
+      } catch {
+        // User cancelled share — no action needed
       }
     } else {
       try {
         await navigator.clipboard.writeText(websiteUrl);
         alert('Website link copied to clipboard! Share it with your friends.');
-      } catch (err) {
-        console.log('Copy to clipboard failed');
+      } catch {
+        // Clipboard unavailable — silently fail
       }
     }
   };

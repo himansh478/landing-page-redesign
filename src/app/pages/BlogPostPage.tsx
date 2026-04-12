@@ -5,6 +5,19 @@ import { blogPosts } from '../data/blogPosts';
 import { Calendar, User, Tag, ArrowLeft } from 'lucide-react';
 import { NotFoundPage } from './NotFoundPage';
 
+/**
+ * Lightweight HTML sanitizer — strips <script>, event handlers (onclick, etc.),
+ * and javascript: hrefs to prevent XSS if content ever comes from a CMS or API.
+ */
+function sanitizeHtml(raw: string): string {
+  return raw
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/\s(on\w+)="[^"]*"/gi, '')
+    .replace(/\s(on\w+)='[^']*'/gi, '')
+    .replace(/href="javascript:[^"]*"/gi, 'href="#"')
+    .replace(/href='javascript:[^']*'/gi, "href='#'");
+}
+
 export function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
   const post = blogPosts.find((p) => p.slug === slug);
@@ -37,9 +50,10 @@ export function BlogPostPage() {
             </h1>
             
             <div className="w-full aspect-video rounded-[40px] overflow-hidden border border-slate-200 bg-white p-2 shadow-2xl shadow-slate-200">
-              <img 
-                src={post.imageUrl} 
-                alt={post.title} 
+              <img
+                src={post.imageUrl}
+                alt={post.title}
+                loading="lazy"
                 className="w-full h-full object-cover rounded-[32px]"
               />
             </div>
@@ -47,17 +61,18 @@ export function BlogPostPage() {
 
           <div className="prose prose-xl prose-slate max-w-none pt-8 border-t border-slate-100">
              {post.content.map((paragraph, index) => {
+               const safe = sanitizeHtml(paragraph);
                if (paragraph.startsWith('<h2')) {
-                 return <h2 key={index} className="text-4xl font-black mt-16 mb-8 text-slate-900 tracking-tight" dangerouslySetInnerHTML={{ __html: paragraph.replace(/<\/?h2>/g, '') }} />;
+                 return <h2 key={index} className="text-4xl font-black mt-16 mb-8 text-slate-900 tracking-tight" dangerouslySetInnerHTML={{ __html: safe.replace(/<\/?h2>/g, '') }} />;
                }
                if (paragraph.startsWith('<h3')) {
-                  return <h3 key={index} className="text-3xl font-bold mt-12 mb-6 text-slate-800 tracking-tight" dangerouslySetInnerHTML={{ __html: paragraph.replace(/<\/?h3>/g, '') }} />;
+                  return <h3 key={index} className="text-3xl font-bold mt-12 mb-6 text-slate-800 tracking-tight" dangerouslySetInnerHTML={{ __html: safe.replace(/<\/?h3>/g, '') }} />;
                }
                if (paragraph.startsWith('<ul')) {
-                  return <ul key={index} className="list-disc pl-8 mb-10 space-y-4 text-slate-600 marker:text-indigo-500" dangerouslySetInnerHTML={{ __html: paragraph.replace(/<\/?ul>/g, '') }} />;
+                  return <ul key={index} className="list-disc pl-8 mb-10 space-y-4 text-slate-600 marker:text-indigo-500" dangerouslySetInnerHTML={{ __html: safe.replace(/<\/?ul>/g, '') }} />;
                }
                return (
-                 <p key={index} className="text-slate-600 text-lg md:text-xl leading-relaxed mb-8 font-light" dangerouslySetInnerHTML={{ __html: paragraph }} />
+                 <p key={index} className="text-slate-600 text-lg md:text-xl leading-relaxed mb-8 font-light" dangerouslySetInnerHTML={{ __html: safe }} />
                )
              })}
           </div>
