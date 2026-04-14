@@ -2,4 +2,4 @@ User-agent: *
 Disallow: /admin/
 Disallow: /api/
 Allow: /
-Sitemap: https://cwaya.in/sitemap.xml
+Sitemap: https://cwaya.me/sitemap.xml

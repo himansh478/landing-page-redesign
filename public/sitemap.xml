@@ -1,44 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <!-- Main Pages -->
-  <url><loc>https://cwaya.in/</loc><priority>1.0</priority><lastmod>2026-04-12</lastmod><changefreq>weekly</changefreq></url>
-  <url><loc>https://cwaya.in/blog</loc><priority>0.9</priority><lastmod>2026-04-12</lastmod><changefreq>weekly</changefreq></url>
-  <url><loc>https://cwaya.in/about-us</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
-  <url><loc>https://cwaya.in/contact-us</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
-  <url><loc>https://cwaya.in/privacy-policy</loc><priority>0.5</priority><lastmod>2026-04-12</lastmod><changefreq>yearly</changefreq></url>
-  <url><loc>https://cwaya.in/terms-conditions</loc><priority>0.5</priority><lastmod>2026-04-12</lastmod><changefreq>yearly</changefreq></url>
-  <url><loc>https://cwaya.in/packages</loc><priority>0.9</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
-  <url><loc>https://cwaya.in/professional-shoots</loc><priority>0.9</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
-  <url><loc>https://cwaya.in/masterful-editing</loc><priority>0.9</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
+  <url><loc>https://cwaya.me/</loc><priority>1.0</priority><lastmod>2026-04-12</lastmod><changefreq>weekly</changefreq></url>
+  <url><loc>https://cwaya.me/blog</loc><priority>0.9</priority><lastmod>2026-04-12</lastmod><changefreq>weekly</changefreq></url>
+  <url><loc>https://cwaya.me/about-us</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
+  <url><loc>https://cwaya.me/contact-us</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
+  <url><loc>https://cwaya.me/privacy-policy</loc><priority>0.5</priority><lastmod>2026-04-12</lastmod><changefreq>yearly</changefreq></url>
+  <url><loc>https://cwaya.me/terms-conditions</loc><priority>0.5</priority><lastmod>2026-04-12</lastmod><changefreq>yearly</changefreq></url>
+  <url><loc>https://cwaya.me/packages</loc><priority>0.9</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
+  <url><loc>https://cwaya.me/professional-shoots</loc><priority>0.9</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
+  <url><loc>https://cwaya.me/masterful-editing</loc><priority>0.9</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
 
   <!-- Portfolio Pages -->
-  <url><loc>https://cwaya.in/wedding-portfolio</loc><priority>0.9</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
-  <url><loc>https://cwaya.in/corporate-shoot-portfolio</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
-  <url><loc>https://cwaya.in/commercial-portfolio</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
-  <url><loc>https://cwaya.in/marketing-portfolio</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
-  <url><loc>https://cwaya.in/religious-portfolio</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
-  <url><loc>https://cwaya.in/political-portfolio</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
-  <url><loc>https://cwaya.in/cinematic-portfolio</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
-  <url><loc>https://cwaya.in/social-video-portfolio</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
-  <url><loc>https://cwaya.in/documentary-portfolio</loc><priority>0.7</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
-  <url><loc>https://cwaya.in/vlog-edit-portfolio</loc><priority>0.7</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
-  <url><loc>https://cwaya.in/reel-portfolio</loc><priority>0.7</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
-  <url><loc>https://cwaya.in/ai-edit-portfolio</loc><priority>0.7</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
+  <url><loc>https://cwaya.me/wedding-portfolio</loc><priority>0.9</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
+  <url><loc>https://cwaya.me/corporate-shoot-portfolio</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
+  <url><loc>https://cwaya.me/commercial-portfolio</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
+  <url><loc>https://cwaya.me/marketing-portfolio</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
+  <url><loc>https://cwaya.me/religious-portfolio</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
+  <url><loc>https://cwaya.me/political-portfolio</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
+  <url><loc>https://cwaya.me/cinematic-portfolio</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
+  <url><loc>https://cwaya.me/social-video-portfolio</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
+  <url><loc>https://cwaya.me/documentary-portfolio</loc><priority>0.7</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
+  <url><loc>https://cwaya.me/vlog-edit-portfolio</loc><priority>0.7</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
+  <url><loc>https://cwaya.me/reel-portfolio</loc><priority>0.7</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
+  <url><loc>https://cwaya.me/ai-edit-portfolio</loc><priority>0.7</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
 
   <!-- Blog Posts -->
-  <url><loc>https://cwaya.in/blog/ultimate-guide-professional-video-editing-brands</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
-  <url><loc>https://cwaya.in/blog/mastering-short-form-content-reels-tiktok-shorts</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
-  <url><loc>https://cwaya.in/blog/setting-the-scene-professional-photography-shoots</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
-  <url><loc>https://cwaya.in/blog/ai-chatbots-automations-transforming-business-efficiency</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
-  <url><loc>https://cwaya.in/blog/mastering-meta-google-ads-growth-strategy</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
-  <url><loc>https://cwaya.in/blog/building-high-performance-websites-luxury-brands</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
-  <url><loc>https://cwaya.in/blog/creator-economy-finding-high-paying-jobs-skilled-professionals</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
-  <url><loc>https://cwaya.in/blog/facebook-vs-instagram-vs-whatsapp-best-platform</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
-  <url><loc>https://cwaya.in/blog/automation-content-creation-ai-human-synergy</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
-  <url><loc>https://cwaya.in/blog/power-video-testimonials-brand-trust</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
-  <url><loc>https://cwaya.in/blog/technical-seo-for-creative-agencies</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
-  <url><loc>https://cwaya.in/blog/meta-pixel-vs-conversions-api-tracking-2026</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
-  <url><loc>https://cwaya.in/blog/building-scalable-brand-whatsapp-enterprise-tools</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
-  <url><loc>https://cwaya.in/blog/art-of-storytelling-why-emotion-beats-features</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
-  <url><loc>https://cwaya.in/blog/collaborating-with-shivexa-referral-programs</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
+  <url><loc>https://cwaya.me/blog/ultimate-guide-professional-video-editing-brands</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
+  <url><loc>https://cwaya.me/blog/mastering-short-form-content-reels-tiktok-shorts</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
+  <url><loc>https://cwaya.me/blog/setting-the-scene-professional-photography-shoots</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
+  <url><loc>https://cwaya.me/blog/ai-chatbots-automations-transforming-business-efficiency</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
+  <url><loc>https://cwaya.me/blog/mastering-meta-google-ads-growth-strategy</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
+  <url><loc>https://cwaya.me/blog/building-high-performance-websites-luxury-brands</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
+  <url><loc>https://cwaya.me/blog/creator-economy-finding-high-paying-jobs-skilled-professionals</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
+  <url><loc>https://cwaya.me/blog/facebook-vs-instagram-vs-whatsapp-best-platform</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
+  <url><loc>https://cwaya.me/blog/automation-content-creation-ai-human-synergy</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
+  <url><loc>https://cwaya.me/blog/power-video-testimonials-brand-trust</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
+  <url><loc>https://cwaya.me/blog/technical-seo-for-creative-agencies</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
+  <url><loc>https://cwaya.me/blog/meta-pixel-vs-conversions-api-tracking-2026</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
+  <url><loc>https://cwaya.me/blog/building-scalable-brand-whatsapp-enterprise-tools</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
+  <url><loc>https://cwaya.me/blog/art-of-storytelling-why-emotion-beats-features</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
+  <url><loc>https://cwaya.me/blog/collaborating-with-shivexa-referral-programs</loc><priority>0.8</priority><lastmod>2026-04-12</lastmod><changefreq>monthly</changefreq></url>
 </urlset>
