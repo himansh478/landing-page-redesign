@@ -77,7 +77,7 @@ const aiTools: AiTool[] = [
         gradient: 'from-rose-500 to-pink-600',
         glowColor: 'rgba(236, 72, 153, 0.15)',
         path: '/ai-photo-sharing',
-        healthEndpoint: 'https://gour-himansh-ai.hf.space/api/health'
+        healthEndpoint: 'https://huggingface.co/spaces/gour-himansh/AI/api/health'
     },
 ];
 
