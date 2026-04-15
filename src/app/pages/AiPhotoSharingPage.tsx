@@ -29,7 +29,7 @@ export function AiPhotoSharingPage() {
             
             {/* Custom Element for Hugging Face Gradio Embeds */}
             <gradio-app 
-                src="gour-himansh/AI"
+                src="https://gour-himansh-ai.hf.space"
                 className="w-full h-full border-none"
                 style={{ width: '100%', height: '100%', border: 'none' }}
                 theme_mode="light"
