@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
-import { User, Briefcase, Mail, Phone, MapPin, Wrench, Camera, Link as LinkIcon, Map, Building } from 'lucide-react';
+import { User, Briefcase, Mail, Phone, MapPin, Wrench, Camera, Link as LinkIcon, Map, Building, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '../../lib/supabase';
 
@@ -14,7 +14,13 @@ export function GlobalAuthGate() {
 
   useEffect(() => {
     // Listen for custom event to open manually
-    const handleOpen = () => setIsOpen(true);
+    // If user already filled the form, don't show it again
+    const handleOpen = () => {
+      const alreadyAuth = localStorage.getItem('isSiteAuthenticated');
+      if (alreadyAuth !== 'true') {
+        setIsOpen(true);
+      }
+    };
     window.addEventListener('open-auth-gate', handleOpen);
 
     // Check if user is already authenticated
@@ -80,6 +86,11 @@ export function GlobalAuthGate() {
     setIsOpen(false);
   };
 
+  const handleClose = () => {
+    localStorage.setItem('isSiteAuthenticated', 'true');
+    setIsOpen(false);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
       <DialogContent 
@@ -87,7 +98,15 @@ export function GlobalAuthGate() {
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
-        <div className="p-8">
+        <div className="relative p-8">
+          {/* Close button — top right corner */}
+          <button
+            onClick={handleClose}
+            className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-red-100 text-slate-400 hover:text-red-500 transition-colors z-10"
+            aria-label="Close"
+          >
+            <X className="w-4 h-4" />
+          </button>
           <DialogHeader className="mb-8">
             <DialogTitle className="text-3xl font-black text-slate-900 text-center tracking-tight">
               {mode === 'select' && 'Welcome '}
