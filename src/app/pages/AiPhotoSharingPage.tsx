@@ -22,7 +22,8 @@ export function AiPhotoSharingPage() {
                 src="https://gour-himansh-ai.hf.space" 
                 className="w-full h-full border-none"
                 title="AI Photo Sharing Premium Tool"
-                allow="camera; display-capture"
+                allow="camera; microphone; display-capture; autoplay; clipboard-write; encrypted-media; fullscreen"
+                sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-downloads"
             />
         </div>
     );

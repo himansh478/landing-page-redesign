@@ -32,11 +32,11 @@ RewriteRule . /index.html [L]
   # Referrer Policy — don't leak full URL on external navigation
   Header set Referrer-Policy "strict-origin-when-cross-origin"
 
-  # Permissions Policy — block unused browser features
-  Header set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+  # Permissions Policy — allow camera for the AI Photo Sharing tool
+  Header set Permissions-Policy "geolocation=(), microphone=(self), camera=(self)"
 
-  # Content Security Policy
-  Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; media-src 'self' https:; frame-src https://www.youtube.com https://www.instagram.com; connect-src 'self' https:;"
+  # Content Security Policy — Added *.hf.space to frame-src
+  Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; media-src 'self' https:; frame-src https://www.youtube.com https://www.instagram.com https://*.hf.space; connect-src 'self' https:;"
 </IfModule>
 
 # =============================================
