@@ -1,6 +1,16 @@
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router";
 
+// Add TypeScript support for the Gradio custom element
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      'gradio-app': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & { src: string; theme_mode?: string };
+    }
+  }
+}
+
+
 export function AiPhotoSharingPage() {
     const navigate = useNavigate();
 
@@ -17,14 +27,13 @@ export function AiPhotoSharingPage() {
                 </button>
             </div>
             
-            {/* Seamless Iframe loading the raw HF Space (no HF header) */}
-            <iframe 
-                src="https://gour-himansh-ai.hf.space" 
+            {/* Custom Element for Hugging Face Gradio Embeds */}
+            <gradio-app 
+                src="https://gour-himansh-ai.hf.space"
                 className="w-full h-full border-none"
-                title="AI Photo Sharing Premium Tool"
-                allow="camera; microphone; display-capture; autoplay; clipboard-write; encrypted-media; fullscreen"
-                sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts allow-downloads"
-            />
+                style={{ width: '100%', height: '100%', border: 'none' }}
+                theme_mode="light"
+            ></gradio-app>
         </div>
     );
 }
