@@ -5,7 +5,7 @@ import { lazy, Suspense } from 'react';
 // Each page is only downloaded when the user navigates to it
 const HomePage                  = lazy(() => import('./pages/HomePage').then(m => ({ default: m.HomePage })));
 const MasterfulEditingPage      = lazy(() => import('./pages/MasterfulEditingPage').then(m => ({ default: m.MasterfulEditingPage })));
-const TheamBasedPage            = lazy(() => import('./pages/TheamBasedPage').then(m => ({ default: m.TheamBasedPage })));
+const ThemeBasedPage            = lazy(() => import('./pages/ThemeBasedPage').then(m => ({ default: m.ThemeBasedPage })));
 const ProfessionalShootPage     = lazy(() => import('./pages/ProfessionalShootPage').then(m => ({ default: m.ProfessionalShootPage })));
 const VlogEditPortfolioPage     = lazy(() => import('./pages/VlogEditPortfolioPage').then(m => ({ default: m.VlogEditPortfolioPage })));
 const CorporateShootPortfolioPage = lazy(() => import('./pages/CorporateShootPortfolioPage').then(m => ({ default: m.CorporateShootPortfolioPage })));
@@ -55,7 +55,7 @@ function withSuspense(Component: React.ComponentType) {
 export const router = createBrowserRouter([
   { path: '/',                        element: withSuspense(HomePage) },
   { path: '/masterful-editing',       element: withSuspense(MasterfulEditingPage) },
-  { path: '/theam-based',             element: withSuspense(TheamBasedPage) },
+  { path: '/theme-based',             element: withSuspense(ThemeBasedPage) },
   { path: '/professional-shoots',     element: withSuspense(ProfessionalShootPage) },
   { path: '/vlog-edit-portfolio',     element: withSuspense(VlogEditPortfolioPage) },
   { path: '/corporate-shoot-portfolio', element: withSuspense(CorporateShootPortfolioPage) },

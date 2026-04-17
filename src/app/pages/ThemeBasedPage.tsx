@@ -71,7 +71,7 @@ const themes: Theme[] = [
   }
 ];
 
-export function TheamBasedPage() {
+export function ThemeBasedPage() {
   const navigate = useNavigate();
 
   return (

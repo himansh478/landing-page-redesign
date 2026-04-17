@@ -5,10 +5,10 @@ import { Star } from 'lucide-react';
 
 // Brand logos (using text for demonstration)
 const brands = [
-  'belive in quality of work',
+  'Believe in quality of work',
   'client satisfaction',
   'smooth editing',
-  'profetional work flow',
+  'Professional work flow',
   'quality work',
   'punctuality',
 ];

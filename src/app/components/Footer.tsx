@@ -100,7 +100,7 @@ export function Footer() {
                 { href: '/professional-shoots', label: 'Professional Shoots' },
                 { href: '/social-media-management', label: 'Social Media Management' },
                 { href: '/technical-solutions', label: 'Web Development / AI bots' },
-                { href: '/theam-based', label: 'Theme Based Shoots' },
+                { href: '/theme-based', label: 'Theme Based Shoots' },
               ].map(link => (
                 <li key={link.href}>
                   <Link
