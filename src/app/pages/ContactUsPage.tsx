@@ -2,6 +2,7 @@ import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { Mail, Phone, MapPin, Send, CheckCircle, AlertCircle, Loader } from 'lucide-react';
 import { useState } from 'react';
+import { supabase } from '../../lib/supabase';
 
 export function ContactUsPage() {
   const [formState, setFormState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -9,22 +10,34 @@ export function ContactUsPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setFormState('loading');
-    const form = e.currentTarget;
-    const data = new FormData(form);
+    
+    const formData = new FormData(e.currentTarget);
+    const name = formData.get('name') as string;
+    const email = formData.get('email') as string;
+    const subject = formData.get('subject') as string;
+    const message = formData.get('message') as string;
+
     try {
-      // Replace YOUR_FORM_ID with your Formspree form ID from formspree.io (free)
-      const response = await fetch('https://formspree.io/f/YOUR_FORM_ID', {
-        method: 'POST',
-        body: data,
-        headers: { Accept: 'application/json' },
-      });
-      if (response.ok) {
-        setFormState('success');
-        form.reset();
-      } else {
+      const { error } = await supabase
+        .from('querries')
+        .insert([
+          { 
+            full_name: name, 
+            email: email, 
+            subject: subject, 
+            message: message 
+          }
+        ]);
+
+      if (error) {
+        console.error('Database insertion error:', error);
         setFormState('error');
+      } else {
+        setFormState('success');
+        (e.target as HTMLFormElement).reset();
       }
-    } catch {
+    } catch (err) {
+      console.error('Unexpected error:', err);
       setFormState('error');
     }
   };

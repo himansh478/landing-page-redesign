@@ -45,3 +45,26 @@ ON public.work_applications
 FOR INSERT 
 TO public
 WITH CHECK (true);
+
+
+-- Table for Contact Us Queries
+CREATE TABLE IF NOT EXISTS public.querries (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    full_name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    subject TEXT NOT NULL,
+    message TEXT NOT NULL
+);
+
+-- Enable Row Level Security (RLS) for querries
+ALTER TABLE public.querries ENABLE ROW LEVEL SECURITY;
+
+-- Allow anonymous inserts to the querries table
+DROP POLICY IF EXISTS "Allow public inserts on querries" ON public.querries;
+CREATE POLICY "Allow public inserts on querries"
+ON public.querries
+FOR INSERT 
+TO public
+WITH CHECK (true);
+
