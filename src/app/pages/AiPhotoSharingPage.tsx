@@ -17,9 +17,9 @@ export function AiPhotoSharingPage() {
                 </button>
             </div>
             
-            {/* Standard Iframe for Hugging Face Docker Embeds */}
+            {/* Azure App Service — Production Deployment */}
             <iframe 
-                src="https://gour-himansh-ai.hf.space"
+                src="https://ai.cwaya.me"
                 className="w-full h-full border-none shadow-2xl"
                 style={{ width: '100%', height: '100%', border: 'none' }}
                 title="AI Photo Sharing App"
