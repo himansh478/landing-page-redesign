@@ -59,6 +59,32 @@ def handle_exception(e):
 app.register_blueprint(photographer_bp)
 app.register_blueprint(user_bp)
 
+# --- Secure Image Proxy ---
+# Users and Frontend will request /api/proxy/photos/123.jpg
+# We will silently fetch it from HF so the token is never exposed!
+import requests as req
+from flask import Response, stream_with_context
+@app.route('/api/proxy/<path:filepath>')
+def proxy_huggingface(filepath):
+    if not Config.HF_TOKEN or not Config.HF_DATASET_ID:
+        return jsonify({"error": "Storage not configured"}), 500
+        
+    url = f"https://huggingface.co/datasets/{Config.HF_DATASET_ID}/resolve/main/{filepath}"
+    headers = {"Authorization": f"Bearer {Config.HF_TOKEN}"}
+    
+    # Stream the image back to the client directly
+    try:
+        r = req.get(url, headers=headers, stream=True)
+        r.raise_for_status()
+        
+        return Response(
+            stream_with_context(r.iter_content(chunk_size=4096)),
+            content_type=r.headers.get('content-type', 'image/jpeg')
+        )
+    except Exception as e:
+        logger.error(f"Failed to fetch from HF proxy: {e}")
+        return jsonify({"error": "Image not found"}), 404
+
 # --- Serve Frontend Static Pages ---
 @app.route('/')
 def index():

@@ -411,23 +411,41 @@
         <!-- Panel 1: Register -->
         <div class="panel active" id="panel1">
             <div class="card">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Your Name</label>
-                        <input type="text" id="pName" placeholder="e.g. Rahul Sharma">
+                <!-- Tab Switcher -->
+                <div style="display: flex; margin-bottom: 24px; background: rgba(255,255,255,0.05); border-radius: 10px; padding: 4px;">
+                    <button id="tabRegister" onclick="switchMode('register')" style="flex: 1; padding: 10px; border: none; border-radius: 8px; background: var(--primary); color: white; cursor: pointer; font-weight: 600; font-family: inherit; transition: all 0.2s;">Create New Event</button>
+                    <button id="tabJoin" onclick="switchMode('join')" style="flex: 1; padding: 10px; border: none; border-radius: 8px; background: transparent; color: var(--muted); cursor: pointer; font-weight: 600; font-family: inherit; transition: all 0.2s;">Join Existing Event</button>
+                </div>
+
+                <!-- Registration Form (Original) -->
+                <div id="registerForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Your Name</label>
+                            <input type="text" id="pName" placeholder="e.g. Rahul Sharma">
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="pEmail" placeholder="rahul@example.com">
+                        </div>
                     </div>
                     <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" id="pEmail" placeholder="rahul@example.com">
+                        <label>Event Name</label>
+                        <input type="text" id="pEventName" placeholder="e.g. Amit & Priya Wedding 2024">
                     </div>
+                    <div id="regError" class="alert alert-error" style="display:none"></div>
+                    <button class="btn-primary" onclick="registerPhotographer()" id="regBtn">Create Event & Get Code</button>
                 </div>
-                <div class="form-group">
-                    <label>Event Name</label>
-                    <input type="text" id="pEventName" placeholder="e.g. Amit & Priya Wedding 2024">
+
+                <!-- Join Form (New) -->
+                <div id="joinForm" style="display: none; animation: fadeUp 0.3s ease;">
+                    <div class="form-group">
+                        <label>Enter Event Code (from Main Photographer)</label>
+                        <input type="text" id="joinCode" placeholder="e.g. EVT-2024-ABCDEF" style="text-transform: uppercase;">
+                    </div>
+                    <div id="joinError" class="alert alert-error" style="display:none"></div>
+                    <button class="btn-primary" onclick="joinEvent()" id="joinBtn">Join & Start Uploading</button>
                 </div>
-                <div id="regError" class="alert alert-error" style="display:none"></div>
-                <button class="btn-primary" onclick="registerPhotographer()" id="regBtn">Create Event & Get
-                    Code</button>
             </div>
         </div>
 
@@ -521,6 +539,53 @@
             document.getElementById('fileCount').style.display = count > 0 ? 'block' : 'none';
             document.getElementById('fileCount').textContent = `${count} photo${count !== 1 ? 's' : ''} selected`;
             document.getElementById('uploadBtn').disabled = count === 0;
+        }
+
+        // ─── Mode Switching (Join vs Register) ───
+        function switchMode(mode) {
+            const isReg = mode === 'register';
+            document.getElementById('registerForm').style.display = isReg ? 'block' : 'none';
+            document.getElementById('joinForm').style.display = isReg ? 'none' : 'block';
+            
+            document.getElementById('tabRegister').style.background = isReg ? 'var(--primary)' : 'transparent';
+            document.getElementById('tabRegister').style.color = isReg ? 'white' : 'var(--muted)';
+            document.getElementById('tabJoin').style.background = isReg ? 'transparent' : 'var(--primary)';
+            document.getElementById('tabJoin').style.color = isReg ? 'var(--muted)' : 'white';
+        }
+
+        async function joinEvent() {
+            const code = document.getElementById('joinCode').value.trim().toUpperCase();
+            const errEl = document.getElementById('joinError');
+            errEl.style.display = 'none';
+
+            if (!code) {
+                errEl.textContent = 'Please enter an event code.';
+                errEl.style.display = 'block';
+                return;
+            }
+
+            document.getElementById('joinBtn').disabled = true;
+            document.getElementById('joinBtn').textContent = 'Verifying code...';
+
+            try {
+                // We test the code by fetching stats (doesn't require auth)
+                const res = await fetch(`/api/photographer/stats?code=${code}`);
+                const data = await res.json();
+                
+                if (!res.ok) throw new Error('Invalid event code. Please check again.');
+
+                photographerCode = code;
+                document.getElementById('codeDisplay').textContent = photographerCode;
+                
+                // Skip directly to Step 2
+                goToStep(2);
+            } catch (e) {
+                errEl.textContent = e.message;
+                errEl.style.display = 'block';
+            } finally {
+                document.getElementById('joinBtn').disabled = false;
+                document.getElementById('joinBtn').textContent = 'Join & Start Uploading';
+            }
         }
 
         // ─── Step Navigation ───

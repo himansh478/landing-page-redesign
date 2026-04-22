@@ -15,8 +15,9 @@ class Config:
     # Supabase (PostgreSQL)
     DB_URL = os.environ.get('SUPABASE_DATABASE_URL')
 
-    # ImgBB (Cloud Storage)
-    IMGBB_API_KEY = os.environ.get('IMGBB_API_KEY')
+    # Hugging Face (Private Photo Storage)
+    HF_TOKEN = os.environ.get('HF_TOKEN')
+    HF_DATASET_ID = os.environ.get('HF_DATASET_ID')
 
     # Storage (Local Temp for processing)
     STORAGE_DIR = os.path.join(ROOT_DIR, 'storage')
