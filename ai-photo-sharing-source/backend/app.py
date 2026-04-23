@@ -31,7 +31,13 @@ app = Flask(__name__, static_folder=STATIC_DIR, static_url_path='/static')
 
 # 🛡️ SECURITY UPGRADE 1: Strict CORS
 # Ab koi aur domain postman ya apne server se API nahi chura sakta
-CORS(app, resources={r"/api/*": {"origins": ["http://localhost:5173", "http://localhost:5174"]}})
+CORS(app, resources={r"/api/*": {"origins": [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "https://www.cwaya.me",
+    "https://cwaya.me",
+    "https://ai.cwaya.me"
+]}})
 app.config['MAX_CONTENT_LENGTH'] = Config.MAX_CONTENT_LENGTH
 
 # 🛡️ SECURITY UPGRADE 2: Anti-Hijack IFrame (Content Security Policy)
@@ -50,9 +56,10 @@ def add_security_headers(response):
 # Server crash hone se pehle user ko polite message dega
 @app.errorhandler(Exception)
 def handle_exception(e):
-    logger.error(f"Server Error: {e}")
+    logger.error(f"Server Error [{type(e).__name__}]: {e}", exc_info=True)
     return jsonify({
-        "error": "Server is processing too many requests. Please wait a moment and try again."
+        "error": f"Internal server error: {type(e).__name__}",
+        "detail": str(e)[:200]
     }), 503
 
 # --- Register Blueprints ---

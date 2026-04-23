@@ -3,7 +3,7 @@ import os
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from config import Config
-from database.db import get_conn, release_conn, json_to_embeddings
+from database.db import get_db_conn, json_to_embeddings
 from psycopg2.extras import RealDictCursor
 import logging
 
@@ -16,8 +16,7 @@ class MatchingService:
         """
         Find all event photos where the user's face appears.
         """
-        conn = get_conn()
-        try:
+        with get_db_conn() as conn:
             cursor = conn.cursor(cursor_factory=RealDictCursor)
             cursor.execute(
                 "SELECT id, thumbnail_path, file_path, embeddings FROM photos WHERE photographer_id = %s AND embeddings IS NOT NULL",
@@ -25,8 +24,6 @@ class MatchingService:
             )
             rows = cursor.fetchall()
             cursor.close()
-        finally:
-            release_conn(conn)
 
         matches = []
         for row in rows:

@@ -7,7 +7,7 @@ import requests
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from config import Config
-from database.db import get_conn, release_conn
+from database.db import get_db_conn
 from models.face_engine import get_engine
 from services.upload_service import UploadService
 from services.matching_service import MatchingService
@@ -25,14 +25,11 @@ def verify_code():
     if not code:
         return jsonify({'valid': False, 'error': 'Code is required'}), 400
 
-    conn = get_conn()
-    try:
+    with get_db_conn() as conn:
         cursor = conn.cursor(cursor_factory=RealDictCursor)
         cursor.execute("SELECT * FROM photographers WHERE code=%s", (code,))
         p = cursor.fetchone()
         cursor.close()
-    finally:
-        release_conn(conn)
 
     if not p:
         return jsonify({'valid': False, 'error': 'Invalid event code'}), 400
@@ -54,14 +51,11 @@ def upload_selfie():
     if not code or not photo:
         return jsonify({'error': 'code and photo are required'}), 400
 
-    conn = get_conn()
-    try:
+    with get_db_conn() as conn:
         cursor = conn.cursor(cursor_factory=RealDictCursor)
         cursor.execute("SELECT * FROM photographers WHERE code=%s", (code,))
         p = cursor.fetchone()
         cursor.close()
-    finally:
-        release_conn(conn)
 
     if not p:
         return jsonify({'error': 'Invalid event code'}), 401
@@ -93,8 +87,7 @@ def upload_selfie():
 
     # 5. Create session in Supabase
     session_id = str(uuid.uuid4())
-    conn = get_conn()
-    try:
+    with get_db_conn() as conn:
         cursor = conn.cursor()
         cursor.execute(
             "INSERT INTO user_sessions (id, photographer_id, selfie_path, matched_count) VALUES (%s,%s,%s,%s)",
@@ -102,8 +95,6 @@ def upload_selfie():
         )
         conn.commit()
         cursor.close()
-    finally:
-        release_conn(conn)
 
     # Cleanup temp
     upload_service.cleanup_temp(temp_path)
@@ -123,33 +114,28 @@ def upload_selfie():
 def download_photo(photo_id):
     session_id = request.args.get('session_id', '')
 
-    conn = get_conn()
-    try:
+    with get_db_conn() as conn:
         cursor = conn.cursor(cursor_factory=RealDictCursor)
         cursor.execute("SELECT * FROM photos WHERE id=%s", (photo_id,))
         photo = cursor.fetchone()
         cursor.close()
-    finally:
-        release_conn(conn)
 
     if not photo:
         return jsonify({'error': 'Photo not found'}), 404
 
     # Log download
     if session_id:
-        conn = get_conn()
         try:
-            cursor = conn.cursor()
-            cursor.execute(
-                "INSERT INTO download_logs (id, session_id, photo_id) VALUES (%s,%s,%s)",
-                (str(uuid.uuid4()), session_id, photo_id)
-            )
-            conn.commit()
-            cursor.close()
+            with get_db_conn() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "INSERT INTO download_logs (id, session_id, photo_id) VALUES (%s,%s,%s)",
+                    (str(uuid.uuid4()), session_id, photo_id)
+                )
+                conn.commit()
+                cursor.close()
         except Exception:
             pass
-        finally:
-            release_conn(conn)
 
     # Redirect to cloud URL instead of serving file locally
     return redirect(photo['file_path'])
