@@ -21,19 +21,54 @@ def init_pool(minconn=1, maxconn=20):
     if not db_url:
         logger.error("SUPABASE_DATABASE_URL is not set!")
         raise RuntimeError("Database URL missing.")
+
+    # List of connection strings to try
+    # 1. User defined (Current)
+    # 2. Fallback to 6543 if was 5432
+    # 3. Fallback to direct host if was pooler
+    # 4. Fallback to pooler if was direct
+    urls_to_try = [db_url]
     
-    # Mask password for logging
-    masked_url = db_url
-    if '@' in db_url:
-        parts = db_url.split('@')
-        masked_url = f"{parts[0].split(':')[0]}:***@{parts[1]}"
-    logger.info(f"Connecting to: {masked_url}")
+    # Extract components
+    import re
+    match = re.match(r"postgresql://(?P<user>[^:]+):(?P<pass>[^@]+)@(?P<host>[^:/]+)(?::(?P<port>\d+))?/(?P<db>.+)", db_url)
+    if match:
+        d = match.groupdict()
+        user, password, host, port, db = d['user'], d['pass'], d['host'], d['port'] or '5432', d['db']
+        
+        # If using direct host, try pooler host
+        if ".supabase.co" in host and "pooler" not in host:
+            project_id = host.split('.')[0]
+            pooler_host = f"aws-0-ap-south-1.pooler.supabase.com"
+            # Add pooler URL with prefixed username
+            urls_to_try.append(f"postgresql://postgres.{project_id}:{password}@{pooler_host}:6543/{db}?sslmode=require")
+            urls_to_try.append(f"postgresql://postgres.{project_id}:{password}@{pooler_host}:5432/{db}?sslmode=require")
+        
+        # If using port 5432, try 6543
+        if port == '5432':
+            urls_to_try.append(db_url.replace(":5432/", ":6543/"))
+
+    working_url = None
+    for url in urls_to_try:
+        masked = url.split('@')[-1]
+        logger.info(f"Trying database connection: {masked}")
+        try:
+            conn = psycopg2.connect(url, connect_timeout=5)
+            conn.close()
+            logger.info("Successfully connected to database!")
+            working_url = url
+            break
+        except Exception as e:
+            logger.warning(f"Connection failed for {masked}: {e}")
+
+    if not working_url:
+        logger.error("All database connection attempts failed.")
+        raise RuntimeError("Could not connect to any database endpoint.")
 
     try:
         with _pool_lock:
             if _pool is None:
-                # Threaded pool for multi-user support
-                _pool = ThreadedConnectionPool(minconn, maxconn, db_url)
+                _pool = ThreadedConnectionPool(minconn, maxconn, working_url)
                 logger.info("Database Connection Pool Initialized.")
     except Exception as e:
         logger.error(f"Failed to create connection pool: {e}")
