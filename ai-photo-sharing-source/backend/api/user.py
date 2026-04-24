@@ -21,7 +21,7 @@ matching_service = MatchingService()
 
 @user_bp.route('/api/user/verify-code', methods=['POST'])
 def verify_code():
-    code = (request.json or {}).get('code', '').strip().upper()
+    code = (request.get_json(silent=True) or {}).get('code', '').strip().upper()
     if not code:
         return jsonify({'valid': False, 'error': 'Code is required'}), 400
 
