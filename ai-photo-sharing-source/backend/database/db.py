@@ -58,6 +58,7 @@ def init_pool(minconn=1, maxconn=20):
         try:
             # Parse URL and use keywords to avoid encoding issues
             import urllib.parse as urlparse
+            import socket
             result = urlparse.urlparse(url)
             username = result.username
             password = urlparse.unquote(result.password) if result.password else None
@@ -65,11 +66,21 @@ def init_pool(minconn=1, maxconn=20):
             hostname = result.hostname
             port = result.port or 5432
             
+            # Resolve to IPv4 to bypass Azure IPv6 issues
+            hostaddr = None
+            try:
+                # Force IPv4 resolution
+                hostaddr = socket.gethostbyname(hostname)
+                logger.info(f"Resolved {hostname} to IPv4: {hostaddr}")
+            except Exception as dns_err:
+                logger.warning(f"DNS resolution failed for {hostname}: {dns_err}")
+
             conn = psycopg2.connect(
                 database=database,
                 user=username,
                 password=password,
                 host=hostname,
+                hostaddr=hostaddr, # This is the magic fix for Azure IPv6 issues
                 port=port,
                 connect_timeout=5,
                 sslmode='require' if 'sslmode=require' in url or 'pooler' in hostname else 'prefer',
