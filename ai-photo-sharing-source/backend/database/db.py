@@ -38,11 +38,14 @@ def init_pool(minconn=1, maxconn=20):
         
         # If using direct host, try pooler host
         if ".supabase.co" in host and "pooler" not in host:
-            project_id = host.split('.')[0]
-            pooler_host = f"aws-0-ap-south-1.pooler.supabase.com"
-            # Add pooler URL with prefixed username
-            urls_to_try.append(f"postgresql://postgres.{project_id}:{password}@{pooler_host}:6543/{db}?sslmode=require")
-            urls_to_try.append(f"postgresql://postgres.{project_id}:{password}@{pooler_host}:5432/{db}?sslmode=require")
+            # db.tvqvkunrruqjgtwgjcye.supabase.co -> tvqvkunrruqjgtwgjcye
+            host_parts = host.split('.')
+            if len(host_parts) >= 3:
+                project_id = host_parts[-3]
+                pooler_host = f"aws-0-ap-south-1.pooler.supabase.com"
+                # Add pooler URL with prefixed username
+                urls_to_try.append(f"postgresql://postgres.{project_id}:{password}@{pooler_host}:6543/{db}?sslmode=require")
+                urls_to_try.append(f"postgresql://postgres.{project_id}:{password}@{pooler_host}:5432/{db}?sslmode=require")
         
         # If using port 5432, try 6543
         if port == '5432':
