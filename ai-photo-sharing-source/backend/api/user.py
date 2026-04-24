@@ -25,11 +25,38 @@ def verify_code():
     if not code:
         return jsonify({'valid': False, 'error': 'Code is required'}), 400
 
-    with get_db_conn() as conn:
-        cursor = conn.cursor(cursor_factory=RealDictCursor)
-        cursor.execute("SELECT * FROM photographers WHERE code=%s", (code,))
-        p = cursor.fetchone()
-        cursor.close()
+    try:
+        with get_db_conn() as conn:
+            cursor = conn.cursor(cursor_factory=RealDictCursor)
+            cursor.execute("SELECT * FROM photographers WHERE code=%s", (code,))
+            p = cursor.fetchone()
+            cursor.close()
+    except Exception as e:
+        logger.warning(f"Direct DB connection failed, trying REST API: {e}")
+        # Fallback to Supabase REST API
+        try:
+            # We need SUPABASE_URL and SUPABASE_ANON_KEY from environment
+            supabase_url = os.environ.get('VITE_SUPABASE_URL')
+            anon_key = os.environ.get('VITE_SUPABASE_ANON_KEY')
+            if supabase_url and anon_key:
+                rest_url = f"{supabase_url}/rest/v1/photographers?code=eq.{code}&select=*"
+                headers = {
+                    "apikey": anon_key,
+                    "Authorization": f"Bearer {anon_key}"
+                }
+                response = requests.get(rest_url, headers=headers, timeout=5)
+                if response.status_code == 200:
+                    data = response.json()
+                    p = data[0] if data else None
+                else:
+                    logger.error(f"REST API failed: {response.status_code} {response.text}")
+                    p = None
+            else:
+                logger.error("Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY for REST fallback")
+                p = None
+        except Exception as rest_err:
+            logger.error(f"REST API fallback error: {rest_err}")
+            p = None
 
     if not p:
         return jsonify({'valid': False, 'error': 'Invalid event code'}), 400
