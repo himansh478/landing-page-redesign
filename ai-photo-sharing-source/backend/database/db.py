@@ -53,7 +53,24 @@ def init_pool(minconn=1, maxconn=20):
         masked = url.split('@')[-1]
         logger.info(f"Trying database connection: {masked}")
         try:
-            conn = psycopg2.connect(url, connect_timeout=5)
+            # Parse URL and use keywords to avoid encoding issues
+            import urllib.parse as urlparse
+            result = urlparse.urlparse(url)
+            username = result.username
+            password = urlparse.unquote(result.password) if result.password else None
+            database = result.path[1:]
+            hostname = result.hostname
+            port = result.port or 5432
+            
+            conn = psycopg2.connect(
+                database=database,
+                user=username,
+                password=password,
+                host=hostname,
+                port=port,
+                connect_timeout=5,
+                sslmode='require' if 'sslmode=require' in url or 'pooler' in hostname else 'prefer'
+            )
             conn.close()
             logger.info("Successfully connected to database!")
             working_url = url
