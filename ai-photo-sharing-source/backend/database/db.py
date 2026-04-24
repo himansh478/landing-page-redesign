@@ -72,7 +72,9 @@ def init_pool(minconn=1, maxconn=20):
                 host=hostname,
                 port=port,
                 connect_timeout=5,
-                sslmode='require' if 'sslmode=require' in url or 'pooler' in hostname else 'prefer'
+                sslmode='require' if 'sslmode=require' in url or 'pooler' in hostname else 'prefer',
+                gssencmode='disable',
+                target_session_attrs='read-write'
             )
             conn.close()
             logger.info("Successfully connected to database!")
