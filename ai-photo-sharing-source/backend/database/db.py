@@ -21,6 +21,13 @@ def init_pool(minconn=1, maxconn=20):
     if not db_url:
         logger.error("SUPABASE_DATABASE_URL is not set!")
         raise RuntimeError("Database URL missing.")
+    
+    # Mask password for logging
+    masked_url = db_url
+    if '@' in db_url:
+        parts = db_url.split('@')
+        masked_url = f"{parts[0].split(':')[0]}:***@{parts[1]}"
+    logger.info(f"Connecting to: {masked_url}")
 
     try:
         with _pool_lock:
