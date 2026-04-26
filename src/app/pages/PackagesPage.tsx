@@ -17,6 +17,7 @@ const pricingPlans = [
             "On your Given Location",
             "Get Reel After 3hr of Shoot",
             "Normal Level editing",
+            "travelling charge exclude",
             "Its a combo pack of 1 Reels"
         ],
         icon: Video,
@@ -29,7 +30,7 @@ const pricingPlans = [
         subtitle: "per/reel",
         features: [
             "We Shoot it",
-            "Best Quality & Editing",
+            "advance level of Editing",
             "Get Reel After 3to4hr of shoot",
             "Professional transition or Sfx",
             "More Than 1 Reel 10% off on total amount"

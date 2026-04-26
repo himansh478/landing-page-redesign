@@ -11,7 +11,7 @@ export function HomePage() {
       <Header />
       <main>
         <HeroSection />
-        <AiToolsSection />
+        {/* <AiToolsSection /> */}
         <ServiceHub />
         <ClientWall />
       </main>
