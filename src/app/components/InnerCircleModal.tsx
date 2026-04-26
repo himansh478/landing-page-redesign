@@ -147,8 +147,8 @@ export function InnerCircleModal({ isOpen, onClose }: InnerCircleModalProps) {
                     value={formData.age}
                     onChange={handleChange}
                     required
-                    min="18"
-                    max="100"
+                    min="10"
+                    max="60"
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium"
                     placeholder="Enter your age"
                   />
