@@ -6,6 +6,10 @@ import { supabase } from '../../lib/supabase';
 
 type LoginMode = 'select' | 'customer' | 'work';
 
+// shared input style used across both forms
+const inputClass = "w-full bg-slate-50 border-none rounded-xl py-3 pl-12 pr-4 text-slate-900 font-medium focus:ring-2 focus:ring-indigo-500 outline-none";
+const customerInputClass = "w-full bg-slate-50 border-none rounded-xl py-4 pl-12 pr-4 text-slate-900 font-medium focus:ring-2 focus:ring-purple-500 outline-none";
+
 export function GlobalAuthGate() {
   const [isOpen, setIsOpen] = useState(false);
   const [mode, setMode] = useState<LoginMode>('select');
@@ -13,26 +17,20 @@ export function GlobalAuthGate() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Listen for custom event to open manually
-    // If user already filled the form, don't show it again
     const handleOpen = () => {
-      const alreadyAuth = localStorage.getItem('isSiteAuthenticated');
-      if (alreadyAuth !== 'true') {
+      if (localStorage.getItem('isSiteAuthenticated') !== 'true') {
         setIsOpen(true);
       }
     };
     window.addEventListener('open-auth-gate', handleOpen);
 
-    // Check if user is already authenticated
-    const isAuth = localStorage.getItem('isSiteAuthenticated');
-    if (isAuth === 'true') {
+    // skip if already authenticated
+    if (localStorage.getItem('isSiteAuthenticated') === 'true') {
       return () => window.removeEventListener('open-auth-gate', handleOpen);
     }
 
-    // Pop up after 1 minute (60,000ms)
-    const timer = setTimeout(() => {
-      setIsOpen(true);
-    }, 60000);
+    // auto popup after 1 min
+    const timer = setTimeout(() => setIsOpen(true), 60000);
 
     return () => {
       clearTimeout(timer);
@@ -44,18 +42,22 @@ export function GlobalAuthGate() {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
+
     const form = e.currentTarget;
     const data = {
       email: (form.elements.namedItem('email') as HTMLInputElement).value,
       phone: (form.elements.namedItem('phone') as HTMLInputElement).value,
     };
+
     const { error: dbError } = await supabase.from('leads').insert([data]);
     setIsLoading(false);
+
     if (dbError) {
       console.error('Supabase insert error (leads):', dbError.message);
       setError(dbError.message);
       return;
     }
+
     localStorage.setItem('isSiteAuthenticated', 'true');
     setIsOpen(false);
   };
@@ -64,6 +66,7 @@ export function GlobalAuthGate() {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
+
     const form = e.currentTarget;
     const data = {
       full_name: (form.elements.namedItem('fullName') as HTMLInputElement).value,
@@ -75,13 +78,16 @@ export function GlobalAuthGate() {
       equipment: (form.elements.namedItem('equipment') as HTMLInputElement).value,
       portfolio: (form.elements.namedItem('portfolio') as HTMLInputElement).value,
     };
+
     const { error: dbError } = await supabase.from('work_applications').insert([data]);
     setIsLoading(false);
+
     if (dbError) {
       console.error('Supabase insert error (work_applications):', dbError.message);
       setError(dbError.message);
       return;
     }
+
     localStorage.setItem('isSiteAuthenticated', 'true');
     setIsOpen(false);
   };
@@ -93,13 +99,13 @@ export function GlobalAuthGate() {
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
-      <DialogContent 
+      <DialogContent
         className="sm:max-w-md bg-white border-0 shadow-2xl rounded-[32px] overflow-hidden p-0 [&>button]:hidden"
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
         <div className="relative p-8">
-          {/* Close button — top right corner */}
+          {/* close btn */}
           <button
             onClick={handleClose}
             className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-red-100 text-slate-400 hover:text-red-500 transition-colors z-10"
@@ -107,6 +113,7 @@ export function GlobalAuthGate() {
           >
             <X className="w-4 h-4" />
           </button>
+
           <DialogHeader className="mb-8">
             <DialogTitle className="text-3xl font-black text-slate-900 text-center tracking-tight">
               {mode === 'select' && 'Welcome '}
@@ -120,6 +127,7 @@ export function GlobalAuthGate() {
           </DialogHeader>
 
           <AnimatePresence mode="wait">
+            {/* mode selection */}
             {mode === 'select' && (
               <motion.div
                 key="select"
@@ -160,6 +168,7 @@ export function GlobalAuthGate() {
               </motion.div>
             )}
 
+            {/* customer form */}
             {mode === 'customer' && (
               <motion.form
                 key="customer"
@@ -170,30 +179,16 @@ export function GlobalAuthGate() {
                 className="space-y-4"
               >
                 {error && (
-                  <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm font-medium">
-                    {error}
-                  </div>
+                  <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm font-medium">{error}</div>
                 )}
                 <div className="space-y-4">
                   <div className="relative">
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                    <input
-                      required
-                      type="email"
-                      name="email"
-                      placeholder="Gmail Address"
-                      className="w-full bg-slate-50 border-none rounded-xl py-4 pl-12 pr-4 text-slate-900 font-medium focus:ring-2 focus:ring-purple-500 outline-none"
-                    />
+                    <input required type="email" name="email" placeholder="Gmail Address" className={customerInputClass} />
                   </div>
                   <div className="relative">
                     <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                    <input
-                      required
-                      type="tel"
-                      name="phone"
-                      placeholder="Calling Number"
-                      className="w-full bg-slate-50 border-none rounded-xl py-4 pl-12 pr-4 text-slate-900 font-medium focus:ring-2 focus:ring-purple-500 outline-none"
-                    />
+                    <input required type="tel" name="phone" placeholder="Calling Number" className={customerInputClass} />
                   </div>
                 </div>
 
@@ -207,8 +202,8 @@ export function GlobalAuthGate() {
                   </button>
                   <button
                     type="submit"
+                    disabled={isLoading}
                     className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-4 rounded-xl font-bold transition-colors shadow-lg shadow-purple-500/30 disabled:opacity-60"
-                   disabled={isLoading}
                   >
                     {isLoading ? 'Saving...' : 'Continue to Site'}
                   </button>
@@ -216,6 +211,7 @@ export function GlobalAuthGate() {
               </motion.form>
             )}
 
+            {/* work application form */}
             {mode === 'work' && (
               <motion.form
                 key="work"
@@ -226,44 +222,42 @@ export function GlobalAuthGate() {
                 className="space-y-4"
               >
                 {error && (
-                  <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm font-medium">
-                    {error}
-                  </div>
+                  <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm font-medium">{error}</div>
                 )}
                 <div className="space-y-3 max-h-[50vh] overflow-y-auto px-1 -mx-1 pb-2">
                   <div className="relative">
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                    <input required type="text" name="fullName" placeholder="Full Name" className="w-full bg-slate-50 border-none rounded-xl py-3 pl-12 pr-4 text-slate-900 font-medium focus:ring-2 focus:ring-indigo-500 outline-none" />
+                    <input required type="text" name="fullName" placeholder="Full Name" className={inputClass} />
                   </div>
                   <div className="relative">
                     <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                    <input required type="tel" name="whatsapp" placeholder="WhatsApp Number" className="w-full bg-slate-50 border-none rounded-xl py-3 pl-12 pr-4 text-slate-900 font-medium focus:ring-2 focus:ring-indigo-500 outline-none" />
+                    <input required type="tel" name="whatsapp" placeholder="WhatsApp Number" className={inputClass} />
                   </div>
                   <div className="relative">
                     <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                    <input required type="text" name="location" placeholder="Exact Location Address" className="w-full bg-slate-50 border-none rounded-xl py-3 pl-12 pr-4 text-slate-900 font-medium focus:ring-2 focus:ring-indigo-500 outline-none" />
+                    <input required type="text" name="location" placeholder="Exact Location Address" className={inputClass} />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="relative">
                       <Map className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                      <input required type="text" name="state" placeholder="State" className="w-full bg-slate-50 border-none rounded-xl py-3 pl-12 pr-4 text-slate-900 font-medium focus:ring-2 focus:ring-indigo-500 outline-none" />
+                      <input required type="text" name="state" placeholder="State" className={inputClass} />
                     </div>
                     <div className="relative">
                       <Building className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                      <input required type="text" name="district" placeholder="District" className="w-full bg-slate-50 border-none rounded-xl py-3 pl-12 pr-4 text-slate-900 font-medium focus:ring-2 focus:ring-indigo-500 outline-none" />
+                      <input required type="text" name="district" placeholder="District" className={inputClass} />
                     </div>
                   </div>
                   <div className="relative">
                     <Wrench className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                    <input required type="text" name="skills" placeholder="Primary Skills (e.g. Editing, Camera)" className="w-full bg-slate-50 border-none rounded-xl py-3 pl-12 pr-4 text-slate-900 font-medium focus:ring-2 focus:ring-indigo-500 outline-none" />
+                    <input required type="text" name="skills" placeholder="Primary Skills (e.g. Editing, Camera)" className={inputClass} />
                   </div>
                   <div className="relative">
-                     <Camera className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                    <input required type="text" name="equipment" placeholder="Equipments available?" className="w-full bg-slate-50 border-none rounded-xl py-3 pl-12 pr-4 text-slate-900 font-medium focus:ring-2 focus:ring-indigo-500 outline-none" />
+                    <Camera className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                    <input required type="text" name="equipment" placeholder="Equipments available?" className={inputClass} />
                   </div>
                   <div className="relative">
-                     <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                    <input required type="url" name="portfolio" placeholder="Portfolio Link (Insta, YouTube, Drive)" className="w-full bg-slate-50 border-none rounded-xl py-3 pl-12 pr-4 text-slate-900 font-medium focus:ring-2 focus:ring-indigo-500 outline-none" />
+                    <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                    <input required type="url" name="portfolio" placeholder="Portfolio Link (Insta, YouTube, Drive)" className={inputClass} />
                   </div>
                 </div>
 
@@ -277,8 +271,8 @@ export function GlobalAuthGate() {
                   </button>
                   <button
                     type="submit"
+                    disabled={isLoading}
                     className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-xl font-bold transition-colors shadow-lg shadow-indigo-500/30 disabled:opacity-60"
-                   disabled={isLoading}
                   >
                     {isLoading ? 'Submitting...' : 'Apply & Login'}
                   </button>

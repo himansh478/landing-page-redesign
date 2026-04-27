@@ -1,19 +1,33 @@
-import { Camera, Mail, Phone, MapPin, Instagram, Youtube, Send, Sparkles } from 'lucide-react';
+import { Mail, Phone, MapPin, Instagram, Youtube, Send, Sparkles } from 'lucide-react';
 import { Link } from 'react-router';
+
+const serviceLinks = [
+  { href: '/masterful-editing', label: 'Video Editing' },
+  { href: '/professional-shoots', label: 'Professional Shoots' },
+  { href: '/social-media-management', label: 'Social Media Management' },
+  { href: '/technical-solutions', label: 'Web Development / AI bots' },
+  { href: '/theme-based', label: 'Theme Based Shoots' },
+];
+
+const companyLinks = [
+  { href: '/wedding-portfolio', label: 'Portfolio' },
+  { href: '/packages', label: 'Pricing & Packages' },
+  { href: '/packages', label: 'Membership' },
+  { href: '/blog', label: 'Blog' },
+  { href: '/about-us', label: 'About Us' },
+  { href: '/contact-us', label: 'Contact' },
+];
 
 export function Footer() {
   return (
-    <footer className="relative overflow-hidden
-      bg-slate-50 dark:bg-[#05050a]
-      border-t border-slate-200 dark:border-white/[0.06]"
-    >
-      {/* Ambient top glow */}
+    <footer className="relative overflow-hidden bg-slate-50 dark:bg-[#05050a] border-t border-slate-200 dark:border-white/[0.06]">
+      {/* top glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-40 bg-indigo-500/6 dark:bg-indigo-600/10 blur-[80px] rounded-full pointer-events-none" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 sm:pt-20 pb-8 sm:pb-10">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 sm:gap-12 mb-12 sm:mb-16">
 
-          {/* Brand */}
+          {/* brand col */}
           <div className="lg:col-span-1">
             <div className="flex items-center gap-2.5 mb-4">
               <div className="relative">
@@ -32,15 +46,14 @@ export function Footer() {
             <p className="text-slate-500 dark:text-slate-400 mb-6 text-sm leading-relaxed">
               Your complete creative and tech powerhouse. Premium results, unbeatable prices.
             </p>
+
+            {/* social icons */}
             <div className="flex gap-2.5">
               <a
                 href="https://www.instagram.com/creative_shiva_01?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-9 h-9 rounded-lg flex items-center justify-center transition-all
-                  bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10
-                  text-slate-500 dark:text-slate-400
-                  hover:bg-gradient-to-tr hover:from-pink-500 hover:to-orange-500 hover:border-transparent hover:text-white hover:scale-110 shadow-sm"
+                className="w-9 h-9 rounded-lg flex items-center justify-center transition-all bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:bg-gradient-to-tr hover:from-pink-500 hover:to-orange-500 hover:border-transparent hover:text-white hover:scale-110 shadow-sm"
                 aria-label="Instagram"
               >
                 <Instagram className="w-4 h-4" />
@@ -49,10 +62,7 @@ export function Footer() {
                 href="https://chat.whatsapp.com/Ftagt0XUzkQI0zSfHZMXxI"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-9 h-9 rounded-lg flex items-center justify-center transition-all
-                  bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10
-                  text-slate-500 dark:text-slate-400
-                  hover:bg-green-500 hover:border-transparent hover:text-white hover:scale-110 shadow-sm"
+                className="w-9 h-9 rounded-lg flex items-center justify-center transition-all bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:bg-green-500 hover:border-transparent hover:text-white hover:scale-110 shadow-sm"
                 aria-label="WhatsApp"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
@@ -63,10 +73,7 @@ export function Footer() {
                 href="https://youtube.com/@creativeshivavlogs?si=sIwTtBGWIiB3k7q1"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-9 h-9 rounded-lg flex items-center justify-center transition-all
-                  bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10
-                  text-slate-500 dark:text-slate-400
-                  hover:bg-red-600 hover:border-transparent hover:text-white hover:scale-110 shadow-sm"
+                className="w-9 h-9 rounded-lg flex items-center justify-center transition-all bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:bg-red-600 hover:border-transparent hover:text-white hover:scale-110 shadow-sm"
                 aria-label="YouTube"
               >
                 <Youtube className="w-4 h-4" />
@@ -75,10 +82,7 @@ export function Footer() {
                 href="https://t.me/creativeshiva01"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-9 h-9 rounded-lg flex items-center justify-center transition-all
-                  bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10
-                  text-slate-500 dark:text-slate-400
-                  hover:bg-blue-500 hover:border-transparent hover:text-white hover:scale-110 shadow-sm"
+                className="w-9 h-9 rounded-lg flex items-center justify-center transition-all bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:bg-blue-500 hover:border-transparent hover:text-white hover:scale-110 shadow-sm"
                 aria-label="Telegram"
               >
                 <Send className="w-4 h-4" />
@@ -86,7 +90,7 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Services */}
+          {/* services col */}
           <div>
             <h3
               className="text-slate-900 dark:text-white font-bold mb-5 text-xs tracking-widest uppercase"
@@ -95,13 +99,7 @@ export function Footer() {
               Services
             </h3>
             <ul className="space-y-3">
-              {[
-                { href: '/masterful-editing', label: 'Video Editing' },
-                { href: '/professional-shoots', label: 'Professional Shoots' },
-                { href: '/social-media-management', label: 'Social Media Management' },
-                { href: '/technical-solutions', label: 'Web Development / AI bots' },
-                { href: '/theme-based', label: 'Theme Based Shoots' },
-              ].map(link => (
+              {serviceLinks.map(link => (
                 <li key={link.href}>
                   <Link
                     to={link.href}
@@ -114,7 +112,7 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Company */}
+          {/* company col */}
           <div>
             <h3
               className="text-slate-900 dark:text-white font-bold mb-5 text-xs tracking-widest uppercase"
@@ -123,15 +121,8 @@ export function Footer() {
               Company
             </h3>
             <ul className="space-y-3">
-              {[
-                { href: '/wedding-portfolio', label: 'Portfolio' },
-                { href: '/packages', label: 'Pricing & Packages' },
-                { href: '/packages', label: 'Membership' },
-                { href: '/blog', label: 'Blog' },
-                { href: '/about-us', label: 'About Us' },
-                { href: '/contact-us', label: 'Contact' },
-              ].map((link, idx) => (
-                <li key={idx}>
+              {companyLinks.map((link, i) => (
+                <li key={i}>
                   <Link
                     to={link.href}
                     className="text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors text-sm"
@@ -143,7 +134,7 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Contact */}
+          {/* contact col */}
           <div>
             <h3
               className="text-slate-900 dark:text-white font-bold mb-5 text-xs tracking-widest uppercase"
@@ -170,7 +161,7 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Bottom Bar */}
+        {/* bottom bar */}
         <div className="pt-6 border-t border-slate-200 dark:border-white/[0.06] flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left">
           <p className="text-slate-400 dark:text-slate-500 text-xs">
             © {new Date().getFullYear()} Cwaya Creative Studio. All rights reserved.

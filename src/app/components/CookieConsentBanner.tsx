@@ -8,7 +8,7 @@ export function CookieConsentBanner() {
   useEffect(() => {
     const consent = localStorage.getItem('cookieConsent');
     if (!consent) {
-      // Show banner after a short delay so it doesn't flash on load
+      // show after small delay so it doesn't flash on page load
       const timer = setTimeout(() => setIsVisible(true), 1500);
       return () => clearTimeout(timer);
     }

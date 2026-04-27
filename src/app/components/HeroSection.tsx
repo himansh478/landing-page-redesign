@@ -6,24 +6,22 @@ import { Link } from 'react-router';
 const HeroSection = React.memo(function HeroSection() {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-deep-space">
-
-      {/* Layered background gradients */}
+      {/* background gradients */}
       <div className="absolute inset-0 bg-gradient-to-br from-indigo-100/70 via-transparent to-purple-100/50 dark:from-indigo-950/40 dark:via-transparent dark:to-purple-950/30 pointer-events-none" />
 
-      {/* Animated ambient orbs */}
+      {/* floating ambient orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-[32rem] h-[32rem] bg-indigo-400/20 dark:bg-indigo-600/10 rounded-full blur-[100px] animate-pulse" />
         <div className="absolute bottom-1/4 right-1/4 w-[32rem] h-[32rem] bg-purple-400/20 dark:bg-purple-600/10 rounded-full blur-[100px] animate-pulse [animation-delay:1s]" />
         <div className="absolute top-1/2 right-1/3 w-64 h-64 bg-pink-400/15 dark:bg-pink-600/08 rounded-full blur-[80px] animate-pulse [animation-delay:2s]" />
-        {/* Subtle grid pattern for dark mode */}
+        {/* grid pattern for dark mode */}
         <div className="hidden dark:block absolute inset-0 opacity-[0.03]"
           style={{backgroundImage: 'linear-gradient(#818cf8 1px, transparent 1px), linear-gradient(to right, #818cf8 1px, transparent 1px)', backgroundSize: '60px 60px'}}
         />
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28 lg:py-36 text-center">
-
-        {/* Badge */}
+        {/* badge */}
         <motion.div
           initial={{ opacity: 0, y: -16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -34,7 +32,6 @@ const HeroSection = React.memo(function HeroSection() {
           Premium Creative & Tech Services · India
         </motion.div>
 
-        {/* Main Headline */}
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -47,7 +44,6 @@ const HeroSection = React.memo(function HeroSection() {
           <span className="text-gradient">Mediocrity</span>
         </motion.h1>
 
-        {/* Sub-headline */}
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -58,7 +54,6 @@ const HeroSection = React.memo(function HeroSection() {
           <span className="text-indigo-600 dark:text-indigo-400 font-semibold">Creative Roof.</span>
         </motion.p>
 
-        {/* Supporting text */}
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -76,7 +71,7 @@ const HeroSection = React.memo(function HeroSection() {
           —premium results at a fraction of agency costs.
         </motion.p>
 
-        {/* CTA Buttons */}
+        {/* cta buttons */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -99,7 +94,7 @@ const HeroSection = React.memo(function HeroSection() {
           </button>
         </motion.div>
 
-        {/* Trust badges */}
+        {/* trust badges */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -112,7 +107,7 @@ const HeroSection = React.memo(function HeroSection() {
         </motion.div>
       </div>
 
-      {/* Scroll indicator */}
+      {/* scroll indicator */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

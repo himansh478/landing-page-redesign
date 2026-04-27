@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { SearchBar } from './SearchBar';
 import { Link } from 'react-router';
 
+// social media links config
 const socialLinks = [
   {
     href: 'https://www.instagram.com/creative_shiva_01?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==',
@@ -39,25 +40,25 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleShare = async () => {
-    const websiteUrl = window.location.origin;
-    const shareData = {
-      title: 'Cwaya — Premium Creative & Tech Services',
-      text: 'Check out Cwaya for premium video editing, photography, social media management, and AI solutions!',
-      url: websiteUrl,
-    };
+    const url = window.location.origin;
 
     if (navigator.share) {
       try {
-        await navigator.share(shareData);
+        await navigator.share({
+          title: 'Cwaya — Premium Creative & Tech Services',
+          text: 'Check out Cwaya for premium video editing, photography, social media management, and AI solutions!',
+          url,
+        });
       } catch {
-        // User cancelled share — no action needed
+        // user cancelled - that's fine
       }
     } else {
+      // fallback: copy to clipboard
       try {
-        await navigator.clipboard.writeText(websiteUrl);
+        await navigator.clipboard.writeText(url);
         alert('Website link copied to clipboard! Share it with your friends.');
       } catch {
-        // Clipboard unavailable — silently fail
+        // clipboard not available on this browser
       }
     }
   };
@@ -67,7 +68,7 @@ export function Header() {
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20">
 
-          {/* Logo */}
+          {/* logo */}
           <motion.a
             href="/"
             whileHover={{ scale: 1.05 }}
@@ -84,15 +85,14 @@ export function Header() {
             </span>
           </motion.a>
 
-          {/* Search Bar */}
+          {/* search - desktop only */}
           <div className="hidden md:flex flex-1">
             <SearchBar />
           </div>
 
-          {/* Desktop Navigation */}
+          {/* desktop nav */}
           <div className="hidden md:flex items-center justify-end gap-3 lg:gap-4">
-
-            {/* Social Icons — Desktop */}
+            {/* social icons */}
             <div className="flex items-center gap-1.5 mr-1">
               {socialLinks.map(social => (
                 <motion.a
@@ -114,10 +114,8 @@ export function Header() {
               ))}
             </div>
 
-            {/* Divider */}
             <div className="w-px h-6 bg-slate-200 dark:bg-white/10" />
 
-            {/* Blog */}
             <Link
               to="/blog"
               className="text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-3 py-2 font-semibold transition-colors text-sm"
@@ -125,7 +123,6 @@ export function Header() {
               Blog
             </Link>
 
-            {/* Connect */}
             <button
               onClick={() => window.dispatchEvent(new Event('open-auth-gate'))}
               className="text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-3 py-2 font-semibold transition-colors text-sm"
@@ -133,7 +130,6 @@ export function Header() {
               Connect
             </button>
 
-            {/* My Packages */}
             <Link
               to="/packages"
               className="relative bg-gradient-to-br from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white px-4 py-2 rounded-lg transition-all shadow-md hover:shadow-lg overflow-hidden group flex items-center gap-2 font-semibold text-sm"
@@ -143,7 +139,6 @@ export function Header() {
               <span className="relative z-10">My Packages</span>
             </Link>
 
-            {/* Share */}
             <motion.button
               onClick={handleShare}
               whileHover={{ scale: 1.1 }}
@@ -156,7 +151,7 @@ export function Header() {
             </motion.button>
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* mobile hamburger */}
           <motion.button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="md:hidden text-slate-700 dark:text-slate-300 p-2.5 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg transition-all"
@@ -169,7 +164,7 @@ export function Header() {
         </div>
       </nav>
 
-      {/* Mobile Menu */}
+      {/* mobile menu dropdown */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
@@ -183,7 +178,6 @@ export function Header() {
                 <SearchBar />
               </div>
 
-              {/* Social Icons — Mobile */}
               <div className="flex gap-2 justify-center pb-2">
                 {socialLinks.map(social => (
                   <a

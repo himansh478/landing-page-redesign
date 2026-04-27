@@ -95,7 +95,7 @@ export function AIEditPortfolioPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header with back button */}
+      {/* sticky nav */}
       <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-slate-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <Link
@@ -108,7 +108,7 @@ export function AIEditPortfolioPage() {
         </div>
       </div>
 
-      {/* Hero Section */}
+      {/* hero */}
       <section className="py-20 bg-[radial-gradient(circle_at_top_right,rgba(147,51,234,0.05)_0%,transparent_50%)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
@@ -127,7 +127,7 @@ export function AIEditPortfolioPage() {
         </div>
       </section>
 
-      {/* Category Filter */}
+      {/* category filter */}
       <section className="py-8 border-b border-slate-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar">
@@ -160,7 +160,7 @@ export function AIEditPortfolioPage() {
                 onClick={() => handleVideoClick(video)}
                 className="group relative bg-white rounded-[40px] overflow-hidden border border-slate-100 hover:border-purple-200 transition-all cursor-pointer shadow-2xl shadow-slate-200/50 hover:shadow-purple-500/10"
               >
-                {/* Thumbnail */}
+                
                 <div className="relative h-64 overflow-hidden bg-slate-100 p-2">
                   <div className="w-full h-full overflow-hidden rounded-[32px]">
                     <img
@@ -171,14 +171,14 @@ export function AIEditPortfolioPage() {
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-[32px] m-2" />
 
-                  {/* Play Button */}
+                  
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 transform scale-50 group-hover:scale-100">
                     <div className="w-20 h-20 bg-white text-purple-600 rounded-full flex items-center justify-center shadow-2xl">
                       <Play className="w-8 h-8 fill-purple-600" />
                     </div>
                   </div>
 
-                  {/* Duration Badge */}
+                  
                   <div className="absolute bottom-5 right-5 bg-white/90 backdrop-blur-md px-4 py-1.5 rounded-full text-slate-900 text-sm font-black shadow-lg">
                     {video.duration}
                   </div>
@@ -189,7 +189,7 @@ export function AIEditPortfolioPage() {
                   </div>
                 </div>
 
-                {/* Content */}
+                
                 <div className="p-8">
                   <h3 className="text-2xl font-black text-slate-900 mb-4 group-hover:text-purple-600 transition-colors uppercase tracking-tight">
                     {video.title}
@@ -198,7 +198,7 @@ export function AIEditPortfolioPage() {
                     {video.description}
                   </p>
 
-                  {/* Watch Button */}
+                  
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
@@ -213,7 +213,7 @@ export function AIEditPortfolioPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* bottom cta */}
       <section className="py-32 bg-slate-900 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(147,51,234,0.2)_0%,transparent_70%)] pointer-events-none" />
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
@@ -241,7 +241,7 @@ export function AIEditPortfolioPage() {
         </div>
       </section>
 
-      {/* Video Player Modal */}
+      {/* video player */}
       {selectedVideo && (
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
           <DialogContent className="bg-white border border-slate-200 text-slate-900 p-2 overflow-hidden rounded-[40px] shadow-2xl max-w-5xl aspect-video">

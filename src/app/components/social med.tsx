@@ -4,6 +4,29 @@ import { useNavigate } from 'react-router';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 
+const features = [
+  {
+    icon: <Calendar className="w-8 h-8" />,
+    title: 'Content Strategy',
+    description: 'Custom content calendars tailored to your brand voice and audience growth goals.'
+  },
+  {
+    icon: <Users className="w-8 h-8" />,
+    title: 'Scheduling',
+    description: 'Optimal timing across all platforms for maximum reach and viral potential.'
+  },
+  {
+    icon: <TrendingUp className="w-8 h-8" />,
+    title: 'Engagement',
+    description: 'Proactive community management, DM automation, and real-time audience interaction.'
+  },
+  {
+    icon: <BarChart3 className="w-8 h-8" />,
+    title: 'Analytics',
+    description: 'Comprehensive performance reports with actionable insights to scale your presence.'
+  }
+];
+
 export function SocialMediaManagementPage() {
   const navigate = useNavigate();
 
@@ -12,7 +35,6 @@ export function SocialMediaManagementPage() {
       <Header />
       <main className="min-h-screen bg-slate-50 pt-32 pb-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Back Button */}
           <button
             onClick={() => navigate('/')}
             className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 mb-8 transition-colors font-semibold group"
@@ -21,7 +43,6 @@ export function SocialMediaManagementPage() {
             Back to Home
           </button>
 
-          {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -36,30 +57,8 @@ export function SocialMediaManagementPage() {
             </p>
           </motion.div>
 
-          {/* Features Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-20">
-            {[
-              {
-                icon: <Calendar className="w-8 h-8" />,
-                title: 'Content Strategy',
-                description: 'Custom content calendars tailored to your brand voice and audience growth goals.'
-              },
-              {
-                icon: <Users className="w-8 h-8" />,
-                title: 'Scheduling',
-                description: 'Optimal timing across all platforms for maximum reach and viral potential.'
-              },
-              {
-                icon: <TrendingUp className="w-8 h-8" />,
-                title: 'Engagement',
-                description: 'Proactive community management, DM automation, and real-time audience interaction.'
-              },
-              {
-                icon: <BarChart3 className="w-8 h-8" />,
-                title: 'Analytics',
-                description: 'Comprehensive performance reports with actionable insights to scale your presence.'
-              }
-            ].map((item, index) => (
+            {features.map((item, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
@@ -77,7 +76,6 @@ export function SocialMediaManagementPage() {
             ))}
           </div>
 
-          {/* CTA */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}

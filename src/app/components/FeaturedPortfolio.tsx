@@ -37,18 +37,14 @@ const videos: VideoItem[] = [
 export function FeaturedPortfolio() {
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const nextSlide = () => {
-    setCurrentIndex((prev) => (prev + 1) % videos.length);
-  };
+  const nextSlide = () => setCurrentIndex((prev) => (prev + 1) % videos.length);
+  const prevSlide = () => setCurrentIndex((prev) => (prev - 1 + videos.length) % videos.length);
 
-  const prevSlide = () => {
-    setCurrentIndex((prev) => (prev - 1 + videos.length) % videos.length);
-  };
+  const current = videos[currentIndex];
 
   return (
     <section id="portfolio" className="py-12 sm:py-24 bg-slate-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -64,7 +60,7 @@ export function FeaturedPortfolio() {
           </p>
         </motion.div>
 
-        {/* Video Slider */}
+        {/* main video slider */}
         <div className="relative overflow-hidden rounded-2xl shadow-2xl shadow-indigo-500/10 border border-slate-200">
           <AnimatePresence mode="wait">
             <motion.div
@@ -76,15 +72,13 @@ export function FeaturedPortfolio() {
               className="relative aspect-video bg-slate-200 rounded-2xl overflow-hidden group"
             >
               <img
-                src={videos[currentIndex].thumbnail}
-                alt={videos[currentIndex].title}
+                src={current.thumbnail}
+                alt={current.title}
                 className="w-full h-full object-cover"
               />
-
-              {/* Overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
 
-              {/* Play button */}
+              {/* play btn */}
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
@@ -93,23 +87,23 @@ export function FeaturedPortfolio() {
                 <Play className="w-6 sm:w-8 h-6 sm:h-8 text-white ml-1" fill="white" />
               </motion.button>
 
-              {/* Video Info */}
+              {/* video info overlay */}
               <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-8">
                 <span className="inline-block px-4 py-1.5 bg-indigo-600 text-white text-xs sm:text-sm font-bold rounded-full mb-2 sm:mb-4 shadow-lg shadow-indigo-500/40">
-                  {videos[currentIndex].category}
+                  {current.category}
                 </span>
                 <h3 className="text-lg sm:text-3xl lg:text-4xl font-black text-white mb-1 sm:mb-3 drop-shadow-md">
-                  {videos[currentIndex].title}
+                  {current.title}
                 </h3>
                 <p className="text-slate-200 flex items-center gap-2 text-sm sm:text-lg font-light drop-shadow-sm">
                   <Play className="w-4 h-4 fill-white" />
-                  {videos[currentIndex].views} views
+                  {current.views} views
                 </p>
               </div>
             </motion.div>
           </AnimatePresence>
 
-          {/* Navigation Buttons */}
+          {/* prev/next arrows */}
           <button
             onClick={prevSlide}
             className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 w-10 sm:w-14 h-10 sm:h-14 bg-white/20 hover:bg-white/40 backdrop-blur-md rounded-full flex items-center justify-center text-white transition-all border border-white/30 z-10 shadow-lg"
@@ -117,7 +111,6 @@ export function FeaturedPortfolio() {
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
-
           <button
             onClick={nextSlide}
             className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 w-10 sm:w-14 h-10 sm:h-14 bg-white/20 hover:bg-white/40 backdrop-blur-md rounded-full flex items-center justify-center text-white transition-all border border-white/30 z-10 shadow-lg"
@@ -127,22 +120,23 @@ export function FeaturedPortfolio() {
           </button>
         </div>
 
-        {/* Dots Indicator */}
+        {/* dot indicators */}
         <div className="flex justify-center gap-2 mt-6 sm:mt-10">
           {videos.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentIndex(index)}
-              className={`h-2 rounded-full transition-all duration-300 ${index === currentIndex
+              className={`h-2 rounded-full transition-all duration-300 ${
+                index === currentIndex
                   ? 'bg-indigo-600 w-10'
                   : 'bg-slate-300 hover:bg-slate-400 w-3'
-                }`}
+              }`}
               aria-label={`Go to slide ${index + 1}`}
             />
           ))}
         </div>
 
-        {/* Thumbnail Grid */}
+        {/* thumbnail strip */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mt-8 sm:mt-12">
           {videos.map((video, index) => (
             <motion.button
@@ -150,16 +144,13 @@ export function FeaturedPortfolio() {
               onClick={() => setCurrentIndex(index)}
               whileHover={{ scale: 1.05, y: -5 }}
               whileTap={{ scale: 0.95 }}
-              className={`relative aspect-video rounded-xl overflow-hidden transition-all duration-300 ${index === currentIndex
+              className={`relative aspect-video rounded-xl overflow-hidden transition-all duration-300 ${
+                index === currentIndex
                   ? 'ring-4 ring-indigo-500 ring-offset-4 ring-offset-slate-50 shadow-xl'
                   : 'shadow-md border border-slate-200'
-                }`}
+              }`}
             >
-              <img
-                src={video.thumbnail}
-                alt={video.title}
-                className="w-full h-full object-cover"
-              />
+              <img src={video.thumbnail} alt={video.title} className="w-full h-full object-cover" />
               <div className={`absolute inset-0 bg-slate-900/40 hover:bg-slate-900/20 transition-colors ${index === currentIndex ? 'opacity-0' : ''}`} />
             </motion.button>
           ))}

@@ -1,12 +1,5 @@
 import { motion } from 'motion/react';
-import {
-  Film,
-  Camera,
-  Share2,
-  Users,
-  Bot,
-  ArrowRight,
-} from 'lucide-react';
+import { Film, Camera, Share2, Users, Bot, ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 import { InnerCircleModal } from './InnerCircleModal';
 import { useNavigate } from 'react-router';
@@ -69,36 +62,35 @@ const services: Service[] = [
   },
 ];
 
+// maps service titles to their routes
+const serviceRoutes: Record<string, string> = {
+  'All Type Editing': '/masterful-editing',
+  'Professional Shoots': '/professional-shoots',
+  'Social Media Management': '/social-media-management',
+  'Technical Solutions': '/technical-solutions',
+};
+
 export function ServiceHub() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
 
-  const handleServiceClick = (serviceTitle: string) => {
-    if (serviceTitle === 'Become My Member') {
+  const handleServiceClick = (title: string) => {
+    if (title === 'Become My Member') {
       setIsModalOpen(true);
-    } else if (serviceTitle === 'All Type Editing') {
-      navigate('/masterful-editing');
-    } else if (serviceTitle === 'Professional Shoots') {
-      navigate('/professional-shoots');
-    } else if (serviceTitle === 'Social Media Management') {
-      navigate('/social-media-management');
-    } else if (serviceTitle === 'Technical Solutions') {
-      navigate('/technical-solutions');
+    } else if (serviceRoutes[title]) {
+      navigate(serviceRoutes[title]);
     }
   };
 
   return (
     <section id="services" className="relative py-20 sm:py-28 bg-deep-space overflow-hidden">
-
-      {/* Ambient background blobs */}
+      {/* ambient blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/2 left-1/4 w-[32rem] h-[32rem] bg-purple-300/20 dark:bg-purple-600/8 rounded-full blur-[120px]" />
         <div className="absolute bottom-1/4 right-1/5 w-[28rem] h-[28rem] bg-indigo-300/20 dark:bg-indigo-600/8 rounded-full blur-[100px]" />
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-        {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -121,7 +113,7 @@ export function ServiceHub() {
           </p>
         </motion.div>
 
-        {/* Services Grid */}
+        {/* services grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
           {services.map((service, index) => (
             <motion.div
@@ -139,23 +131,16 @@ export function ServiceHub() {
                 hover:border-indigo-200 dark:hover:border-white/15
                 backdrop-blur-sm"
             >
-              {/* Gradient hover shine — light & dark */}
-              <div
-                className={`absolute inset-0 bg-gradient-to-br ${service.gradient} opacity-0 group-hover:opacity-[0.06] transition-opacity duration-500 rounded-2xl`}
-              />
-
-              {/* Dark mode inner glow on hover */}
+              <div className={`absolute inset-0 bg-gradient-to-br ${service.gradient} opacity-0 group-hover:opacity-[0.06] transition-opacity duration-500 rounded-2xl`} />
               <div
                 className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 dark:block hidden"
                 style={{ background: `radial-gradient(circle at 30% 30%, ${service.darkGlow}, transparent 70%)` }}
               />
 
-              {/* Icon */}
               <div className={`inline-flex p-3 rounded-xl bg-gradient-to-br ${service.gradient} text-white mb-5 relative z-10 shadow-md group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300`}>
                 {service.icon}
               </div>
 
-              {/* Title */}
               <h3
                 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-2 relative z-10"
                 style={{ fontFamily: 'Outfit, Inter, sans-serif' }}
@@ -163,22 +148,19 @@ export function ServiceHub() {
                 {service.title}
               </h3>
 
-              {/* Description */}
               <p className="text-sm text-slate-500 dark:text-slate-400 mb-4 relative z-10 leading-relaxed">
                 {service.description}
               </p>
 
-              {/* Features */}
               <ul className="space-y-1.5 mb-5 relative z-10">
-                {service.features.map((feature, idx) => (
-                  <li key={idx} className="flex items-center gap-2.5 text-slate-600 dark:text-slate-300 text-xs sm:text-sm">
+                {service.features.map((feature, i) => (
+                  <li key={i} className="flex items-center gap-2.5 text-slate-600 dark:text-slate-300 text-xs sm:text-sm">
                     <div className={`w-1.5 h-1.5 rounded-full bg-gradient-to-r ${service.gradient} flex-shrink-0`} />
                     {feature}
                   </li>
                 ))}
               </ul>
 
-              {/* CTA */}
               <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 text-sm font-semibold group-hover:gap-3 transition-all relative z-10">
                 {service.title === 'Become My Member' ? 'Apply Now' : 'Explore More'}
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -188,7 +170,6 @@ export function ServiceHub() {
         </div>
       </div>
 
-      {/* Inner Circle Modal */}
       <InnerCircleModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </section>
   );

@@ -12,7 +12,7 @@ export function SocialMediaManagementPage() {
       <Header />
       <main className="min-h-screen bg-white pt-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Back Button */}
+          
           <button
             onClick={() => navigate('/')}
             className="flex items-center gap-2 text-slate-500 hover:text-pink-600 mb-12 transition-all group font-bold"
@@ -21,7 +21,7 @@ export function SocialMediaManagementPage() {
             Back to Home
           </button>
 
-          {/* Header */}
+          {/* header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -36,7 +36,7 @@ export function SocialMediaManagementPage() {
             </p>
           </motion.div>
 
-          {/* Features Grid */}
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-20">
             {[
               {
@@ -77,7 +77,7 @@ export function SocialMediaManagementPage() {
             ))}
           </div>
 
-          {/* CTA */}
+          {/* cta */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}

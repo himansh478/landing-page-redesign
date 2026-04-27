@@ -6,7 +6,7 @@ export function AiPhotoSharingPage() {
 
     return (
         <div className="fixed inset-0 w-full h-full bg-white z-[100] flex flex-col">
-            {/* Overlay Navigation Header */}
+            {/* back nav */}
             <div className="absolute top-4 left-4 z-10">
                 <button 
                     onClick={() => navigate('/')}

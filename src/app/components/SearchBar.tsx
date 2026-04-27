@@ -3,7 +3,6 @@ import { Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ServiceBookingForm } from './ServiceBookingForm';
 
-// Combined services from the DB models
 const ALL_SERVICES = [
   'Vlog Edit',
   'Documentary Edit',
@@ -29,15 +28,14 @@ export function SearchBar() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
 
-  // Filter logic
-  const filteredServices = ALL_SERVICES.filter(service =>
-    service.toLowerCase().includes(query.toLowerCase())
+  const filteredServices = ALL_SERVICES.filter(s =>
+    s.toLowerCase().includes(query.toLowerCase())
   );
 
-  // Click outside to close dropdown
+  // close dropdown when clicking outside
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+    function handleClickOutside(e: MouseEvent) {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
         setIsOpen(false);
       }
     }
@@ -49,13 +47,12 @@ export function SearchBar() {
     setQuery(service);
     setSelectedService(service);
     setIsOpen(false);
-    setIsFormOpen(true); // Open the booking modal immediately
+    setIsFormOpen(true);
   };
 
   return (
     <>
       <div className="relative w-full max-w-sm ml-4" ref={searchRef}>
-        {/* Search Input Box */}
         <div className="relative flex items-center">
           <Search className="absolute left-3 w-5 h-5 text-slate-400" />
           <input
@@ -71,7 +68,7 @@ export function SearchBar() {
           />
         </div>
 
-        {/* Dropdown Results */}
+        {/* dropdown */}
         <AnimatePresence>
           {isOpen && query.length > 0 && (
             <motion.div
@@ -82,9 +79,9 @@ export function SearchBar() {
             >
               <div className="max-h-60 overflow-y-auto">
                 {filteredServices.length > 0 ? (
-                  filteredServices.map((service, index) => (
+                  filteredServices.map((service, i) => (
                     <button
-                      key={index}
+                      key={i}
                       onClick={() => handleSelectService(service)}
                       className="w-full text-left px-4 py-3 text-sm text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors border-b border-slate-100 last:border-0"
                     >
@@ -102,7 +99,6 @@ export function SearchBar() {
         </AnimatePresence>
       </div>
 
-      {/* Booking Form Modal */}
       {selectedService && (
         <ServiceBookingForm
           isOpen={isFormOpen}

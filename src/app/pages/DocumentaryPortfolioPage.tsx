@@ -113,7 +113,7 @@ export function DocumentaryPortfolioPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header with back button */}
+      {/* sticky nav */}
       <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-slate-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <Link
@@ -126,7 +126,7 @@ export function DocumentaryPortfolioPage() {
         </div>
       </div>
 
-      {/* Hero Section */}
+      {/* hero */}
       <section className="py-20 bg-[radial-gradient(circle_at_top_right,rgba(37,99,235,0.05)_0%,transparent_50%)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
@@ -145,7 +145,7 @@ export function DocumentaryPortfolioPage() {
         </div>
       </section>
 
-      {/* Documentary Long Form Videos Section - 16:9 Ratio */}
+      {/* long form videos */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-12">
@@ -163,7 +163,7 @@ export function DocumentaryPortfolioPage() {
                 onClick={() => handleVideoClick(video)}
                 className="group relative bg-white rounded-[40px] overflow-hidden border border-slate-100 hover:border-blue-200 transition-all cursor-pointer shadow-2xl shadow-slate-200/50 hover:shadow-blue-500/10"
               >
-                {/* Thumbnail - 16:9 */}
+                
                 <div className="relative w-full aspect-video bg-slate-100 p-2">
                   <div className="w-full h-full overflow-hidden rounded-[32px]">
                     <img
@@ -174,26 +174,26 @@ export function DocumentaryPortfolioPage() {
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-[32px] m-2" />
 
-                  {/* Play Button */}
+                  
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 transform scale-50 group-hover:scale-100">
                     <div className="w-20 h-20 bg-white text-blue-600 rounded-full flex items-center justify-center shadow-2xl">
                       <Play className="w-8 h-8 fill-blue-600" />
                     </div>
                   </div>
 
-                  {/* Duration Badge */}
+                  
                   <div className="absolute bottom-5 right-5 bg-white/90 backdrop-blur-md px-4 py-1.5 rounded-full text-slate-900 text-sm font-black shadow-lg">
                     {video.duration}
                   </div>
                 </div>
 
-                {/* Content */}
+                
                 <div className="p-8">
                   <h3 className="text-2xl font-black text-slate-900 mb-6 group-hover:text-blue-600 transition-colors uppercase tracking-tight">
                     {video.title}
                   </h3>
 
-                  {/* Watch Button */}
+                  
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
@@ -208,7 +208,7 @@ export function DocumentaryPortfolioPage() {
         </div>
       </section>
 
-      {/* Documentary Shorts Section - 9:16 Ratio */}
+      {/* shorts */}
       <section className="py-20 border-t border-slate-100 bg-slate-50/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-12">
@@ -226,7 +226,7 @@ export function DocumentaryPortfolioPage() {
                 onClick={() => handleVideoClick(video)}
                 className="group relative bg-white rounded-3xl overflow-hidden border border-slate-100 hover:border-cyan-200 transition-all cursor-pointer shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-cyan-500/10"
               >
-                {/* Thumbnail - 9:16 */}
+                
                 <div className="relative w-full aspect-[9/16] bg-slate-100 p-1">
                   <div className="w-full h-full overflow-hidden rounded-[22px]">
                     <img
@@ -237,7 +237,7 @@ export function DocumentaryPortfolioPage() {
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-[22px] m-1" />
 
-                  {/* Play Button */}
+                  
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 transform scale-50 group-hover:scale-100">
                     <div className="w-16 h-16 bg-white text-cyan-600 rounded-full flex items-center justify-center shadow-2xl">
                       <Play className="w-7 h-7 fill-cyan-600" />
@@ -245,7 +245,7 @@ export function DocumentaryPortfolioPage() {
                   </div>
                 </div>
 
-                {/* Content */}
+                
                 <div className="p-4">
                   <h3 className="text-sm font-black text-slate-900 group-hover:text-cyan-600 transition-colors line-clamp-2 uppercase tracking-tight leading-tight">
                     {video.title}
@@ -257,7 +257,7 @@ export function DocumentaryPortfolioPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* bottom cta */}
       <section className="py-32 bg-slate-900 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(37,99,235,0.2)_0%,transparent_70%)] pointer-events-none" />
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
@@ -285,7 +285,7 @@ export function DocumentaryPortfolioPage() {
         </div>
       </section>
 
-      {/* Video Player Modal */}
+      {/* video player */}
       {selectedVideo && (
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
           <DialogContent className={`bg-white border border-slate-200 text-slate-900 p-2 overflow-hidden rounded-[40px] shadow-2xl ${selectedVideo.type === 'documentary' ? 'max-w-5xl aspect-video' : 'max-w-sm aspect-[9/16]'}`}>
@@ -309,7 +309,7 @@ export function DocumentaryPortfolioPage() {
         </Dialog>
       )}
 
-      {/* Booking Form Modal */}
+      {/* booking modal */}
       <ServiceBookingForm
         isOpen={isBookingModalOpen}
         onOpenChange={setIsBookingModalOpen}

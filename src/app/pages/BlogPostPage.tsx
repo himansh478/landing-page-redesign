@@ -30,7 +30,7 @@ export function BlogPostPage() {
     <div className="bg-white min-h-screen flex flex-col font-sans">
       <Header />
       <main className="flex-grow pt-24 pb-16 relative overflow-hidden">
-        {/* Background Gradients */}
+        {/* bg blobs */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-200/10 blur-[120px] rounded-full pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-200/10 blur-[120px] rounded-full pointer-events-none" />
 

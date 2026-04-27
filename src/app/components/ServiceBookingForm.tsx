@@ -1,10 +1,6 @@
 import { useState, useEffect } from 'react';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from './ui/dialog';
 import { supabase } from '../../lib/supabase';
 
@@ -14,72 +10,69 @@ interface ServiceBookingFormProps {
   selectedService: string;
 }
 
+const shootTypes = [
+  'Wedding Shoot',
+  'Insta & YouTube Video Shoot',
+  'Commercial Shoot',
+  'Corporate Event Shoot',
+  'Marketing Shoot',
+  'Religious Shoot',
+  'Political Shoot',
+  'Cinematic Shoot',
+];
 
-export function ServiceBookingForm({
-  isOpen,
-  onOpenChange,
-  selectedService,
-}: ServiceBookingFormProps) {
-  const shootTypes = [
-    'Wedding Shoot',
-    'Insta & YouTube Video Shoot',
-    'Commercial Shoot',
-    'Corporate Event Shoot',
-    'Marketing Shoot',
-    'Religious Shoot',
-    'Political Shoot',
-    'Cinematic Shoot',
-  ];
+const editingServices = [
+  'Vlog Edit',
+  'Documentary Edit',
+  'Reel Edit',
+  'AI Edit',
+  'Custom Edit',
+  'Wedding Edit',
+  'Professional Shoot',
+];
 
-  const serviceOptions = [
-    'Vlog Edit',
-    'Documentary Edit',
-    'Reel Edit',
-    'AI Edit',
-    'Custom Edit',
-    'Wedding Edit',
-    'Professional Shoot',
-  ];
+// common input styling
+const fieldClass = "w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all";
+const selectClass = fieldClass + " [&>option]:bg-white";
 
+// location suggestions for the datalist
+const locationOptions = [
+  'sehore', 'bhopal', 'Indore', 'Gwalior', 'Ujjain', 'Jabalpur',
+  'Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Chennai',
+  'Kolkata', 'Pune', 'Ahmedabad', 'Jaipur', 'Lucknow',
+];
+
+export function ServiceBookingForm({ isOpen, onOpenChange, selectedService }: ServiceBookingFormProps) {
   const [formData, setFormData] = useState({
-    // Personal Information
     name: '',
     email: '',
     whatsappNumber: '',
     location: '',
-
-    // Project Details
     editingOption: selectedService || '',
     projectTitle: '',
     description: '',
-
-    // Budget & Timeline
     budget: '',
     timeline: '',
-
-    // References
     referenceVideoLink: '',
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // Update form when selectedService changes
+  // sync selected service when modal opens
   useEffect(() => {
     if (isOpen && selectedService) {
-      setFormData((prev) => ({
-        ...prev,
-        editingOption: selectedService,
-      }));
+      setFormData(prev => ({ ...prev, editingOption: selectedService }));
     }
   }, [isOpen, selectedService]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
+
+  const isShootBooking = shootTypes.includes(formData.editingOption);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,32 +107,22 @@ export function ServiceBookingForm({
         if (error) throw error;
       }
 
-      // Reset form on success
+      // reset on success
       setFormData({
-        name: '',
-        email: '',
-        whatsappNumber: '',
-        location: '',
+        name: '', email: '', whatsappNumber: '', location: '',
         editingOption: selectedService || '',
-        projectTitle: '',
-        description: '',
-        budget: '',
-        timeline: '',
+        projectTitle: '', description: '', budget: '', timeline: '',
         referenceVideoLink: '',
       });
       onOpenChange(false);
       alert(`✅ ${isShootBooking ? 'Shoot' : 'Service'} booking saved successfully!`);
-    } catch (error: any) {
-      console.error('Supabase booking error:', error);
-      setSubmitError(error.message || 'Something went wrong. Please try again.');
+    } catch (err: any) {
+      console.error('Supabase booking error:', err);
+      setSubmitError(err.message || 'Something went wrong. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
-
-
-
-  const isShootBooking = shootTypes.includes(formData.editingOption);
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -154,204 +137,95 @@ export function ServiceBookingForm({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6 pr-4">
-          {/* Section 1: Personal Information */}
+          {/* personal info */}
           <div className="space-y-4 pb-4 border-b border-slate-100">
             <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
               <span className="text-indigo-500">👤</span> Personal Information
             </h3>
 
-            {/* Name Field */}
             <div className="space-y-2">
               <label className="block text-sm font-semibold text-slate-700">
                 Full Name <span className="text-red-500">*</span>
               </label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                placeholder="Enter your name"
-                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all"
-                required
-              />
+              <input type="text" name="name" value={formData.name} onChange={handleInputChange}
+                placeholder="Enter your name" className={fieldClass} required />
             </div>
-
-            {/* Email Field */}
             <div className="space-y-2">
               <label className="block text-sm font-semibold text-slate-700">
                 Email Address <span className="text-red-500">*</span>
               </label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                placeholder="you@example.com"
-                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all"
-                required
-              />
+              <input type="email" name="email" value={formData.email} onChange={handleInputChange}
+                placeholder="you@example.com" className={fieldClass} required />
             </div>
-
-            {/* WhatsApp Number Field */}
             <div className="space-y-2">
               <label className="block text-sm font-semibold text-slate-700">
                 WhatsApp Number <span className="text-red-500">*</span>
               </label>
-              <input
-                type="tel"
-                name="whatsappNumber"
-                value={formData.whatsappNumber}
-                onChange={handleInputChange}
-                placeholder="+91 98765 43210 or 10 digit number"
-                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all"
-                required
-              />
+              <input type="tel" name="whatsappNumber" value={formData.whatsappNumber} onChange={handleInputChange}
+                placeholder="+91 98765 43210 or 10 digit number" className={fieldClass} required />
             </div>
-
-            {/* Location Field */}
             <div className="space-y-2">
               <label className="block text-sm font-semibold text-slate-700">
                 Location <span className="text-red-500">*</span>
               </label>
-              <input
-                type="text"
-                name="location"
-                value={formData.location}
-                onChange={handleInputChange}
-                placeholder="Select or type your location"
-                list="locationList"
-                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all"
-                required
-              />
+              <input type="text" name="location" value={formData.location} onChange={handleInputChange}
+                placeholder="Select or type your location" list="locationList" className={fieldClass} required />
               <datalist id="locationList">
-                <option value="sehore" />
-                <option value="bhopal" />
-                <option value="Indore" />
-                <option value="Gwalior" />
-                <option value="Ujjain" />
-                <option value="Jabalpur" />
-                <option value="Mumbai" />
-                <option value="Delhi" />
-                <option value="Bangalore" />
-                <option value="Hyderabad" />
-                <option value="Chennai" />
-                <option value="Kolkata" />
-                <option value="Pune" />
-                <option value="Ahmedabad" />
-                <option value="Jaipur" />
-                <option value="Lucknow" />
-
+                {locationOptions.map(loc => <option key={loc} value={loc} />)}
               </datalist>
             </div>
           </div>
 
-          {/* Section 2: Project Details */}
+          {/* project / shoot details */}
           <div className="space-y-4 pb-4 border-b border-slate-100">
             <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
               <span className="text-purple-500">🎬</span> {isShootBooking ? 'Shoot Details' : 'Project Details'}
             </h3>
 
-            {/* Service/Shoot Selection */}
             <div className="space-y-2">
               <label className="block text-sm font-semibold text-slate-700">
                 {isShootBooking ? 'Select Shoot' : 'Editing Service'} <span className="text-red-500">*</span>
               </label>
-              <select
-                name="editingOption"
-                value={formData.editingOption}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all [&>option]:bg-white"
-                required
-              >
+              <select name="editingOption" value={formData.editingOption} onChange={handleInputChange}
+                className={selectClass} required>
                 <option value="">Select a {isShootBooking ? 'shoot type' : 'service'}</option>
-                {isShootBooking ? (
-                  shootTypes.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))
-                ) : (
-                  serviceOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))
-                )}
+                {(isShootBooking ? shootTypes : editingServices).map(opt => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
               </select>
             </div>
 
-            {/* Project Title - Only for editing services */}
             {!isShootBooking && (
               <div className="space-y-2">
-                <label className="block text-sm font-semibold text-slate-700">
-                  Project Title
-                </label>
-                <input
-                  type="text"
-                  name="projectTitle"
-                  value={formData.projectTitle}
-                  onChange={handleInputChange}
-                  placeholder="e.g., Summer Travel Vlog Series"
-                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all"
-                />
+                <label className="block text-sm font-semibold text-slate-700">Project Title</label>
+                <input type="text" name="projectTitle" value={formData.projectTitle} onChange={handleInputChange}
+                  placeholder="e.g., Summer Travel Vlog Series" className={fieldClass} />
               </div>
             )}
 
-            {/* Description - Only for editing services */}
-            {!isShootBooking && (
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-slate-700">
-                  Project Description
-                </label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  placeholder="Describe your project, requirements, and specific needs..."
-                  rows={3}
-                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all resize-none"
-                />
-              </div>
-            )}
-
-            {/* For shoot bookings, show event details instead */}
-            {isShootBooking && (
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-slate-700">
-                  Event/Project Details
-                </label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  placeholder="Tell us more about your shoot - location, date, special requirements..."
-                  rows={3}
-                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all resize-none"
-                />
-              </div>
-            )}
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-slate-700">
+                {isShootBooking ? 'Event/Project Details' : 'Project Description'}
+              </label>
+              <textarea name="description" value={formData.description} onChange={handleInputChange}
+                placeholder={isShootBooking
+                  ? "Tell us more about your shoot - location, date, special requirements..."
+                  : "Describe your project, requirements, and specific needs..."
+                }
+                rows={3} className={fieldClass + " resize-none"} />
+            </div>
           </div>
 
-
-
-          {/* Section 4: Budget & Timeline */}
+          {/* budget & timeline */}
           <div className="space-y-4 pb-4 border-b border-slate-100">
             <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
               <span className="text-emerald-500">💰</span> Budget & Timeline
             </h3>
-
-            {/* Budget */}
             <div className="space-y-2">
               <label className="block text-sm font-semibold text-slate-700">
                 Budget Range <span className="text-red-500">*</span>
               </label>
-              <select
-                name="budget"
-                value={formData.budget}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all [&>option]:bg-white"
-                required
-              >
+              <select name="budget" value={formData.budget} onChange={handleInputChange} className={selectClass} required>
                 <option value="">Select budget</option>
                 <option value="₹0-500">₹0-500</option>
                 <option value="₹500-1000">₹500-1000</option>
@@ -360,19 +234,11 @@ export function ServiceBookingForm({
                 <option value="₹5000+">₹5000+</option>
               </select>
             </div>
-
-            {/* Timeline */}
             <div className="space-y-2">
               <label className="block text-sm font-semibold text-slate-700">
                 Required Timeline <span className="text-red-500">*</span>
               </label>
-              <select
-                name="timeline"
-                value={formData.timeline}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all [&>option]:bg-white"
-                required
-              >
+              <select name="timeline" value={formData.timeline} onChange={handleInputChange} className={selectClass} required>
                 <option value="">Select timeline</option>
                 <option value="Urgent (24-48 hours)">Urgent (24-48 hours)</option>
                 <option value="ASAP (3-7 days)">ASAP (3-7 days)</option>
@@ -383,33 +249,22 @@ export function ServiceBookingForm({
             </div>
           </div>
 
-          {/* Section 5: References & Links */}
+          {/* references */}
           <div className="space-y-4 pb-4">
             <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
               <span className="text-orange-500">🔗</span> References & Links
             </h3>
-
-            {/* Reference Video Link */}
             <div className="space-y-2">
-              <label className="block text-sm font-semibold text-slate-700">
-                Reference Video Link
-              </label>
-              <input
-                type="url"
-                name="referenceVideoLink"
-                value={formData.referenceVideoLink}
-                onChange={handleInputChange}
-                placeholder="https://youtu.be/... or https://drive.google.com/..."
-                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all"
-              />
+              <label className="block text-sm font-semibold text-slate-700">Reference Video Link</label>
+              <input type="url" name="referenceVideoLink" value={formData.referenceVideoLink} onChange={handleInputChange}
+                placeholder="https://youtu.be/... or https://drive.google.com/..." className={fieldClass} />
             </div>
-
           </div>
 
-          {/* Submit Button */}
           {submitError && (
             <p className="text-red-500 text-sm font-medium text-center">{submitError}</p>
           )}
+
           <button
             type="submit"
             disabled={isSubmitting}

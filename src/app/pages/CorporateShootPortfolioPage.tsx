@@ -81,7 +81,7 @@ export function CorporateShootPortfolioPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header with back button */}
+      {/* sticky nav */}
       <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-slate-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <Link
@@ -94,7 +94,7 @@ export function CorporateShootPortfolioPage() {
         </div>
       </div>
 
-      {/* Hero Section */}
+      {/* hero */}
       <section className="py-20 bg-[radial-gradient(circle_at_top_right,rgba(239,68,68,0.05)_0%,transparent_50%)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
@@ -132,7 +132,7 @@ export function CorporateShootPortfolioPage() {
                 onClick={() => handleVideoClick(video)}
                 className="group relative bg-white rounded-3xl overflow-hidden border border-slate-100 hover:border-orange-200 transition-all cursor-pointer shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-orange-500/10"
               >
-                {/* Thumbnail - 9:16 */}
+                
                 <div className="relative w-full aspect-[9/16] bg-slate-100 p-1">
                   <div className="w-full h-full overflow-hidden rounded-[22px]">
                     <img
@@ -143,7 +143,7 @@ export function CorporateShootPortfolioPage() {
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-[22px] m-1" />
 
-                  {/* Play Button */}
+                  
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 transform scale-50 group-hover:scale-100">
                     <div className="w-16 h-16 bg-white text-orange-600 rounded-full flex items-center justify-center shadow-2xl">
                       <Play className="w-7 h-7 fill-orange-600" />
@@ -151,7 +151,7 @@ export function CorporateShootPortfolioPage() {
                   </div>
                 </div>
 
-                {/* Content */}
+                
                 <div className="p-4">
                   <h3 className="text-sm font-black text-slate-900 group-hover:text-orange-600 transition-colors line-clamp-2 uppercase tracking-tight leading-tight">
                     {video.title}
@@ -163,7 +163,7 @@ export function CorporateShootPortfolioPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* bottom cta */}
       <section className="py-32 bg-slate-900 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(239,68,68,0.2)_0%,transparent_70%)] pointer-events-none" />
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
@@ -191,7 +191,7 @@ export function CorporateShootPortfolioPage() {
         </div>
       </section>
 
-      {/* Video Player Modal */}
+      {/* video player */}
       {selectedVideo && (
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
           <DialogContent className={`bg-white border border-slate-200 text-slate-900 p-2 overflow-hidden rounded-[40px] shadow-2xl max-w-sm aspect-[9/16]`}>
@@ -215,7 +215,7 @@ export function CorporateShootPortfolioPage() {
         </Dialog>
       )}
 
-      {/* Booking Form Modal */}
+      {/* booking modal */}
       <ServiceBookingForm
         isOpen={isBookingModalOpen}
         onOpenChange={setIsBookingModalOpen}

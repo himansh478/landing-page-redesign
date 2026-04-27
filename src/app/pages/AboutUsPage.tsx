@@ -2,12 +2,19 @@ import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { Users, Target, Shield, Zap } from 'lucide-react';
 
+const values = [
+  { icon: Target, color: 'text-pink-500', title: 'Our Mission', text: 'To provide budget-friendly, professional-standard creative solutions that empower businesses worldwide.' },
+  { icon: Users, color: 'text-indigo-500', title: 'Who We Are', text: 'A diverse team of videographers, developers, and AI enthusiasts driving modern digital transformation.' },
+  { icon: Shield, color: 'text-purple-500', title: 'Trust & Integrity', text: "We value our clients' intellectual property and guarantee discretion and security in all our projects." },
+  { icon: Zap, color: 'text-orange-500', title: 'Innovation', text: 'Leveraging cutting-edge AI and the latest web technologies to deliver lightning-fast, premium results.' },
+];
+
 export function AboutUsPage() {
   return (
     <div className="bg-white min-h-screen flex flex-col font-sans">
       <Header />
       <main className="flex-grow pt-24 pb-16 relative overflow-hidden">
-        {/* Background Gradients */}
+        {/* bg blobs */}
         <div className="absolute top-20 left-1/4 w-96 h-96 bg-indigo-200/30 blur-[100px] rounded-full pointer-events-none" />
         <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-purple-200/30 blur-[100px] rounded-full pointer-events-none" />
 
@@ -32,34 +39,18 @@ export function AboutUsPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-12">
-            <div className="bg-white/80 border border-slate-200 p-6 rounded-xl flex items-start gap-4 hover:scale-[1.02] hover:shadow-lg transition-all">
-              <Target className="text-pink-500 w-8 h-8 flex-shrink-0" />
-              <div>
-                <h3 className="text-slate-900 font-bold mb-2">Our Mission</h3>
-                <p className="text-slate-500 text-sm">To provide budget-friendly, professional-standard creative solutions that empower businesses worldwide.</p>
-              </div>
-            </div>
-            <div className="bg-white/80 border border-slate-200 p-6 rounded-xl flex items-start gap-4 hover:scale-[1.02] hover:shadow-lg transition-all">
-              <Users className="text-indigo-500 w-8 h-8 flex-shrink-0" />
-              <div>
-                <h3 className="text-slate-900 font-bold mb-2">Who We Are</h3>
-                <p className="text-slate-500 text-sm">A diverse team of videographers, developers, and AI enthusiasts driving modern digital transformation.</p>
-              </div>
-            </div>
-            <div className="bg-white/80 border border-slate-200 p-6 rounded-xl flex items-start gap-4 hover:scale-[1.02] hover:shadow-lg transition-all">
-              <Shield className="text-purple-500 w-8 h-8 flex-shrink-0" />
-              <div>
-                <h3 className="text-slate-900 font-bold mb-2">Trust & Integrity</h3>
-                <p className="text-slate-500 text-sm">We value our clients' intellectual property and guarantee discretion and security in all our projects.</p>
-              </div>
-            </div>
-            <div className="bg-white/80 border border-slate-200 p-6 rounded-xl flex items-start gap-4 hover:scale-[1.02] hover:shadow-lg transition-all">
-              <Zap className="text-orange-500 w-8 h-8 flex-shrink-0" />
-              <div>
-                <h3 className="text-slate-900 font-bold mb-2">Innovation</h3>
-                <p className="text-slate-500 text-sm">Leveraging cutting-edge AI and the latest web technologies to deliver lightning-fast, premium results.</p>
-              </div>
-            </div>
+            {values.map(item => {
+              const Icon = item.icon;
+              return (
+                <div key={item.title} className="bg-white/80 border border-slate-200 p-6 rounded-xl flex items-start gap-4 hover:scale-[1.02] hover:shadow-lg transition-all">
+                  <Icon className={`${item.color} w-8 h-8 flex-shrink-0`} />
+                  <div>
+                    <h3 className="text-slate-900 font-bold mb-2">{item.title}</h3>
+                    <p className="text-slate-500 text-sm">{item.text}</p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </main>

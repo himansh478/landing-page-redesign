@@ -1,11 +1,5 @@
 import { useState } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from './ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { X } from 'lucide-react';
 
 interface Sample {
@@ -23,85 +17,27 @@ interface ViewSamplesModalProps {
   samples: Sample[];
 }
 
+// TODO: replace placeholder URLs with actual project videos
 const sampleVideosMap: Record<string, Sample[]> = {
   'Wedding Shoot': [
-    {
-      id: 1,
-      title: 'Wedding Highlights - Cinematic',
-      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-      aspectRatio: '16:9',
-      duration: '4:30'
-    },
-    {
-      id: 2,
-      title: 'Wedding Reel - Instagram Style',
-      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-      aspectRatio: '9:16',
-      duration: '0:60'
-    },
-    {
-      id: 3,
-      title: 'Wedding Ceremony - Full Edit',
-      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-      aspectRatio: '16:9',
-      duration: '15:00'
-    },
+    { id: 1, title: 'Wedding Highlights - Cinematic', videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ', aspectRatio: '16:9', duration: '4:30' },
+    { id: 2, title: 'Wedding Reel - Instagram Style', videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ', aspectRatio: '9:16', duration: '0:60' },
+    { id: 3, title: 'Wedding Ceremony - Full Edit', videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ', aspectRatio: '16:9', duration: '15:00' },
   ],
   'Insta & YouTube Video Shoot': [
-    {
-      id: 1,
-      title: 'YouTube Video Sample',
-      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-      aspectRatio: '16:9',
-      duration: '8:30'
-    },
-    {
-      id: 2,
-      title: 'Instagram Reel Sample',
-      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-      aspectRatio: '9:16',
-      duration: '0:30'
-    },
-    {
-      id: 3,
-      title: 'Instagram Reel - Trending',
-      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-      aspectRatio: '9:16',
-      duration: '0:45'
-    },
+    { id: 1, title: 'YouTube Video Sample', videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ', aspectRatio: '16:9', duration: '8:30' },
+    { id: 2, title: 'Instagram Reel Sample', videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ', aspectRatio: '9:16', duration: '0:30' },
+    { id: 3, title: 'Instagram Reel - Trending', videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ', aspectRatio: '9:16', duration: '0:45' },
   ],
   'Commercial Shoot': [
-    {
-      id: 1,
-      title: 'Commercial Ad - Product Shot',
-      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-      aspectRatio: '16:9',
-      duration: '1:00'
-    },
-    {
-      id: 2,
-      title: 'Commercial Vertical Ad',
-      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-      aspectRatio: '9:16',
-      duration: '0:30'
-    },
-    {
-      id: 3,
-      title: 'Brand Video - Cinematic',
-      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-      aspectRatio: '16:9',
-      duration: '3:45'
-    },
+    { id: 1, title: 'Commercial Ad - Product Shot', videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ', aspectRatio: '16:9', duration: '1:00' },
+    { id: 2, title: 'Commercial Vertical Ad', videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ', aspectRatio: '9:16', duration: '0:30' },
+    { id: 3, title: 'Brand Video - Cinematic', videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ', aspectRatio: '16:9', duration: '3:45' },
   ],
 };
 
-export function ViewSamplesModal({
-  isOpen,
-  onOpenChange,
-  shootType,
-}: ViewSamplesModalProps) {
+export function ViewSamplesModal({ isOpen, onOpenChange, shootType }: ViewSamplesModalProps) {
   const [selectedVideo, setSelectedVideo] = useState<Sample | null>(null);
-
   const samples = sampleVideosMap[shootType] || [];
 
   return (
@@ -126,10 +62,7 @@ export function ViewSamplesModal({
               >
                 <div
                   className="bg-slate-200 flex items-center justify-center relative overflow-hidden"
-                  style={{
-                    aspectRatio:
-                      sample.aspectRatio === '16:9' ? '16 / 9' : '9 / 16',
-                  }}
+                  style={{ aspectRatio: sample.aspectRatio === '16:9' ? '16 / 9' : '9 / 16' }}
                 >
                   <iframe
                     src={sample.videoUrl}
@@ -139,20 +72,14 @@ export function ViewSamplesModal({
                   />
                   <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
                     <div className="bg-indigo-600 p-4 rounded-full shadow-2xl transform scale-75 group-hover:scale-100 transition-transform">
-                      <svg
-                        className="w-8 h-8 text-white ml-1"
-                        fill="currentColor"
-                        viewBox="0 0 24 24"
-                      >
+                      <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M8 5v14l11-7z" />
                       </svg>
                     </div>
                   </div>
                 </div>
                 <div className="p-5">
-                  <h3 className="font-bold text-slate-900 mb-2 line-clamp-2 leading-tight">
-                    {sample.title}
-                  </h3>
+                  <h3 className="font-bold text-slate-900 mb-2 line-clamp-2 leading-tight">{sample.title}</h3>
                   <div className="flex items-center justify-between text-xs font-semibold text-slate-500 uppercase tracking-wider">
                     <span className="bg-slate-200 px-2 py-1 rounded">{sample.aspectRatio}</span>
                     {sample.duration && <span className="bg-indigo-50 text-indigo-600 px-2 py-1 rounded">{sample.duration}</span>}
@@ -164,19 +91,14 @@ export function ViewSamplesModal({
         </DialogContent>
       </Dialog>
 
-      {/* Full Video Viewer Modal */}
+      {/* full screen video viewer */}
       <Dialog open={!!selectedVideo} onOpenChange={() => setSelectedVideo(null)}>
         <DialogContent className="bg-white border border-slate-200 text-slate-900 max-w-4xl p-0 overflow-hidden shadow-2xl">
           {selectedVideo && (
             <div className="flex flex-col">
               <div className="flex items-center justify-between p-6 border-b border-slate-100">
-                <h3 className="text-2xl font-black text-slate-900 tracking-tight">
-                  {selectedVideo.title}
-                </h3>
-                <button
-                  onClick={() => setSelectedVideo(null)}
-                  className="p-2 hover:bg-slate-100 rounded-full transition-colors"
-                >
+                <h3 className="text-2xl font-black text-slate-900 tracking-tight">{selectedVideo.title}</h3>
+                <button onClick={() => setSelectedVideo(null)} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
                   <X className="w-6 h-6 text-slate-400 hover:text-slate-600" />
                 </button>
               </div>
@@ -186,10 +108,8 @@ export function ViewSamplesModal({
                   className="shadow-2xl rounded-2xl overflow-hidden border border-white/10"
                   style={{
                     width: '100%',
-                    aspectRatio:
-                      selectedVideo.aspectRatio === '16:9' ? '16 / 9' : '9 / 16',
-                    maxWidth:
-                      selectedVideo.aspectRatio === '16:9' ? '100%' : '400px',
+                    aspectRatio: selectedVideo.aspectRatio === '16:9' ? '16 / 9' : '9 / 16',
+                    maxWidth: selectedVideo.aspectRatio === '16:9' ? '100%' : '400px',
                   }}
                 >
                   <iframe

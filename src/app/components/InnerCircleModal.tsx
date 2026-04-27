@@ -8,19 +8,17 @@ interface InnerCircleModalProps {
   onClose: () => void;
 }
 
+// shared input class for all fields
+const fieldClass = "w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium";
+
+const defaultForm = {
+  name: '', age: '', achievement: '', topSkill: '',
+  state: '', district: '', location: '',
+  whatsappNumber: '', gmail: '', portfolioLink: ''
+};
+
 export function InnerCircleModal({ isOpen, onClose }: InnerCircleModalProps) {
-  const [formData, setFormData] = useState({
-    name: '',
-    age: '',
-    achievement: '',
-    topSkill: '',
-    state: '',
-    district: '',
-    location: '',
-    whatsappNumber: '',
-    gmail: '',
-    portfolioLink: ''
-  });
+  const [formData, setFormData] = useState({ ...defaultForm });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -29,7 +27,7 @@ export function InnerCircleModal({ isOpen, onClose }: InnerCircleModalProps) {
     setLoading(true);
     setError('');
 
-    const submitData = {
+    const payload = {
       name: formData.name,
       age: parseInt(formData.age),
       achievement: formData.achievement,
@@ -44,7 +42,7 @@ export function InnerCircleModal({ isOpen, onClose }: InnerCircleModalProps) {
 
     const { error: dbError } = await supabase
       .from('inner_circle_applications')
-      .insert([submitData]);
+      .insert([payload]);
 
     setLoading(false);
 
@@ -54,25 +52,31 @@ export function InnerCircleModal({ isOpen, onClose }: InnerCircleModalProps) {
     }
 
     onClose();
-    setFormData({
-      name: '', age: '', achievement: '', topSkill: '',
-      state: '', district: '', location: '',
-      whatsappNumber: '', gmail: '', portfolioLink: ''
-    });
+    setFormData({ ...defaultForm });
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+
+  // field config to reduce repetition
+  const fields = [
+    { id: 'name', label: 'Full Name', type: 'text', placeholder: 'Enter your full name' },
+    { id: 'age', label: 'Age', type: 'number', placeholder: 'Enter your age', min: '10', max: '60' },
+    { id: 'topSkill', label: 'Top Skill', type: 'text', placeholder: 'e.g., Digital Marketing, Video Editing, Business Strategy' },
+    { id: 'state', label: 'State', type: 'text', placeholder: 'Enter your state' },
+    { id: 'district', label: 'District', type: 'text', placeholder: 'Enter your district' },
+    { id: 'location', label: 'Location', type: 'text', placeholder: 'Enter your city/town' },
+    { id: 'whatsappNumber', label: 'WhatsApp Number', type: 'tel', placeholder: 'e.g., +91 9XXXXXXXXX' },
+    { id: 'gmail', label: 'Gmail Address', type: 'email', placeholder: 'your.email@gmail.com' },
+    { id: 'portfolioLink', label: 'Portfolio Link', type: 'url', placeholder: 'https://yourportfolio.com' },
+  ];
 
   return (
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
+          {/* backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -81,7 +85,6 @@ export function InnerCircleModal({ isOpen, onClose }: InnerCircleModalProps) {
             className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50"
           />
 
-          {/* Modal */}
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -90,7 +93,7 @@ export function InnerCircleModal({ isOpen, onClose }: InnerCircleModalProps) {
               transition={{ duration: 0.3 }}
               className="bg-white border border-slate-200 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto pointer-events-auto shadow-2xl shadow-indigo-500/10"
             >
-              {/* Header */}
+              {/* header */}
               <div className="sticky top-0 bg-white border-b border-slate-100 p-8 flex items-center justify-between z-10">
                 <div>
                   <h2 className="text-3xl font-black text-slate-900 mb-2 tracking-tight">
@@ -109,52 +112,35 @@ export function InnerCircleModal({ isOpen, onClose }: InnerCircleModalProps) {
                 </button>
               </div>
 
-              {/* Form */}
               <form onSubmit={handleSubmit} className="p-8 space-y-6">
-                {/* Error Message */}
                 {error && (
                   <div className="bg-red-50 border border-red-200 rounded-xl p-4">
                     <p className="text-red-600 text-sm">{error}</p>
                   </div>
                 )}
 
-                {/* Name */}
-                <div>
-                  <label htmlFor="name" className="block text-slate-700 font-bold mb-2">
-                    Full Name <span className="text-indigo-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium"
-                    placeholder="Enter your full name"
-                  />
-                </div>
+                {/* regular text/email/tel/url fields */}
+                {fields.map(f => (
+                  <div key={f.id}>
+                    <label htmlFor={f.id} className="block text-slate-700 font-bold mb-2">
+                      {f.label} <span className="text-indigo-500">*</span>
+                    </label>
+                    <input
+                      type={f.type}
+                      id={f.id}
+                      name={f.id}
+                      value={(formData as any)[f.id]}
+                      onChange={handleChange}
+                      required
+                      placeholder={f.placeholder}
+                      className={fieldClass}
+                      {...(f.min ? { min: f.min } : {})}
+                      {...(f.max ? { max: f.max } : {})}
+                    />
+                  </div>
+                ))}
 
-                {/* Age */}
-                <div>
-                  <label htmlFor="age" className="block text-slate-700 font-bold mb-2">
-                    Age <span className="text-indigo-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    id="age"
-                    name="age"
-                    value={formData.age}
-                    onChange={handleChange}
-                    required
-                    min="10"
-                    max="60"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium"
-                    placeholder="Enter your age"
-                  />
-                </div>
-
-                {/* Achievement */}
+                {/* achievement textarea - separate because it's multi-line */}
                 <div>
                   <label htmlFor="achievement" className="block text-slate-700 font-bold mb-2">
                     Your Top Achievement <span className="text-indigo-500">*</span>
@@ -166,131 +152,11 @@ export function InnerCircleModal({ isOpen, onClose }: InnerCircleModalProps) {
                     onChange={handleChange}
                     required
                     rows={3}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium resize-none"
+                    className={fieldClass + " resize-none"}
                     placeholder="Tell us about your greatest achievement"
                   />
                 </div>
 
-                {/* Top Skill */}
-                <div>
-                  <label htmlFor="topSkill" className="block text-slate-700 font-bold mb-2">
-                    Top Skill <span className="text-indigo-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="topSkill"
-                    name="topSkill"
-                    value={formData.topSkill}
-                    onChange={handleChange}
-                    required
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium"
-                    placeholder="e.g., Digital Marketing, Video Editing, Business Strategy"
-                  />
-                </div>
-
-                {/* State */}
-                <div>
-                  <label htmlFor="state" className="block text-slate-700 font-bold mb-2">
-                    State <span className="text-indigo-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="state"
-                    name="state"
-                    value={formData.state}
-                    onChange={handleChange}
-                    required
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium"
-                    placeholder="Enter your state"
-                  />
-                </div>
-
-                {/* District */}
-                <div>
-                  <label htmlFor="district" className="block text-slate-700 font-bold mb-2">
-                    District <span className="text-indigo-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="district"
-                    name="district"
-                    value={formData.district}
-                    onChange={handleChange}
-                    required
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium"
-                    placeholder="Enter your district"
-                  />
-                </div>
-
-                {/* Location */}
-                <div>
-                  <label htmlFor="location" className="block text-slate-700 font-bold mb-2">
-                    Location <span className="text-indigo-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="location"
-                    name="location"
-                    value={formData.location}
-                    onChange={handleChange}
-                    required
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium"
-                    placeholder="Enter your city/town"
-                  />
-                </div>
-
-                {/* WhatsApp Number */}
-                <div>
-                  <label htmlFor="whatsappNumber" className="block text-slate-700 font-bold mb-2">
-                    WhatsApp Number <span className="text-indigo-500">*</span>
-                  </label>
-                  <input
-                    type="tel"
-                    id="whatsappNumber"
-                    name="whatsappNumber"
-                    value={formData.whatsappNumber}
-                    onChange={handleChange}
-                    required
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium"
-                    placeholder="e.g., +91 9XXXXXXXXX"
-                  />
-                </div>
-
-                {/* Gmail */}
-                <div>
-                  <label htmlFor="gmail" className="block text-slate-700 font-bold mb-2">
-                    Gmail Address <span className="text-indigo-500">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    id="gmail"
-                    name="gmail"
-                    value={formData.gmail}
-                    onChange={handleChange}
-                    required
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium"
-                    placeholder="your.email@gmail.com"
-                  />
-                </div>
-
-                {/* Portfolio Link */}
-                <div>
-                  <label htmlFor="portfolioLink" className="block text-slate-700 font-bold mb-2">
-                    Portfolio Link <span className="text-indigo-500">*</span>
-                  </label>
-                  <input
-                    type="url"
-                    id="portfolioLink"
-                    name="portfolioLink"
-                    value={formData.portfolioLink}
-                    onChange={handleChange}
-                    required
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium"
-                    placeholder="https://yourportfolio.com"
-                  />
-                </div>
-
-                {/* Submit Button */}
                 <div className="pt-4">
                   <motion.button
                     type="submit"
