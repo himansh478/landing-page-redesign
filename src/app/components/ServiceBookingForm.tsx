@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from './ui/dialog';
+import { Turnstile } from '@marsidev/react-turnstile';
 import { supabase } from '../../lib/supabase';
 
 interface ServiceBookingFormProps {
@@ -54,15 +55,20 @@ export function ServiceBookingForm({ isOpen, onOpenChange, selectedService }: Se
     budget: '',
     timeline: '',
     referenceVideoLink: '',
+    website_url: '', // honeypot
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   // sync selected service when modal opens
   useEffect(() => {
     if (isOpen && selectedService) {
       setFormData(prev => ({ ...prev, editingOption: selectedService }));
+    }
+    if (!isOpen) {
+      setTurnstileToken(null);
     }
   }, [isOpen, selectedService]);
 
@@ -76,6 +82,17 @@ export function ServiceBookingForm({ isOpen, onOpenChange, selectedService }: Se
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Honeypot check
+    if (formData.website_url) {
+      return;
+    }
+
+    if (!turnstileToken) {
+      setSubmitError('Please complete the CAPTCHA check.');
+      return;
+    }
+
     setIsSubmitting(true);
     setSubmitError(null);
 
@@ -113,7 +130,9 @@ export function ServiceBookingForm({ isOpen, onOpenChange, selectedService }: Se
         editingOption: selectedService || '',
         projectTitle: '', description: '', budget: '', timeline: '',
         referenceVideoLink: '',
+        website_url: '',
       });
+      setTurnstileToken(null);
       onOpenChange(false);
       alert(`✅ ${isShootBooking ? 'Shoot' : 'Service'} booking saved successfully!`);
     } catch (err: any) {
@@ -259,6 +278,21 @@ export function ServiceBookingForm({ isOpen, onOpenChange, selectedService }: Se
               <input type="url" name="referenceVideoLink" value={formData.referenceVideoLink} onChange={handleInputChange}
                 placeholder="https://youtu.be/... or https://drive.google.com/..." className={fieldClass} />
             </div>
+          </div>
+
+          {/* Honeypot field (hidden from humans) */}
+          <div style={{ display: 'none' }} aria-hidden="true">
+            <input type="text" name="website_url" value={formData.website_url} onChange={handleInputChange} tabIndex={-1} autoComplete="off" />
+          </div>
+
+          {/* Cloudflare Turnstile CAPTCHA */}
+          <div className="flex justify-center py-2">
+            <Turnstile 
+              siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'} 
+              onSuccess={(token) => setTurnstileToken(token)}
+              onExpire={() => setTurnstileToken(null)}
+              onError={() => setTurnstileToken(null)}
+            />
           </div>
 
           {submitError && (

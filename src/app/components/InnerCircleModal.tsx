@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '../../lib/supabase';
+import { Turnstile } from '@marsidev/react-turnstile';
 
 interface InnerCircleModalProps {
   isOpen: boolean;
@@ -14,16 +15,29 @@ const fieldClass = "w-full bg-slate-50 border border-slate-200 rounded-xl px-4 p
 const defaultForm = {
   name: '', age: '', achievement: '', topSkill: '',
   state: '', district: '', location: '',
-  whatsappNumber: '', gmail: '', portfolioLink: ''
+  whatsappNumber: '', gmail: '', portfolioLink: '',
+  website_url: '' // honeypot
 };
 
 export function InnerCircleModal({ isOpen, onClose }: InnerCircleModalProps) {
   const [formData, setFormData] = useState({ ...defaultForm });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Honeypot check
+    if (formData.website_url) {
+      return;
+    }
+
+    if (!turnstileToken) {
+      setError('Please complete the CAPTCHA check.');
+      return;
+    }
+
     setLoading(true);
     setError('');
 
@@ -53,6 +67,7 @@ export function InnerCircleModal({ isOpen, onClose }: InnerCircleModalProps) {
 
     onClose();
     setFormData({ ...defaultForm });
+    setTurnstileToken(null);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -154,6 +169,21 @@ export function InnerCircleModal({ isOpen, onClose }: InnerCircleModalProps) {
                     rows={3}
                     className={fieldClass + " resize-none"}
                     placeholder="Tell us about your greatest achievement"
+                  />
+                </div>
+
+                {/* Honeypot field (hidden from humans) */}
+                <div style={{ display: 'none' }} aria-hidden="true">
+                  <input type="text" name="website_url" value={formData.website_url} onChange={handleChange} tabIndex={-1} autoComplete="off" />
+                </div>
+
+                {/* Cloudflare Turnstile CAPTCHA */}
+                <div className="flex justify-center py-2">
+                  <Turnstile 
+                    siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'} 
+                    onSuccess={(token) => setTurnstileToken(token)}
+                    onExpire={() => setTurnstileToken(null)}
+                    onError={() => setTurnstileToken(null)}
                   />
                 </div>
 

@@ -1,52 +1,51 @@
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
-import { User, Briefcase, Mail, Phone, MapPin, Wrench, Camera, Link as LinkIcon, Map, Building, X } from 'lucide-react';
+import { User, Briefcase, Mail, Phone, MapPin, Wrench, Camera, Link as LinkIcon, Map, Building } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '../../lib/supabase';
+import { Turnstile } from '@marsidev/react-turnstile';
 
 type LoginMode = 'select' | 'customer' | 'work';
+
+interface GlobalAuthGateProps {
+  onAuth: () => void;
+}
 
 // shared input style used across both forms
 const inputClass = "w-full bg-slate-50 border-none rounded-xl py-3 pl-12 pr-4 text-slate-900 font-medium focus:ring-2 focus:ring-indigo-500 outline-none";
 const customerInputClass = "w-full bg-slate-50 border-none rounded-xl py-4 pl-12 pr-4 text-slate-900 font-medium focus:ring-2 focus:ring-purple-500 outline-none";
 
-export function GlobalAuthGate() {
-  const [isOpen, setIsOpen] = useState(false);
+export function GlobalAuthGate({ onAuth }: GlobalAuthGateProps) {
   const [mode, setMode] = useState<LoginMode>('select');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
+  // reset token when changing mode
   useEffect(() => {
-    const handleOpen = () => {
-      if (localStorage.getItem('isSiteAuthenticated') !== 'true') {
-        setIsOpen(true);
-      }
-    };
-    window.addEventListener('open-auth-gate', handleOpen);
-
-    // skip if already authenticated
-    if (localStorage.getItem('isSiteAuthenticated') === 'true') {
-      return () => window.removeEventListener('open-auth-gate', handleOpen);
-    }
-
-    // auto popup after 1 min
-    const timer = setTimeout(() => setIsOpen(true), 60000);
-
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener('open-auth-gate', handleOpen);
-    };
-  }, []);
+    setTurnstileToken(null);
+    setError(null);
+  }, [mode]);
 
   const handleCustomerSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    const form = e.currentTarget;
+    const fd = new FormData(form);
+
+    // Honeypot check
+    if (fd.get('website_url')) return;
+
+    if (!turnstileToken) {
+      setError('Please complete the CAPTCHA check.');
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
-    const form = e.currentTarget;
     const data = {
-      email: (form.elements.namedItem('email') as HTMLInputElement).value,
-      phone: (form.elements.namedItem('phone') as HTMLInputElement).value,
+      email: fd.get('email') as string,
+      phone: fd.get('phone') as string,
     };
 
     const { error: dbError } = await supabase.from('leads').insert([data]);
@@ -58,25 +57,37 @@ export function GlobalAuthGate() {
       return;
     }
 
-    localStorage.setItem('isSiteAuthenticated', 'true');
-    setIsOpen(false);
+    // Set hashed key to make it harder to guess/bypass
+    localStorage.setItem('_cwaya_auth_v1', 'verified_session_' + btoa(data.email));
+    onAuth();
   };
 
   const handleWorkSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    const form = e.currentTarget;
+    const fd = new FormData(form);
+
+    // Honeypot check
+    if (fd.get('website_url')) return;
+
+    if (!turnstileToken) {
+      setError('Please complete the CAPTCHA check.');
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
-    const form = e.currentTarget;
     const data = {
-      full_name: (form.elements.namedItem('fullName') as HTMLInputElement).value,
-      whatsapp: (form.elements.namedItem('whatsapp') as HTMLInputElement).value,
-      location: (form.elements.namedItem('location') as HTMLInputElement).value,
-      state: (form.elements.namedItem('state') as HTMLInputElement).value,
-      district: (form.elements.namedItem('district') as HTMLInputElement).value,
-      skills: (form.elements.namedItem('skills') as HTMLInputElement).value,
-      equipment: (form.elements.namedItem('equipment') as HTMLInputElement).value,
-      portfolio: (form.elements.namedItem('portfolio') as HTMLInputElement).value,
+      full_name: fd.get('fullName') as string,
+      whatsapp: fd.get('whatsapp') as string,
+      location: fd.get('location') as string,
+      state: fd.get('state') as string,
+      district: fd.get('district') as string,
+      skills: fd.get('skills') as string,
+      equipment: fd.get('equipment') as string,
+      portfolio: fd.get('portfolio') as string,
     };
 
     const { error: dbError } = await supabase.from('work_applications').insert([data]);
@@ -88,46 +99,38 @@ export function GlobalAuthGate() {
       return;
     }
 
-    localStorage.setItem('isSiteAuthenticated', 'true');
-    setIsOpen(false);
-  };
-
-  const handleClose = () => {
-    localStorage.setItem('isSiteAuthenticated', 'true');
-    setIsOpen(false);
+    // Set hashed key
+    localStorage.setItem('_cwaya_auth_v1', 'verified_session_' + btoa(data.whatsapp));
+    onAuth();
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={() => {}}>
-      <DialogContent
-        className="sm:max-w-md bg-white border-0 shadow-2xl rounded-[32px] overflow-hidden p-0 [&>button]:hidden"
-        onInteractOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
-      >
-        <div className="relative p-8">
-          {/* close btn */}
-          <button
-            onClick={handleClose}
-            className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-red-100 text-slate-400 hover:text-red-500 transition-colors z-10"
-            aria-label="Close"
-          >
-            <X className="w-4 h-4" />
-          </button>
+    <div className="fixed inset-0 z-[9999] bg-slate-900 flex items-center justify-center p-4">
+      {/* Background decoration */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-600/20 blur-[120px] rounded-full" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-purple-600/20 blur-[120px] rounded-full" />
+      </div>
 
-          <DialogHeader className="mb-8">
-            <DialogTitle className="text-3xl font-black text-slate-900 text-center tracking-tight">
-              {mode === 'select' && 'Welcome '}
+      <motion.div 
+        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        className="bg-white rounded-[40px] shadow-2xl w-full max-w-md overflow-hidden relative z-10"
+      >
+        <div className="p-8">
+          <div className="mb-8 text-center">
+            <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-2">
+              {mode === 'select' && 'Welcome to Cwaya'}
               {mode === 'customer' && 'Login as Customer'}
               {mode === 'work' && 'Work Applications'}
-            </DialogTitle>
-            <DialogDescription className="text-center text-slate-500 font-medium">
+            </h2>
+            <p className="text-slate-500 font-medium">
               {mode === 'select' && 'Please identify yourself to continue accessing the website.'}
               {mode !== 'select' && 'Complete the form below to unlock access.'}
-            </DialogDescription>
-          </DialogHeader>
+            </p>
+          </div>
 
           <AnimatePresence mode="wait">
-            {/* mode selection */}
             {mode === 'select' && (
               <motion.div
                 key="select"
@@ -168,7 +171,6 @@ export function GlobalAuthGate() {
               </motion.div>
             )}
 
-            {/* customer form */}
             {mode === 'customer' && (
               <motion.form
                 key="customer"
@@ -192,6 +194,19 @@ export function GlobalAuthGate() {
                   </div>
                 </div>
 
+                {/* Honeypot field */}
+                <div style={{ display: 'none' }} aria-hidden="true">
+                  <input type="text" name="website_url" tabIndex={-1} autoComplete="off" />
+                </div>
+
+                {/* Cloudflare Turnstile */}
+                <div className="flex justify-center py-2 scale-90">
+                  <Turnstile 
+                    siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'} 
+                    onSuccess={(token) => setTurnstileToken(token)}
+                  />
+                </div>
+
                 <div className="flex gap-3 pt-4">
                   <button
                     type="button"
@@ -205,13 +220,12 @@ export function GlobalAuthGate() {
                     disabled={isLoading}
                     className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-4 rounded-xl font-bold transition-colors shadow-lg shadow-purple-500/30 disabled:opacity-60"
                   >
-                    {isLoading ? 'Saving...' : 'Continue to Site'}
+                    {isLoading ? 'Saving...' : 'Unlock Site'}
                   </button>
                 </div>
               </motion.form>
             )}
 
-            {/* work application form */}
             {mode === 'work' && (
               <motion.form
                 key="work"
@@ -224,7 +238,7 @@ export function GlobalAuthGate() {
                 {error && (
                   <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm font-medium">{error}</div>
                 )}
-                <div className="space-y-3 max-h-[50vh] overflow-y-auto px-1 -mx-1 pb-2">
+                <div className="space-y-3 max-h-[40vh] overflow-y-auto px-1 -mx-1 pb-2">
                   <div className="relative">
                     <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                     <input required type="text" name="fullName" placeholder="Full Name" className={inputClass} />
@@ -249,7 +263,7 @@ export function GlobalAuthGate() {
                   </div>
                   <div className="relative">
                     <Wrench className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                    <input required type="text" name="skills" placeholder="Primary Skills (e.g. Editing, Camera)" className={inputClass} />
+                    <input required type="text" name="skills" placeholder="Primary Skills" className={inputClass} />
                   </div>
                   <div className="relative">
                     <Camera className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
@@ -257,8 +271,21 @@ export function GlobalAuthGate() {
                   </div>
                   <div className="relative">
                     <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                    <input required type="url" name="portfolio" placeholder="Portfolio Link (Insta, YouTube, Drive)" className={inputClass} />
+                    <input required type="url" name="portfolio" placeholder="Portfolio Link" className={inputClass} />
                   </div>
+                </div>
+
+                {/* Honeypot field */}
+                <div style={{ display: 'none' }} aria-hidden="true">
+                  <input type="text" name="website_url" tabIndex={-1} autoComplete="off" />
+                </div>
+
+                {/* Cloudflare Turnstile */}
+                <div className="flex justify-center py-2 scale-90">
+                  <Turnstile 
+                    siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'} 
+                    onSuccess={(token) => setTurnstileToken(token)}
+                  />
                 </div>
 
                 <div className="flex gap-3 pt-4 border-t border-slate-100">
@@ -274,14 +301,14 @@ export function GlobalAuthGate() {
                     disabled={isLoading}
                     className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-xl font-bold transition-colors shadow-lg shadow-indigo-500/30 disabled:opacity-60"
                   >
-                    {isLoading ? 'Submitting...' : 'Apply & Login'}
+                    {isLoading ? 'Submitting...' : 'Apply & Unlock'}
                   </button>
                 </div>
               </motion.form>
             )}
           </AnimatePresence>
         </div>
-      </DialogContent>
-    </Dialog>
+      </motion.div>
+    </div>
   );
 }

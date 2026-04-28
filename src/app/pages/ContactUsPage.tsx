@@ -4,6 +4,8 @@ import { Mail, Phone, MapPin, Send, CheckCircle, AlertCircle, Loader } from 'luc
 import { useState } from 'react';
 import { supabase } from '../../lib/supabase';
 
+import { Turnstile } from '@marsidev/react-turnstile';
+
 const fieldClass = "w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all font-medium";
 
 // contact info cards
@@ -22,14 +24,28 @@ const contactInfo = [
   },
 ];
 
+import { Helmet } from 'react-helmet-async';
+
 export function ContactUsPage() {
   const [formState, setFormState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setFormState('loading');
-
+    
+    // Honeypot check (Bots fill hidden fields, humans don't)
     const fd = new FormData(e.currentTarget);
+    if (fd.get('website_url')) {
+      console.warn('Bot detected via honeypot');
+      return;
+    }
+
+    if (!turnstileToken) {
+      alert('Please complete the CAPTCHA check.');
+      return;
+    }
+
+    setFormState('loading');
 
     try {
       const { error } = await supabase.from('querries').insert([{
@@ -45,6 +61,7 @@ export function ContactUsPage() {
       } else {
         setFormState('success');
         (e.target as HTMLFormElement).reset();
+        setTurnstileToken(null);
       }
     } catch (err) {
       console.error('Unexpected error:', err);
@@ -53,7 +70,12 @@ export function ContactUsPage() {
   };
 
   return (
-    <div className="bg-white min-h-screen flex flex-col font-sans">
+    <div className="bg-white min-h-screen selection:bg-indigo-100 selection:text-indigo-900">
+      <Helmet>
+        <title>Contact Us — Cwaya Creative Studio</title>
+        <meta name="description" content="Get in touch with Cwaya for premium video editing, photography, and technical solutions. We are ready to bring your vision to life." />
+        <link rel="canonical" href="https://www.cwaya.me/contact" />
+      </Helmet>
       <Header />
       <main className="flex-grow pt-24 pb-16 relative overflow-hidden">
         {/* bg blobs */}
@@ -141,6 +163,21 @@ export function ContactUsPage() {
                   <div className="space-y-2">
                     <label className="block text-slate-800 font-bold tracking-tight">How can we help?</label>
                     <textarea required name="message" rows={5} className={fieldClass + " resize-none"} placeholder="Tell us about your project or vision..." />
+                  </div>
+
+                  {/* Honeypot field (hidden from humans) */}
+                  <div style={{ display: 'none' }} aria-hidden="true">
+                    <input type="text" name="website_url" tabIndex={-1} autoComplete="off" />
+                  </div>
+
+                  {/* Cloudflare Turnstile CAPTCHA */}
+                  <div className="flex justify-center py-2">
+                    <Turnstile 
+                      siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'} 
+                      onSuccess={(token) => setTurnstileToken(token)}
+                      onExpire={() => setTurnstileToken(null)}
+                      onError={() => setTurnstileToken(null)}
+                    />
                   </div>
 
                   {formState === 'error' && (

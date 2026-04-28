@@ -1,6 +1,8 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Check } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from '../../lib/supabase';
+import { Turnstile } from '@marsidev/react-turnstile';
 
 interface TechnicalService {
   id: number;
@@ -23,9 +25,16 @@ export function TechnicalSolutionForm({ service, onClose }: TechnicalSolutionFor
     serviceType: service.title,
     description: '',
     message: '',
+    website_url: '', // honeypot
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+
+  // Sync service title when service prop changes
+  useEffect(() => {
+    setFormData(prev => ({ ...prev, serviceType: service.title }));
+  }, [service]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -35,17 +44,53 @@ export function TechnicalSolutionForm({ service, onClose }: TechnicalSolutionFor
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // Honeypot check
+    if (formData.website_url) {
+      return;
+    }
+
+    if (!turnstileToken) {
+      alert('Please complete the CAPTCHA check.');
+      return;
+    }
+
     setIsLoading(true);
 
-    // TODO: replace with actual supabase insert
-    setTimeout(() => {
+    try {
+      const { error } = await supabase.from('technical_bookings').insert([{
+        name: formData.name,
+        whatsapp_number: formData.whatsappNumber,
+        location: formData.location,
+        service_type: formData.serviceType,
+        description: formData.description,
+        message: formData.message || null,
+      }]);
+
+      if (error) throw error;
+
       setIsLoading(false);
       setIsSubmitted(true);
+      setTurnstileToken(null);
+      
       setTimeout(() => {
         onClose();
         setIsSubmitted(false);
+        setFormData({
+          name: '',
+          whatsappNumber: '',
+          location: '',
+          serviceType: service.title,
+          description: '',
+          message: '',
+          website_url: '',
+        });
       }, 3000);
-    }, 1000);
+    } catch (err: any) {
+      console.error('Supabase technical booking error:', err);
+      alert('Failed to submit booking. Please try again.');
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -96,36 +141,57 @@ export function TechnicalSolutionForm({ service, onClose }: TechnicalSolutionFor
               </motion.div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <label className="block text-slate-900 font-bold mb-2">Full Name *</label>
-                  <input type="text" name="name" value={formData.name} onChange={handleChange}
-                    required placeholder="Enter your full name" className={fieldClass} />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-slate-900 font-bold mb-2">Full Name *</label>
+                    <input type="text" name="name" value={formData.name} onChange={handleChange}
+                      required placeholder="Enter your full name" className={fieldClass} />
+                  </div>
+                  <div>
+                    <label className="block text-slate-900 font-bold mb-2">WhatsApp Number *</label>
+                    <input type="tel" name="whatsappNumber" value={formData.whatsappNumber} onChange={handleChange}
+                      required placeholder="Enter your WhatsApp number" className={fieldClass} />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-slate-900 font-bold mb-2">WhatsApp Number *</label>
-                  <input type="tel" name="whatsappNumber" value={formData.whatsappNumber} onChange={handleChange}
-                    required placeholder="Enter your WhatsApp number" className={fieldClass} />
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-slate-900 font-bold mb-2">Location *</label>
+                    <input type="text" name="location" value={formData.location} onChange={handleChange}
+                      required placeholder="Enter your city/location" className={fieldClass} />
+                  </div>
+                  <div>
+                    <label className="block text-slate-900 font-bold mb-2">Service Type *</label>
+                    <select name="serviceType" value={formData.serviceType} onChange={handleChange}
+                      required className={fieldClass}>
+                      <option value="Website Design">Website Design</option>
+                      <option value="Automation">Automation</option>
+                      <option value="AI Bot">AI Bot</option>
+                      <option value="Insta Auto Reply">Insta Auto Reply</option>
+                    </select>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-slate-900 font-bold mb-2">Location *</label>
-                  <input type="text" name="location" value={formData.location} onChange={handleChange}
-                    required placeholder="Enter your city/location" className={fieldClass} />
-                </div>
-                <div>
-                  <label className="block text-slate-900 font-bold mb-2">Service Type *</label>
-                  <select name="serviceType" value={formData.serviceType} onChange={handleChange}
-                    required className={fieldClass}>
-                    <option value="Website Design">Website Design</option>
-                    <option value="Automation">Automation</option>
-                    <option value="AI Bot">AI Bot</option>
-                    <option value="Insta Auto Reply">Insta Auto Reply</option>
-                  </select>
-                </div>
+
                 <div>
                   <label className="block text-slate-900 font-bold mb-2">Project Description *</label>
                   <textarea name="description" value={formData.description} onChange={handleChange}
                     required placeholder="Describe your project requirements in detail"
                     rows={4} className={fieldClass + " resize-none"} />
+                </div>
+
+                {/* Honeypot field (hidden from humans) */}
+                <div style={{ display: 'none' }} aria-hidden="true">
+                  <input type="text" name="website_url" value={formData.website_url} onChange={handleChange} tabIndex={-1} autoComplete="off" />
+                </div>
+
+                {/* Cloudflare Turnstile CAPTCHA */}
+                <div className="flex justify-center py-2">
+                  <Turnstile 
+                    siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'} 
+                    onSuccess={(token) => setTurnstileToken(token)}
+                    onExpire={() => setTurnstileToken(null)}
+                    onError={() => setTurnstileToken(null)}
+                  />
                 </div>
 
                 <motion.button

@@ -41,14 +41,18 @@ const technicalServices = [
 
 const fieldClass = "w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:bg-white focus:outline-none transition-all";
 
+import { Turnstile } from '@marsidev/react-turnstile';
+
 // inline booking form for tech services
 function BookingForm({ service, onClose }: { service: typeof technicalServices[0]; onClose: () => void }) {
   const [formData, setFormData] = useState({
     name: '', whatsappNumber: '', location: '',
     serviceType: service.title, description: '', message: '',
+    website_url: '', // honeypot
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -56,6 +60,17 @@ function BookingForm({ service, onClose }: { service: typeof technicalServices[0
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // Honeypot check
+    if (formData.website_url) {
+      return;
+    }
+
+    if (!turnstileToken) {
+      alert('Please complete the CAPTCHA check.');
+      return;
+    }
+
     setIsLoading(true);
 
     const { error } = await supabase.from('technical_bookings').insert([{
@@ -76,10 +91,11 @@ function BookingForm({ service, onClose }: { service: typeof technicalServices[0
     }
 
     setIsSubmitted(true);
+    setTurnstileToken(null);
     setTimeout(() => {
       onClose();
       setIsSubmitted(false);
-      setFormData({ name: '', whatsappNumber: '', location: '', serviceType: service.title, description: '', message: '' });
+      setFormData({ name: '', whatsappNumber: '', location: '', serviceType: service.title, description: '', message: '', website_url: '' });
     }, 3000);
   };
 
@@ -162,6 +178,21 @@ function BookingForm({ service, onClose }: { service: typeof technicalServices[0
                     placeholder="Any specific questions for our team?" rows={2} className={fieldClass + " resize-none"} />
                 </div>
 
+                {/* Honeypot field (hidden from humans) */}
+                <div style={{ display: 'none' }} aria-hidden="true">
+                  <input type="text" name="website_url" value={formData.website_url} onChange={handleChange} tabIndex={-1} autoComplete="off" />
+                </div>
+
+                {/* Cloudflare Turnstile CAPTCHA */}
+                <div className="flex justify-center py-2">
+                  <Turnstile 
+                    siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'} 
+                    onSuccess={(token) => setTurnstileToken(token)}
+                    onExpire={() => setTurnstileToken(null)}
+                    onError={() => setTurnstileToken(null)}
+                  />
+                </div>
+
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -198,6 +229,11 @@ export function TechnicalSolutionsPage() {
 
   return (
     <div className="min-h-screen bg-white">
+      <Helmet>
+        <title>Technical Solutions — Web Design, AI Bots & Automation | Cwaya</title>
+        <meta name="description" content="Custom web design, intelligent AI chatbots, and business automation solutions to scale your brand effectively." />
+        <link rel="canonical" href="https://www.cwaya.me/technical-solutions" />
+      </Helmet>
       {/* hero */}
       <div className="pt-20 pb-16 bg-[radial-gradient(circle_at_top_right,rgba(37,99,235,0.05)_0%,transparent_50%)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

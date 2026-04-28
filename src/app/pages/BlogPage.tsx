@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
@@ -7,6 +8,11 @@ import { Calendar, User, Tag } from 'lucide-react';
 export function BlogPage() {
   return (
     <div className="bg-white min-h-screen flex flex-col font-sans">
+      <Helmet>
+        <title>Insights & News — Cwaya Creative Blog</title>
+        <meta name="description" content="Explore the latest trends in video editing, AI automation, and creative strategies on the Cwaya blog." />
+        <link rel="canonical" href="https://www.cwaya.me/blog" />
+      </Helmet>
       <Header />
       <main className="flex-grow pt-24 pb-16 relative overflow-hidden">
         {/* bg blobs */}

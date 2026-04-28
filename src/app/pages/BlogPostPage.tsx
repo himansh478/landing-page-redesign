@@ -5,18 +5,17 @@ import { blogPosts } from '../data/blogPosts';
 import { Calendar, User, Tag, ArrowLeft } from 'lucide-react';
 import { NotFoundPage } from './NotFoundPage';
 
+import DOMPurify from 'dompurify';
+
 /**
- * Lightweight HTML sanitizer — strips <script>, event handlers (onclick, etc.),
- * and javascript: hrefs to prevent XSS if content ever comes from a CMS or API.
+ * Robust HTML sanitizer using DOMPurify — prevents XSS by stripping 
+ * dangerous scripts, event handlers, and malicious links.
  */
 function sanitizeHtml(raw: string): string {
-  return raw
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-    .replace(/\s(on\w+)="[^"]*"/gi, '')
-    .replace(/\s(on\w+)='[^']*'/gi, '')
-    .replace(/href="javascript:[^"]*"/gi, 'href="#"')
-    .replace(/href='javascript:[^']*'/gi, "href='#'");
+  return DOMPurify.sanitize(raw);
 }
+
+import { Helmet } from 'react-helmet-async';
 
 export function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -28,6 +27,13 @@ export function BlogPostPage() {
 
   return (
     <div className="bg-white min-h-screen flex flex-col font-sans">
+      <Helmet>
+        <title>{post.title} — Cwaya Blog</title>
+        <meta name="description" content={post.content[0].substring(0, 160)} />
+        <link rel="canonical" href={`https://www.cwaya.me/blog/${post.slug}`} />
+        <meta property="og:title" content={post.title} />
+        <meta property="og:image" content={post.imageUrl} />
+      </Helmet>
       <Header />
       <main className="flex-grow pt-24 pb-16 relative overflow-hidden">
         {/* bg blobs */}
