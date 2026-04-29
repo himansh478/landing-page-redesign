@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { User, Briefcase, Mail, Phone, MapPin, Wrench, Camera, Link as LinkIcon, Map, Building } from 'lucide-react';
+import { User, Briefcase, Mail, Phone, MapPin, Wrench, Camera, Link as LinkIcon, Map, Building, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '../../lib/supabase';
 import { Turnstile } from '@marsidev/react-turnstile';
@@ -8,13 +8,14 @@ type LoginMode = 'select' | 'customer' | 'work';
 
 interface GlobalAuthGateProps {
   onAuth: () => void;
+  onClose?: () => void;
 }
 
 // shared input style used across both forms
 const inputClass = "w-full bg-slate-50 border-none rounded-xl py-3 pl-12 pr-4 text-slate-900 font-medium focus:ring-2 focus:ring-indigo-500 outline-none";
 const customerInputClass = "w-full bg-slate-50 border-none rounded-xl py-4 pl-12 pr-4 text-slate-900 font-medium focus:ring-2 focus:ring-purple-500 outline-none";
 
-export function GlobalAuthGate({ onAuth }: GlobalAuthGateProps) {
+export function GlobalAuthGate({ onAuth, onClose }: GlobalAuthGateProps) {
   const [mode, setMode] = useState<LoginMode>('select');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -117,6 +118,15 @@ export function GlobalAuthGate({ onAuth }: GlobalAuthGateProps) {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         className="bg-white rounded-[40px] shadow-2xl w-full max-w-md overflow-hidden relative z-10"
       >
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 bg-slate-50 hover:bg-slate-100 rounded-full transition-colors z-20"
+            aria-label="Close"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
         <div className="p-8">
           <div className="mb-8 text-center">
             <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-2">
