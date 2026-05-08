@@ -34,7 +34,7 @@ export function FindClients() {
     async function fetchJobs() {
       try {
         const { data, error } = await supabase
-          .from('looking_for_shoot')
+          .from('I_have_work')
           .select('*')
           .order('created_at', { ascending: false });
 

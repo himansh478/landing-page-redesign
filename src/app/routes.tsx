@@ -31,6 +31,7 @@ const CinematicPortfolioPage = lazy(() => import('./pages/CinematicPortfolioPage
 const SocialVideoPortfolioPage = lazy(() => import('./pages/SocialVideoPortfolioPage').then(m => ({ default: m.SocialVideoPortfolioPage })));
 const ShootBooking = lazy(() => import('./pages/ShootBooking').then(m => ({ default: m.ShootBooking })));
 const FindClients = lazy(() => import('./pages/FindClients').then(m => ({ default: m.FindClients })));
+const AdminApplicationsPage = lazy(() => import('./pages/AdminApplicationsPage').then(m => ({ default: m.AdminApplicationsPage })));
 
 // loading spinner while page chunk downloads
 function PageLoader() {
@@ -81,5 +82,6 @@ export const router = createBrowserRouter([
   { path: '/social-video-portfolio', element: withSuspense(SocialVideoPortfolioPage) },
   { path: '/shoot-booking', element: withSuspense(ShootBooking) },
   { path: '/find-clients', element: withSuspense(FindClients) },
+  { path: '/admin-view-interests', element: withSuspense(AdminApplicationsPage) },
   { path: '*', element: withSuspense(NotFoundPage) },
 ]);

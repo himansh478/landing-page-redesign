@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { Bot, Code, Zap, MessageSquare, ArrowRight, X, Check } from 'lucide-react';
 import { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { supabase } from '../../lib/supabase';
 
 // service data

@@ -82,7 +82,7 @@ const HeroSection = React.memo(function HeroSection() {
             to="/shoot-booking"
             className="group inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-base shadow-lg hover:shadow-indigo-500/30 hover:shadow-2xl transition-all duration-300 neon-border"
           >
-            Looking_for_shoot
+            I_have_ work
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </Link>
           <Link

@@ -30,7 +30,7 @@ export function ShootBooking() {
 
         try {
             const { error } = await supabase
-                .from('looking_for_shoot')
+                .from('I_have_work')
                 .insert([{
                     name: formData.name,
                     gmail: formData.gmail,
