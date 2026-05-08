@@ -1,5 +1,5 @@
 import { createBrowserRouter } from 'react-router';
-import { lazy, Suspense } from 'react';
+import React, { lazy, Suspense } from 'react';
 
 // lazy loaded pages - only downloads when user visits that route
 const HomePage = lazy(() => import('./pages/HomePage').then(m => ({ default: m.HomePage })));
@@ -29,6 +29,8 @@ const ReligiousPortfolioPage = lazy(() => import('./pages/ReligiousPortfolioPage
 const PoliticalPortfolioPage = lazy(() => import('./pages/PoliticalPortfolioPage').then(m => ({ default: m.PoliticalPortfolioPage })));
 const CinematicPortfolioPage = lazy(() => import('./pages/CinematicPortfolioPage').then(m => ({ default: m.CinematicPortfolioPage })));
 const SocialVideoPortfolioPage = lazy(() => import('./pages/SocialVideoPortfolioPage').then(m => ({ default: m.SocialVideoPortfolioPage })));
+const ShootBooking = lazy(() => import('./pages/ShootBooking').then(m => ({ default: m.ShootBooking })));
+const FindClients = lazy(() => import('./pages/FindClients').then(m => ({ default: m.FindClients })));
 
 // loading spinner while page chunk downloads
 function PageLoader() {
@@ -77,5 +79,7 @@ export const router = createBrowserRouter([
   { path: '/political-portfolio', element: withSuspense(PoliticalPortfolioPage) },
   { path: '/cinematic-portfolio', element: withSuspense(CinematicPortfolioPage) },
   { path: '/social-video-portfolio', element: withSuspense(SocialVideoPortfolioPage) },
+  { path: '/shoot-booking', element: withSuspense(ShootBooking) },
+  { path: '/find-clients', element: withSuspense(FindClients) },
   { path: '*', element: withSuspense(NotFoundPage) },
 ]);

@@ -79,19 +79,19 @@ const HeroSection = React.memo(function HeroSection() {
           className="flex flex-col sm:flex-row gap-4 justify-center items-center"
         >
           <Link
-            to="/packages"
+            to="/shoot-booking"
             className="group inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-base shadow-lg hover:shadow-indigo-500/30 hover:shadow-2xl transition-all duration-300 neon-border"
           >
-            View Packages
+            Looking_for_shoot
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </Link>
-          <button
-            onClick={() => window.dispatchEvent(new Event('open-auth-gate'))}
+          <Link
+            to="/find-clients"
             className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl border-2 border-slate-300 dark:border-slate-600 bg-white/80 dark:bg-white/5 text-slate-800 dark:text-slate-100 hover:border-indigo-400 dark:hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 font-bold text-base transition-all duration-300 backdrop-blur-sm"
           >
             <Play className="w-4 h-4 fill-current" />
-            Connect with Us
-          </button>
+            Find Clients....
+          </Link>
         </motion.div>
 
         {/* trust badges */}
