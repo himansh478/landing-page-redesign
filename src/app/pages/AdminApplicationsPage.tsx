@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Loader2, Users, Phone, IndianRupee, Link as LinkIcon, Briefcase } from 'lucide-react';
+import { Loader2, Users, Phone, IndianRupee, Link as LinkIcon, Briefcase, Activity } from 'lucide-react';
 
 interface ShootJob {
   id: string;
@@ -55,7 +55,31 @@ export function AdminApplicationsPage() {
         setLoading(false);
       }
     }
+    
     fetchData();
+
+    // REAL-TIME SUBSCRIPTIONS
+    // Listen for new I_have_work jobs
+    const jobSubscription = supabase
+      .channel('public:I_have_work')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'I_have_work' }, payload => {
+        setJobs(currentJobs => [payload.new as ShootJob, ...currentJobs]);
+      })
+      .subscribe();
+
+    // Listen for new shoot_applications
+    const appSubscription = supabase
+      .channel('public:shoot_applications')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'shoot_applications' }, payload => {
+        setApplications(currentApps => [payload.new as ShootApplication, ...currentApps]);
+      })
+      .subscribe();
+
+    // Cleanup subscriptions on unmount
+    return () => {
+      supabase.removeChannel(jobSubscription);
+      supabase.removeChannel(appSubscription);
+    };
   }, []);
 
   if (loading) {
@@ -71,11 +95,16 @@ export function AdminApplicationsPage() {
     <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-black text-slate-900 mb-4 tracking-tight">
-            Admin <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Dashboard</span>
-          </h1>
+          <div className="inline-flex items-center justify-center gap-2 mb-4">
+            <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight">
+              Admin <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Dashboard</span>
+            </h1>
+            <span className="flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold animate-pulse">
+              <Activity className="w-3 h-3" /> Live
+            </span>
+          </div>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            View all "I_have_work" cards and people who clicked "I am Interested"
+            Viewing real-time updates for "I_have_work" cards and interested applicants
           </p>
         </div>
 
