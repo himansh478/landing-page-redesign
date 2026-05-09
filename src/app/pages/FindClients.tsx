@@ -121,7 +121,7 @@ export function FindClients() {
                   </div>
                   <div className="flex items-center gap-3 text-sm font-bold text-green-600 bg-green-50 px-3 py-2 rounded-xl mt-3 border border-green-100">
                     <IndianRupee className="w-4 h-4" />
-                    <span>I Pay: ₹{Math.round(job.price * 0.9)}</span>
+                    <span>You Get: ₹{Math.round(job.price * 0.9)}</span>
                   </div>
                 </div>
               </div>
