@@ -13,6 +13,7 @@ interface ShootJob {
   reference_video: string;
   device_type: string;
   price: number;
+  status?: string;
   created_at: string;
 }
 
@@ -96,13 +97,23 @@ export function FindClients() {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {!loading && jobs.map((job) => (
-            <div key={job.id} className="bg-white rounded-2xl shadow-sm hover:shadow-xl border border-slate-200 overflow-hidden transition-all duration-300 flex flex-col">
-              <div className="p-6 flex-grow">
-                <span className="inline-block px-3 py-1 rounded-full bg-indigo-100 text-indigo-800 text-xs font-bold uppercase mb-3">
-                  {job.work_type}
-                </span>
-                <h3 className="text-xl font-bold text-slate-900 mb-4">{job.district}, {job.state}</h3>
+          {!loading && jobs.map((job) => {
+            const isCompleted = job.status === 'completed';
+            
+            return (
+              <div key={job.id} className={`bg-white rounded-2xl shadow-sm hover:shadow-xl border border-slate-200 overflow-hidden transition-all duration-300 flex flex-col ${isCompleted ? 'opacity-75 grayscale-[0.5]' : ''}`}>
+                <div className="p-6 flex-grow">
+                  <div className="flex justify-between items-start mb-3">
+                    <span className="inline-block px-3 py-1 rounded-full bg-indigo-100 text-indigo-800 text-xs font-bold uppercase">
+                      {job.work_type}
+                    </span>
+                    {isCompleted && (
+                      <span className="px-3 py-1 bg-red-100 text-red-700 text-[10px] font-black uppercase rounded-lg border border-red-200">
+                        Closed / Hired
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-900 mb-4">{job.district}, {job.state}</h3>
                 
                 <div className="space-y-3">
                   <div className="flex items-center gap-3 text-sm text-slate-600">
@@ -127,13 +138,18 @@ export function FindClients() {
               <div className="px-6 py-4 bg-slate-50 border-t border-slate-100">
                 <button 
                   onClick={() => setSelectedJob(job)}
-                  className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-all shadow-md active:scale-95"
+                  disabled={isCompleted}
+                  className={`w-full py-3 font-bold rounded-xl transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 ${
+                    isCompleted 
+                    ? 'bg-slate-200 text-slate-500 cursor-not-allowed border-2 border-slate-300' 
+                    : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                  }`}
                 >
-                  I'm Interested
+                  {isCompleted ? 'Vacancy Filled' : "I'm Interested"}
                 </button>
               </div>
             </div>
-          ))}
+          )})}
         </div>
 
         {/* Interest Modal */}
