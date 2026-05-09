@@ -47,7 +47,20 @@ export function FindClients() {
         setLoading(false);
       }
     }
+
     fetchJobs();
+
+    // REAL-TIME: Listen for status updates and new jobs
+    const channel = supabase
+      .channel('public:I_have_work_find_clients')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'I_have_work' }, () => {
+        fetchJobs(); // Sync instantly when admin marks as done
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const handleApplySubmit = async (e: React.FormEvent) => {
