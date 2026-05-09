@@ -56,7 +56,7 @@ export function FindClients() {
     setIsSubmitting(true);
     try {
       const { error } = await supabase
-        .from('shoot_applications')
+        .from('admin_dashboard')
         .insert([{
           job_id: selectedJob.id,
           phone_number: appFormData.phone,

@@ -41,7 +41,7 @@ export function AdminApplicationsPage() {
 
         // Fetch Applications
         const { data: appsData, error: appsError } = await supabase
-          .from('shoot_applications')
+          .from('admin_dashboard')
           .select('*')
           .order('created_at', { ascending: false });
 
@@ -69,8 +69,8 @@ export function AdminApplicationsPage() {
 
     // Listen for new shoot_applications
     const appSubscription = supabase
-      .channel('public:shoot_applications')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'shoot_applications' }, payload => {
+      .channel('public:admin_dashboard')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'admin_dashboard' }, payload => {
         setApplications(currentApps => [payload.new as ShootApplication, ...currentApps]);
       })
       .subscribe();

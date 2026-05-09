@@ -82,6 +82,6 @@ export const router = createBrowserRouter([
   { path: '/social-video-portfolio', element: withSuspense(SocialVideoPortfolioPage) },
   { path: '/shoot-booking', element: withSuspense(ShootBooking) },
   { path: '/find-clients', element: withSuspense(FindClients) },
-  { path: '/admin-view-interests', element: withSuspense(AdminApplicationsPage) },
+  { path: '/admin-dashboard', element: withSuspense(AdminApplicationsPage) },
   { path: '*', element: withSuspense(NotFoundPage) },
 ]);
