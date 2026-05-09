@@ -27,7 +27,6 @@ export function FindClients() {
   const [appFormData, setAppFormData] = useState({
     phone: '',
     equipments: '',
-    charges: '',
     portfolio: ''
   });
 
@@ -62,7 +61,6 @@ export function FindClients() {
           job_id: selectedJob.id,
           phone_number: appFormData.phone,
           equipments: appFormData.equipments,
-          charges: appFormData.charges,
           portfolio_link: appFormData.portfolio
         }]);
 
@@ -70,7 +68,7 @@ export function FindClients() {
 
       alert("Your interest has been submitted! The client will contact you soon. ✅");
       setSelectedJob(null); // Close modal
-      setAppFormData({ phone: '', equipments: '', charges: '', portfolio: '' }); // Clear form
+      setAppFormData({ phone: '', equipments: '', portfolio: '' }); // Clear form
     } catch (err: any) {
       alert("Error submitting application: " + err.message);
     } finally {
@@ -180,31 +178,17 @@ export function FindClients() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-bold text-slate-700 mb-1 flex items-center gap-2">
-                        <IndianRupee className="w-4 h-4 text-indigo-500" /> Your Charges (₹)
-                      </label>
-                      <input 
-                        type="text" required
-                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all"
-                        placeholder="e.g. 5000"
-                        value={appFormData.charges}
-                        onChange={(e) => setAppFormData({...appFormData, charges: e.target.value})}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-bold text-slate-700 mb-1 flex items-center gap-2">
-                        <Globe className="w-4 h-4 text-indigo-500" /> Portfolio Link
-                      </label>
-                      <input 
-                        type="url" required
-                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all"
-                        placeholder="Behance, IG or Drive link"
-                        value={appFormData.portfolio}
-                        onChange={(e) => setAppFormData({...appFormData, portfolio: e.target.value})}
-                      />
-                    </div>
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-1 flex items-center gap-2">
+                      <Globe className="w-4 h-4 text-indigo-500" /> Portfolio Link
+                    </label>
+                    <input 
+                      type="url" required
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all"
+                      placeholder="Behance, IG or Drive link"
+                      value={appFormData.portfolio}
+                      onChange={(e) => setAppFormData({...appFormData, portfolio: e.target.value})}
+                    />
                   </div>
                 </div>
 
