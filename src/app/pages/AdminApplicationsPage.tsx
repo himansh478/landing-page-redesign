@@ -85,7 +85,6 @@ export function AdminApplicationsPage() {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   const handleStatusUpdate = async (jobId: string, newStatus: string) => {
-    console.log("Attempting to update status for:", jobId, "to", newStatus);
     setUpdatingId(jobId);
 
     // Optimistic Update
@@ -105,8 +104,6 @@ export function AdminApplicationsPage() {
         console.error("Supabase Update Error:", error);
         alert("Database Error: " + error.message);
         fetchData(); 
-      } else {
-        console.log("Successfully updated status in DB!");
       }
     } catch (err: any) {
       console.error("System Error:", err);
