@@ -124,10 +124,7 @@ export function ShootBooking() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <label className="block text-sm font-bold text-slate-700 mb-1">Work Type *</label>
-                            <input list="workTypes" name="workType" value={formData.workType} required onChange={handleChange} className={inputClass} placeholder="Select or Type" />
-                            <datalist id="workTypes">
-                                <option value="Wedding" /><option value="Commercial" /><option value="Vlog" /><option value="Cinematic" /><option value="Short Film" />
-                            </datalist>
+                            <input type="text" name="workType" value={formData.workType} required onChange={handleChange} className={inputClass} placeholder="e.g. Wedding, Commercial, Vlog" />
                         </div>
                         <div>
                             <label className="block text-sm font-bold text-slate-700 mb-1">Duration *</label>
@@ -143,10 +140,7 @@ export function ShootBooking() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-bold text-slate-700 mb-1">Shoot Device *</label>
-                            <input list="devices" name="deviceType" value={formData.deviceType} required onChange={handleChange} className={inputClass} placeholder="Select or Type Device" />
-                            <datalist id="devices">
-                                <option value="Sony A7III / Mirrorless" /><option value="iPhone 15 Pro / 16 Pro" /><option value="GoPro / Action Cam" /><option value="DJI Drone" /><option value="Red / Blackmagic" />
-                            </datalist>
+                            <input type="text" name="deviceType" value={formData.deviceType} required onChange={handleChange} className={inputClass} placeholder="e.g. Sony A7III, iPhone, Drone" />
                         </div>
                         <div>
                             <label className="block text-sm font-bold text-slate-700 mb-1">Reference Video Link *</label>
