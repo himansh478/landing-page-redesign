@@ -1,7 +1,6 @@
 import { motion } from 'motion/react';
 import { Film, Camera, Share2, Users, Bot, ArrowRight } from 'lucide-react';
 import { useState } from 'react';
-import { InnerCircleModal } from './InnerCircleModal';
 import { useNavigate } from 'react-router';
 
 interface Service {
@@ -43,15 +42,6 @@ const services: Service[] = [
     darkGlow: 'rgba(236,72,153,0.15)',
   },
   {
-    id: 8,
-    title: 'Become My Member',
-    icon: <Users className="w-7 h-7" />,
-    description: 'Membership portal for recurring clients and exclusive perks',
-    features: ['Priority Support', 'Exclusive Deals', 'Monthly Credits', 'VIP Access'],
-    gradient: 'from-green-500 to-emerald-500',
-    darkGlow: 'rgba(16,185,129,0.15)',
-  },
-  {
     id: 10,
     title: 'Technical Solutions',
     icon: <Bot className="w-7 h-7" />,
@@ -71,13 +61,10 @@ const serviceRoutes: Record<string, string> = {
 };
 
 export function ServiceHub() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleServiceClick = (title: string) => {
-    if (title === 'Become My Member') {
-      setIsModalOpen(true);
-    } else if (serviceRoutes[title]) {
+    if (serviceRoutes[title]) {
       navigate(serviceRoutes[title]);
     }
   };
@@ -162,7 +149,7 @@ export function ServiceHub() {
               </ul>
 
               <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 text-sm font-semibold group-hover:gap-3 transition-all relative z-10">
-                {service.title === 'Become My Member' ? 'Apply Now' : 'Explore More'}
+                Explore More
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </div>
             </motion.div>
@@ -170,7 +157,6 @@ export function ServiceHub() {
         </div>
       </div>
 
-      <InnerCircleModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </section>
   );
 }
