@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Loader2, Users, Phone, IndianRupee, Link as LinkIcon, Briefcase, Activity } from 'lucide-react';
+import { Loader2, Users, Phone, IndianRupee, Link as LinkIcon, Briefcase, Activity, Trash2 } from 'lucide-react';
 
 interface ShootJob {
   id: string;
@@ -80,7 +80,39 @@ export function AdminApplicationsPage() {
       supabase.removeChannel(jobSubscription);
       supabase.removeChannel(appSubscription);
     };
-  }, []);
+  }, [jobs, applications]);
+
+  const handleDeleteJob = async (jobId: string) => {
+    if (!window.confirm("Are you sure you want to delete this job and all its applications?")) return;
+    
+    try {
+      const { error } = await supabase
+        .from('I_have_work')
+        .delete()
+        .eq('id', jobId);
+
+      if (error) throw error;
+      setJobs(jobs.filter(j => j.id !== jobId));
+    } catch (err: any) {
+      alert("Error deleting job: " + err.message);
+    }
+  };
+
+  const handleDeleteApplication = async (appId: string) => {
+    if (!window.confirm("Delete this interest application?")) return;
+
+    try {
+      const { error } = await supabase
+        .from('admin_dashboard')
+        .delete()
+        .eq('id', appId);
+
+      if (error) throw error;
+      setApplications(applications.filter(a => a.id !== appId));
+    } catch (err: any) {
+      alert("Error deleting application: " + err.message);
+    }
+  };
 
   if (loading) {
     return (
@@ -121,9 +153,18 @@ export function AdminApplicationsPage() {
                     </h2>
                     <p className="text-sm text-slate-600">Posted by: {job.name || 'Anonymous'} | Location: {job.exact_location}</p>
                   </div>
-                  <div className="flex items-center gap-2 px-4 py-2 bg-indigo-100 text-indigo-800 rounded-lg font-bold">
-                    <Users className="w-5 h-5" />
-                    <span>{jobApps.length} Interested</span>
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 px-4 py-2 bg-indigo-100 text-indigo-800 rounded-lg font-bold">
+                      <Users className="w-5 h-5" />
+                      <span>{jobApps.length} Interested</span>
+                    </div>
+                    <button 
+                      onClick={() => handleDeleteJob(job.id)}
+                      className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                      title="Delete Job"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
                   </div>
                 </div>
 
@@ -133,7 +174,14 @@ export function AdminApplicationsPage() {
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {jobApps.map((app) => (
-                        <div key={app.id} className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                        <div key={app.id} className="relative bg-slate-50 p-4 pt-8 rounded-xl border border-slate-200 space-y-3 group">
+                          <button 
+                            onClick={() => handleDeleteApplication(app.id)}
+                            className="absolute top-2 right-2 p-1.5 text-slate-300 hover:text-red-600 hover:bg-white rounded-md transition-all opacity-0 group-hover:opacity-100"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                          
                           <div className="flex items-center gap-2 text-sm text-slate-800 font-medium">
                             <Phone className="w-4 h-4 text-green-600" />
                             <a href={`https://wa.me/${app.phone_number}`} target="_blank" rel="noreferrer" className="hover:underline">{app.phone_number}</a>
