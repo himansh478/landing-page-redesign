@@ -80,10 +80,10 @@ const HeroSection = React.memo(function HeroSection() {
         >
           <Link
             to="/shoot-booking"
-            className="group inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-base shadow-lg hover:shadow-indigo-500/30 hover:shadow-2xl transition-all duration-300 neon-border"
+            className="group relative inline-flex items-center justify-center px-10 py-5 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-[length:200%_auto] hover:bg-right text-white font-black text-xl shadow-2xl hover:shadow-indigo-500/50 transition-all duration-500 hover:scale-110 active:scale-95 animate-shimmer"
           >
-            I_have_ work
-            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            <span className="relative z-10 uppercase tracking-widest">I_have_work</span>
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-indigo-400 to-purple-400 blur-xl opacity-20 group-hover:opacity-60 transition-opacity animate-pulse" />
           </Link>
           <Link
             to="/find-clients"
