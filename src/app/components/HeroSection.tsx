@@ -87,10 +87,10 @@ const HeroSection = React.memo(function HeroSection() {
           </Link>
           <Link
             to="/find-clients"
-            className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl border-2 border-slate-300 dark:border-slate-600 bg-white/80 dark:bg-white/5 text-slate-800 dark:text-slate-100 hover:border-indigo-400 dark:hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 font-bold text-base transition-all duration-300 backdrop-blur-sm"
+            className="group relative inline-flex items-center justify-center px-10 py-5 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white/10 dark:bg-white/5 text-slate-900 dark:text-white font-black text-xl transition-all duration-500 hover:scale-110 active:scale-95 backdrop-blur-md hover:border-indigo-500 overflow-hidden"
           >
-            <Play className="w-4 h-4 fill-current" />
-            Find Clients....
+            <span className="relative z-10 uppercase tracking-widest">Find Clients</span>
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-indigo-500/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
           </Link>
         </motion.div>
 
