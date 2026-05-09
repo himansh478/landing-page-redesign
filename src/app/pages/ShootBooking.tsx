@@ -134,8 +134,8 @@ export function ShootBooking() {
                             <input type="text" name="workDuration" value={formData.workDuration} required onChange={handleChange} className={inputClass} placeholder="e.g. 5 Hours" />
                         </div>
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Estimated Price (₹) *</label>
-                            <input type="number" name="price" value={formData.price} required onChange={handleChange} className={inputClass} placeholder="Budget" />
+                            <label className="block text-sm font-bold text-slate-700 mb-1">I Pay (₹) *</label>
+                            <input type="number" name="price" value={formData.price} required onChange={handleChange} className={inputClass} placeholder="Your Price" />
                         </div>
                     </div>
 
