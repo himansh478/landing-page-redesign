@@ -82,8 +82,13 @@ export function AdminApplicationsPage() {
     };
   }, []);
 
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+
   const handleStatusUpdate = async (jobId: string, newStatus: string) => {
-    // 1. Optimistic Update: Card ko turant screen par update kar do
+    console.log("Attempting to update status for:", jobId, "to", newStatus);
+    setUpdatingId(jobId);
+
+    // Optimistic Update
     setJobs(currentJobs => 
       currentJobs.map(job => 
         job.id === jobId ? { ...job, status: newStatus } : job
@@ -97,14 +102,18 @@ export function AdminApplicationsPage() {
         .eq('id', jobId);
 
       if (error) {
-        // Agar error aaye (jaise column missing), toh alert dikhao
-        alert("Database Error: " + error.message + "\n\nTip: Make sure you added the 'status' column in Supabase SQL Editor.");
-        // Rollback state
+        console.error("Supabase Update Error:", error);
+        alert("Database Error: " + error.message);
         fetchData(); 
+      } else {
+        console.log("Successfully updated status in DB!");
       }
     } catch (err: any) {
+      console.error("System Error:", err);
       alert("System Error: " + err.message);
       fetchData();
+    } finally {
+      setUpdatingId(null);
     }
   };
 
@@ -163,16 +172,20 @@ export function AdminApplicationsPage() {
                     {!isCompleted ? (
                       <button 
                         onClick={() => handleStatusUpdate(job.id, 'completed')}
-                        className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold text-sm shadow-md transition-all active:scale-95"
+                        disabled={updatingId === job.id}
+                        className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-slate-400 text-white rounded-lg font-bold text-sm shadow-md transition-all active:scale-95 flex items-center gap-2"
                       >
-                        Mark as Done
+                        {updatingId === job.id ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                        {updatingId === job.id ? 'Updating...' : 'Mark as Done'}
                       </button>
                     ) : (
                       <button 
                         onClick={() => handleStatusUpdate(job.id, 'open')}
-                        className="px-4 py-2 border-2 border-slate-300 text-slate-500 hover:bg-slate-100 rounded-lg font-bold text-sm transition-all"
+                        disabled={updatingId === job.id}
+                        className="px-4 py-2 border-2 border-slate-300 text-slate-500 hover:bg-slate-100 disabled:opacity-50 rounded-lg font-bold text-sm transition-all flex items-center gap-2"
                       >
-                        Re-open
+                        {updatingId === job.id ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                        {updatingId === job.id ? 'Updating...' : 'Re-open'}
                       </button>
                     )}
                   </div>
