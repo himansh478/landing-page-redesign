@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Loader2, Users, Phone, IndianRupee, Link as LinkIcon, Briefcase, Activity, Trash2 } from 'lucide-react';
+import { Loader2, Users, Phone, IndianRupee, Link as LinkIcon, Briefcase, Activity } from 'lucide-react';
 
 interface ShootJob {
   id: string;
@@ -10,6 +10,7 @@ interface ShootJob {
   exact_location: string;
   work_duration: string;
   work_type: string;
+  status?: string;
   created_at: string;
 }
 
@@ -59,11 +60,10 @@ export function AdminApplicationsPage() {
     fetchData();
 
     // REAL-TIME SUBSCRIPTIONS
-    // Listen for new I_have_work jobs
     const jobSubscription = supabase
       .channel('public:I_have_work')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'I_have_work' }, payload => {
-        setJobs(currentJobs => [payload.new as ShootJob, ...currentJobs]);
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'I_have_work' }, () => {
+        fetchData(); // Refresh all on any change to keep status in sync
       })
       .subscribe();
 
@@ -80,37 +80,19 @@ export function AdminApplicationsPage() {
       supabase.removeChannel(jobSubscription);
       supabase.removeChannel(appSubscription);
     };
-  }, [jobs, applications]);
+  }, []);
 
-  const handleDeleteJob = async (jobId: string) => {
-    if (!window.confirm("Are you sure you want to delete this job and all its applications?")) return;
-    
+  const handleStatusUpdate = async (jobId: string, newStatus: string) => {
     try {
       const { error } = await supabase
         .from('I_have_work')
-        .delete()
+        .update({ status: newStatus })
         .eq('id', jobId);
 
       if (error) throw error;
-      setJobs(jobs.filter(j => j.id !== jobId));
+      // Note: Real-time subscription will trigger a refresh
     } catch (err: any) {
-      alert("Error deleting job: " + err.message);
-    }
-  };
-
-  const handleDeleteApplication = async (appId: string) => {
-    if (!window.confirm("Delete this interest application?")) return;
-
-    try {
-      const { error } = await supabase
-        .from('admin_dashboard')
-        .delete()
-        .eq('id', appId);
-
-      if (error) throw error;
-      setApplications(applications.filter(a => a.id !== appId));
-    } catch (err: any) {
-      alert("Error deleting application: " + err.message);
+      alert("Error updating status: " + err.message);
     }
   };
 
@@ -143,28 +125,44 @@ export function AdminApplicationsPage() {
         <div className="space-y-8">
           {jobs.map((job) => {
             const jobApps = applications.filter(app => app.job_id === job.id);
+            const isCompleted = job.status === 'completed';
 
             return (
-              <div key={job.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div className="p-6 bg-slate-100 border-b border-slate-200 flex justify-between items-center flex-wrap gap-4">
-                  <div>
-                    <h2 className="text-xl font-bold text-slate-900">
-                      {job.work_type} at {job.district}, {job.state}
-                    </h2>
+              <div key={job.id} className={`bg-white rounded-2xl shadow-sm border ${isCompleted ? 'border-slate-200 opacity-75' : 'border-slate-200'} overflow-hidden transition-all`}>
+                <div className={`p-6 ${isCompleted ? 'bg-slate-50' : 'bg-slate-100'} border-b border-slate-200 flex justify-between items-center flex-wrap gap-4`}>
+                  <div className="flex-grow">
+                    <div className="flex items-center gap-3">
+                      <h2 className="text-xl font-bold text-slate-900">
+                        {job.work_type} at {job.district}, {job.state}
+                      </h2>
+                      {isCompleted && (
+                        <span className="px-2 py-0.5 bg-slate-200 text-slate-600 text-xs font-bold rounded uppercase">Completed</span>
+                      )}
+                    </div>
                     <p className="text-sm text-slate-600">Posted by: {job.name || 'Anonymous'} | Location: {job.exact_location}</p>
                   </div>
+                  
                   <div className="flex items-center gap-3">
                     <div className="flex items-center gap-2 px-4 py-2 bg-indigo-100 text-indigo-800 rounded-lg font-bold">
                       <Users className="w-5 h-5" />
                       <span>{jobApps.length} Interested</span>
                     </div>
-                    <button 
-                      onClick={() => handleDeleteJob(job.id)}
-                      className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                      title="Delete Job"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
+
+                    {!isCompleted ? (
+                      <button 
+                        onClick={() => handleStatusUpdate(job.id, 'completed')}
+                        className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold text-sm shadow-md transition-all active:scale-95"
+                      >
+                        Mark as Done
+                      </button>
+                    ) : (
+                      <button 
+                        onClick={() => handleStatusUpdate(job.id, 'open')}
+                        className="px-4 py-2 border-2 border-slate-300 text-slate-500 hover:bg-slate-100 rounded-lg font-bold text-sm transition-all"
+                      >
+                        Re-open
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -174,14 +172,7 @@ export function AdminApplicationsPage() {
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {jobApps.map((app) => (
-                        <div key={app.id} className="relative bg-slate-50 p-4 pt-8 rounded-xl border border-slate-200 space-y-3 group">
-                          <button 
-                            onClick={() => handleDeleteApplication(app.id)}
-                            className="absolute top-2 right-2 p-1.5 text-slate-300 hover:text-red-600 hover:bg-white rounded-md transition-all opacity-0 group-hover:opacity-100"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                          
+                        <div key={app.id} className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
                           <div className="flex items-center gap-2 text-sm text-slate-800 font-medium">
                             <Phone className="w-4 h-4 text-green-600" />
                             <a href={`https://wa.me/${app.phone_number}`} target="_blank" rel="noreferrer" className="hover:underline">{app.phone_number}</a>
