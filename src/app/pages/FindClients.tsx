@@ -114,7 +114,7 @@ export function FindClients() {
             const isCompleted = job.status === 'completed';
             
             return (
-              <div key={job.id} className={`bg-white rounded-2xl shadow-sm hover:shadow-xl border border-slate-200 overflow-hidden transition-all duration-300 flex flex-col ${isCompleted ? 'opacity-75 grayscale-[0.5]' : ''}`}>
+              <div key={job.id} className={`bg-white rounded-2xl shadow-sm hover:shadow-xl border border-slate-200 overflow-hidden transition-all duration-300 flex flex-col ${isCompleted ? 'opacity-60 grayscale' : ''}`}>
                 <div className="p-6 flex-grow">
                   <div className="flex justify-between items-start mb-3">
                     <span className="inline-block px-3 py-1 rounded-full bg-indigo-100 text-indigo-800 text-xs font-bold uppercase">
