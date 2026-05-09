@@ -83,16 +83,28 @@ export function AdminApplicationsPage() {
   }, []);
 
   const handleStatusUpdate = async (jobId: string, newStatus: string) => {
+    // 1. Optimistic Update: Card ko turant screen par update kar do
+    setJobs(currentJobs => 
+      currentJobs.map(job => 
+        job.id === jobId ? { ...job, status: newStatus } : job
+      )
+    );
+
     try {
       const { error } = await supabase
         .from('I_have_work')
         .update({ status: newStatus })
         .eq('id', jobId);
 
-      if (error) throw error;
-      // Note: Real-time subscription will trigger a refresh
+      if (error) {
+        // Agar error aaye (jaise column missing), toh alert dikhao
+        alert("Database Error: " + error.message + "\n\nTip: Make sure you added the 'status' column in Supabase SQL Editor.");
+        // Rollback state
+        fetchData(); 
+      }
     } catch (err: any) {
-      alert("Error updating status: " + err.message);
+      alert("System Error: " + err.message);
+      fetchData();
     }
   };
 
