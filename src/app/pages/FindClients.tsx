@@ -12,6 +12,7 @@ interface ShootJob {
   work_type: string;
   reference_video: string;
   device_type: string;
+  price: number;
   created_at: string;
 }
 
@@ -117,6 +118,10 @@ export function FindClients() {
                   <div className="flex items-center gap-3 text-sm text-slate-600">
                     <Video className="w-4 h-4 text-slate-400" />
                     <span>Req. Device: {job.device_type}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm font-bold text-green-600 bg-green-50 px-3 py-2 rounded-xl mt-3 border border-green-100">
+                    <IndianRupee className="w-4 h-4" />
+                    <span>I Pay: ₹{job.price}</span>
                   </div>
                 </div>
               </div>
