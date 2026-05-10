@@ -77,12 +77,12 @@ const HeroSection = React.memo(function HeroSection() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: 'easeOut', delay: 0.1 }}
-          className="text-4xl sm:text-6xl lg:text-7xl xl:text-8xl font-black text-slate-900 dark:text-white mb-5 leading-[1.1] tracking-[-0.03em]"
+          className="text-4xl sm:text-6xl lg:text-7xl xl:text-8xl font-black mb-5 leading-[1.1] tracking-[-0.03em]"
           style={{ fontFamily: 'Outfit, Inter, sans-serif' }}
         >
-          Stop Overpaying for
+          <span className="text-slate-900 dark:text-white text-3d">Stop Overpaying for</span>
           <br />
-          <span className="text-gradient">Mediocrity</span>
+          <span className="text-gradient-3d">Mediocrity</span>
         </motion.h1>
 
         <motion.p
