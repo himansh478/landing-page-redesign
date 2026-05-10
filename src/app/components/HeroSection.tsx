@@ -47,7 +47,7 @@ const HeroSection = React.memo(function HeroSection() {
               scale: { duration: 1, delay: tag.delay },
               y: { repeat: Infinity, duration: 4 + (index % 2), delay: tag.delay, ease: "easeInOut" }
             }}
-            className="absolute hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/40 dark:bg-slate-900/40 backdrop-blur-md border border-indigo-200/50 dark:border-indigo-500/30 shadow-sm text-xs font-medium text-slate-700 dark:text-slate-300"
+            className="absolute flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1 md:py-1.5 rounded-full bg-white/30 md:bg-white/40 dark:bg-slate-900/30 md:dark:bg-slate-900/40 backdrop-blur-md border border-indigo-200/30 md:border-indigo-200/50 dark:border-indigo-500/20 md:dark:border-indigo-500/30 shadow-sm text-[10px] md:text-xs font-medium text-slate-600/80 md:text-slate-700 dark:text-slate-400/80 md:dark:text-slate-300"
             style={{ 
               top: tag.top, 
               left: tag.left, 
@@ -55,7 +55,7 @@ const HeroSection = React.memo(function HeroSection() {
               bottom: tag.bottom 
             }}
           >
-            <tag.icon className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+            <tag.icon className="w-3 h-3 md:w-3.5 md:h-3.5 text-indigo-500/70 md:text-indigo-600 dark:text-indigo-400/70 md:dark:text-indigo-400" />
             {tag.label}
           </motion.div>
         ))}
