@@ -1,22 +1,7 @@
 import { motion } from 'motion/react';
 import React from 'react';
-import { ArrowRight, Play, Video, Wand2, Megaphone, Heart, Briefcase, Scissors, Smartphone, Palette, Film, MonitorPlay, Camera, Share2 } from 'lucide-react';
+import { ArrowRight, Play } from 'lucide-react';
 import { Link } from 'react-router';
-
-const floatingTags = [
-  { icon: Video, label: 'Vlog Edit', delay: 0, top: '20%', left: '8%' },
-  { icon: Wand2, label: 'AI Edit', delay: 1.2, top: '15%', right: '12%' },
-  { icon: Megaphone, label: 'Political Shoot', delay: 0.5, bottom: '35%', left: '5%' },
-  { icon: Heart, label: 'Wedding Shoot', delay: 2.1, bottom: '30%', right: '8%' },
-  { icon: Briefcase, label: 'Corporate Shoot', delay: 1.8, top: '45%', left: '2%' },
-  { icon: Scissors, label: 'Master Editing', delay: 0.8, top: '35%', right: '3%' },
-  { icon: Smartphone, label: 'Reel Edit', delay: 2.5, top: '10%', left: '35%' },
-  { icon: Palette, label: 'Theme Based', delay: 1.5, bottom: '20%', right: '35%' },
-  { icon: Film, label: 'Documentary', delay: 0.3, bottom: '15%', left: '25%' },
-  { icon: MonitorPlay, label: 'Commercial', delay: 2.8, top: '8%', right: '35%' },
-  { icon: Camera, label: 'Cinematic', delay: 1.1, top: '55%', right: '2%' },
-  { icon: Share2, label: 'Social Video', delay: 0.7, top: '65%', left: '6%' },
-];
 
 const HeroSection = React.memo(function HeroSection() {
   return (
@@ -33,32 +18,6 @@ const HeroSection = React.memo(function HeroSection() {
         <div className="hidden dark:block absolute inset-0 opacity-[0.03]"
           style={{backgroundImage: 'linear-gradient(#818cf8 1px, transparent 1px), linear-gradient(to right, #818cf8 1px, transparent 1px)', backgroundSize: '60px 60px'}}
         />
-      </div>
-
-      {/* Floating service icons */}
-      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden max-w-7xl mx-auto">
-        {floatingTags.map((tag, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1, y: [0, -15, 0] }}
-            transition={{ 
-              opacity: { duration: 1, delay: tag.delay },
-              scale: { duration: 1, delay: tag.delay },
-              y: { repeat: Infinity, duration: 4 + (index % 2), delay: tag.delay, ease: "easeInOut" }
-            }}
-            className="absolute flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1 md:py-1.5 rounded-full bg-white/30 md:bg-white/40 dark:bg-slate-900/30 md:dark:bg-slate-900/40 backdrop-blur-md border border-indigo-200/30 md:border-indigo-200/50 dark:border-indigo-500/20 md:dark:border-indigo-500/30 shadow-sm text-[10px] md:text-xs font-medium text-slate-600/80 md:text-slate-700 dark:text-slate-400/80 md:dark:text-slate-300"
-            style={{ 
-              top: tag.top, 
-              left: tag.left, 
-              right: tag.right, 
-              bottom: tag.bottom 
-            }}
-          >
-            <tag.icon className="w-3 h-3 md:w-3.5 md:h-3.5 text-indigo-500/70 md:text-indigo-600 dark:text-indigo-400/70 md:dark:text-indigo-400" />
-            {tag.label}
-          </motion.div>
-        ))}
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28 lg:py-36 text-center">
