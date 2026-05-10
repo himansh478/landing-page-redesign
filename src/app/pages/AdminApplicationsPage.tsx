@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Loader2, Users, Phone, Link as LinkIcon, Briefcase, Activity } from 'lucide-react';
+import { Loader2, Users, Phone, IndianRupee, Link as LinkIcon, Briefcase, Activity } from 'lucide-react';
 
 interface ShootJob {
   id: string;
@@ -19,6 +19,7 @@ interface ShootApplication {
   job_id: string;
   phone_number: string;
   equipments: string;
+  charges?: string;
   portfolio_link: string;
   created_at: string;
 }
@@ -203,6 +204,13 @@ export function AdminApplicationsPage() {
                             <Briefcase className="w-4 h-4 text-slate-400 mt-0.5" />
                             <span><span className="font-semibold">Equipments:</span> {app.equipments}</span>
                           </div>
+
+                          {app.charges && (
+                            <div className="flex items-center gap-2 text-sm text-slate-600">
+                              <IndianRupee className="w-4 h-4 text-slate-400" />
+                              <span><span className="font-semibold">Charges:</span> ₹{app.charges}</span>
+                            </div>
+                          )}
 
 
                           {app.portfolio_link && (
