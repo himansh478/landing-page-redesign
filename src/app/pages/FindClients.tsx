@@ -75,7 +75,6 @@ export function FindClients() {
           job_id: selectedJob.id,
           phone_number: appFormData.phone,
           equipments: appFormData.equipments,
-          charges: 'N/A (Fixed Budget)', // Sending default value to bypass not-null constraint
           portfolio_link: appFormData.portfolio
         }]);
 
