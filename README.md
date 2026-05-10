@@ -1,15 +1,14 @@
-# Creative Shiva — Landing Page
+# Cwaya — Premium Creative Services
 
-Premium creative & tech services landing page.
+Premium creative & tech services platform.
 
 ## Live Site
-https://landing-page-redesign-beta.vercel.app
+https://cwaya.vercel.app
 
 ## Tech Stack
-- Frontend: React 19 + TypeScript + Vite + Tailwind CSS
-- Backend: Django 4.2 + Django REST Framework
-- Database: PostgreSQL (Railway)
-- Deployment: Vercel (Frontend) + Railway (Backend)
+- Frontend: React 18 + TypeScript + Vite + Tailwind CSS v4 + Framer Motion
+- Backend: Supabase (PostgreSQL & Auth)
+- Deployment: Vercel
 
 ## Local Setup
 
