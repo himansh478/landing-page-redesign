@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'motion/react';
-import { FileText, Scale, AlertCircle, ShieldCheck, Mail, Zap, Terminal } from 'lucide-react';
+import { FileText, Scale, AlertCircle, ShieldCheck, Mail, Zap, Terminal, Lock } from 'lucide-react';
 
 export default function TermsConditionsPage() {
   return (

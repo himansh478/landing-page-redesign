@@ -1,4 +1,4 @@
-import { VlogVideo } from './VlogEditPortfolioPage';
+import { VlogVideo } from '@/types';
 
 export const reelVideos: VlogVideo[] = [
   {

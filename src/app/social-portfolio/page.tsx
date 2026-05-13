@@ -192,7 +192,6 @@ export default function SocialVideoPortfolioPage() {
         isOpen={isSamplesModalOpen}
         onOpenChange={setIsSamplesModalOpen}
         shootType="Insta & YouTube Video Shoot"
-        samples={[]}
       />
     </div>
   );

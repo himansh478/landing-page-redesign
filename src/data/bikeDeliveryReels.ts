@@ -1,4 +1,4 @@
-import { ReelVideo } from './ReelPortfolioPage.tsx';
+import { ReelVideo } from '@/types';
 
 export const bikeDeliveryReels: ReelVideo[] = [
   {

@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Check } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { Turnstile } from '@marsidev/react-turnstile';
 
 interface TechnicalService {
@@ -187,7 +187,7 @@ export function TechnicalSolutionForm({ service, onClose }: TechnicalSolutionFor
                 {/* Cloudflare Turnstile CAPTCHA */}
                 <div className="flex justify-center py-2">
                   <Turnstile 
-                    siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'} 
+                    siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'} 
                     onSuccess={(token) => setTurnstileToken(token)}
                     onExpire={() => setTurnstileToken(null)}
                     onError={() => setTurnstileToken(null)}

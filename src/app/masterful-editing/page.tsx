@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'motion/react';
-import { PlayCircle, Film, Sparkles, Heart, ArrowLeft, Check, Play, Eye, ArrowRight, Sparkle, Youtube } from 'lucide-react';
+import { PlayCircle, Film, Sparkles, Heart, ArrowLeft, Check, Play, Eye, ArrowRight, Sparkle, Video } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 import { ServiceBookingForm } from '@/components/ServiceBookingForm';
@@ -17,7 +17,7 @@ const editingServices = [
   {
     id: 1,
     title: 'Vlog Edit',
-    icon: Youtube,
+    icon: Video,
     description: 'Dynamic pacing and professional storytelling for creators.',
     features: ['Jump cuts & transitions', 'Color correction', 'Background music', 'Text overlays & graphics'],
     image: 'https://images.unsplash.com/photo-1492724441997-5dc865305da7?q=80&w=2070&auto=format&fit=crop',
