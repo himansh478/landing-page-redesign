@@ -117,6 +117,20 @@ export function Header() {
               Blog
             </Link>
 
+            <Link
+              href="/about-us"
+              className="text-slate-700 hover:text-indigo-600 px-3 py-2 font-semibold transition-colors text-sm"
+            >
+              About
+            </Link>
+
+            <Link
+              href="/contact-us"
+              className="text-slate-700 hover:text-indigo-600 px-3 py-2 font-semibold transition-colors text-sm"
+            >
+              Contact
+            </Link>
+
             <button
               onClick={() => {
                 if (typeof window !== 'undefined') {
@@ -199,6 +213,20 @@ export function Header() {
                   className="w-full bg-slate-50 hover:bg-indigo-50 text-slate-700 px-6 py-3 rounded-lg transition-all font-semibold border border-slate-200 text-base flex items-center justify-center"
                 >
                   Blog
+                </Link>
+                <Link
+                  href="/about-us"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full bg-slate-50 hover:bg-indigo-50 text-slate-700 px-6 py-3 rounded-lg transition-all font-semibold border border-slate-200 text-base flex items-center justify-center"
+                >
+                  About Us
+                </Link>
+                <Link
+                  href="/contact-us"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full bg-slate-50 hover:bg-indigo-50 text-slate-700 px-6 py-3 rounded-lg transition-all font-semibold border border-slate-200 text-base flex items-center justify-center"
+                >
+                  Contact Us
                 </Link>
                 <div className="grid grid-cols-2 gap-3">
                   <Link
