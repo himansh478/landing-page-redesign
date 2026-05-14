@@ -1,6 +1,6 @@
 'use client';
 
-import { Mail, Phone, MapPin, ImageIcon, PlayCircle, Send, Sparkles } from 'lucide-react';
+import { Mail, Phone, MapPin, Instagram, PlayCircle, Send, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 
 const serviceLinks = [
@@ -50,13 +50,13 @@ export function Footer() {
 
             <div className="flex gap-2.5">
               <a
-                href="https://www.ImageIcon.com/creative_shiva_01?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
+                href="https://www.instagram.com/creative_shiva_01?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-9 h-9 rounded-lg flex items-center justify-center transition-all bg-white border border-slate-200 text-slate-500 hover:bg-gradient-to-tr hover:from-pink-500 hover:to-orange-500 hover:border-transparent hover:text-white hover:scale-110 shadow-sm"
-                aria-label="ImageIcon"
+                aria-label="Instagram"
               >
-                <ImageIcon className="w-4 h-4" />
+                <Instagram className="w-4 h-4" />
               </a>
               <a
                 href="https://chat.whatsapp.com/Ftagt0XUzkQI0zSfHZMXxI"

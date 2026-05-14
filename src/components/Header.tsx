@@ -1,6 +1,6 @@
 'use client';
 
-import { Menu, X, Share2, Sparkles, Package, ImageIcon, PlayCircle, Send } from 'lucide-react';
+import { Menu, X, Share2, Sparkles, Package, Instagram, PlayCircle, Send } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { SearchBar } from './SearchBar';
@@ -8,10 +8,10 @@ import Link from 'next/link';
 
 const socialLinks = [
   {
-    href: 'https://www.ImageIcon.com/creative_shiva_01?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==',
-    label: 'ImageIcon',
+    href: 'https://www.instagram.com/creative_shiva_01?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==',
+    label: 'Instagram',
     hoverClass: 'hover:bg-gradient-to-tr hover:from-pink-500 hover:to-orange-500 hover:border-transparent hover:text-white',
-    icon: <ImageIcon className="w-4 h-4" />,
+    icon: <Instagram className="w-4 h-4" />,
   },
   {
     href: 'https://chat.whatsapp.com/Ftagt0XUzkQI0zSfHZMXxI',
