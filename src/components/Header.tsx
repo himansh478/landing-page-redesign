@@ -200,6 +200,22 @@ export function Header() {
                 >
                   Blog
                 </Link>
+                <div className="grid grid-cols-2 gap-3">
+                  <Link
+                    href="/find-to-fill"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="bg-slate-900 text-white px-4 py-3 rounded-lg transition-all font-bold text-sm flex items-center justify-center text-center leading-tight"
+                  >
+                    I HAVE WORK
+                  </Link>
+                  <Link
+                    href="/find-clients"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="bg-white text-slate-900 px-4 py-3 rounded-lg transition-all font-bold text-sm border border-slate-200 flex items-center justify-center text-center leading-tight"
+                  >
+                    FIND WORK
+                  </Link>
+                </div>
                 <button
                   onClick={() => {
                     if (typeof window !== 'undefined') {
