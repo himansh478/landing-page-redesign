@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Turnstile } from '@marsidev/react-turnstile';
 import { supabase } from '@/lib/supabase';
-import { Check, Loader2, User, Camera, MapPin, Instagram, Mail, Briefcase, Wrench, Smartphone } from 'lucide-react';
+import { Check, Loader2, User, Camera, MapPin, Instagram, Mail, Briefcase, Wrench, Smartphone, Link as LinkIcon } from 'lucide-react';
 
 const inputClass = "w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all";
 
@@ -19,6 +19,7 @@ export function PartnerRegistrationForm() {
     skills: '',
     equipments: '',
     experience: '',
+    portfolio_link: '',
     website_url: '', // honeypot
   });
 
@@ -57,6 +58,7 @@ export function PartnerRegistrationForm() {
         skills: formData.skills,
         equipments: formData.equipments,
         experience: formData.experience,
+        portfolio_link: formData.portfolio_link,
       }]);
 
       if (error) throw error;
@@ -65,6 +67,7 @@ export function PartnerRegistrationForm() {
       setFormData({
         name: '', whatsapp: '', insta_id: '', gmail: '', state: '', district: '',
         exact_location: '', skills: '', equipments: '', experience: '',
+        portfolio_link: '',
         website_url: '',
       });
     } catch (err: any) {
@@ -183,6 +186,12 @@ export function PartnerRegistrationForm() {
               <Camera className="w-3 h-3" /> Equipments You Own
             </label>
             <textarea name="equipments" value={formData.equipments} onChange={handleInputChange} rows={3} placeholder="List your camera, lenses, gimbal, etc." className={inputClass + " resize-none"} required />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm text-zinc-400 ml-1 flex items-center gap-2">
+              <LinkIcon className="w-3 h-3" /> Portfolio Link (Website / Drive / PDF)
+            </label>
+            <input name="portfolio_link" value={formData.portfolio_link} onChange={handleInputChange} placeholder="https://..." className={inputClass} />
           </div>
         </div>
 
