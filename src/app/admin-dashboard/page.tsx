@@ -2,8 +2,9 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Loader2, Users, Phone, IndianRupee, Link as LinkIcon, Briefcase, Activity, Lock, AlertTriangle, Mail, MessageCircle, ImageIcon, LogOut } from 'lucide-react';
+import { Loader2, Users, Phone, IndianRupee, Link as LinkIcon, Briefcase, Activity, Lock, AlertTriangle, Mail, MessageCircle, ImageIcon, LogOut, CheckCircle2, Star } from 'lucide-react';
 import { verifyAdminPassword, checkAdminAuth, logoutAdmin } from '@/app/actions/auth';
+import { Partner } from '@/types';
 
 interface ShootJob {
   id: string;
@@ -112,6 +113,7 @@ function AdminAuthGate({ onAuthenticated }: { onAuthenticated: () => void }) {
 export default function AdminDashboardPage() {
   const [jobs, setJobs] = useState<ShootJob[]>([]);
   const [applications, setApplications] = useState<ShootApplication[]>([]);
+  const [partners, setPartners] = useState<Partner[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -153,12 +155,55 @@ export default function AdminDashboardPage() {
 
       if (jobsData) setJobs(jobsData);
       if (appsData) setApplications(appsData);
+
+      const { data: partnersData } = await supabase
+        .from('partners')
+        .select('*');
+      
+      if (partnersData) setPartners(partnersData);
     } catch (err: any) {
       setError(err.message || 'Failed to load data');
     } finally {
       setLoading(false);
     }
   }, []);
+
+  const getMatchedPartners = (job: ShootJob) => {
+    if (!partners || partners.length === 0) return [];
+    
+    return partners.map(partner => {
+      let score = 0;
+      const matchingLogs: string[] = [];
+
+      // Priority 1: Location (State -> District -> Location)
+      if (partner.state.toLowerCase() === job.state.toLowerCase()) {
+        score += 10;
+        matchingLogs.push("State Match");
+        if (partner.district.toLowerCase() === job.district.toLowerCase()) {
+          score += 20;
+          matchingLogs.push("District Match");
+          if (partner.exact_location.toLowerCase().includes(job.exact_location.toLowerCase()) || 
+              job.exact_location.toLowerCase().includes(partner.exact_location.toLowerCase())) {
+            score += 40;
+            matchingLogs.push("Exact Location Match");
+          }
+        }
+      }
+
+      // Priority 2: Work Type / Skills
+      const workType = (job.work_type || "").toLowerCase();
+      const skills = (partner.skills || "").toLowerCase();
+      if (skills.includes(workType) || workType.includes(skills)) {
+        score += 30;
+        matchingLogs.push("Skill Match");
+      }
+
+      return { ...partner, score, matchingLogs };
+    })
+    .filter(p => p.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5); // Top 5 matches
+  };
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -326,6 +371,61 @@ export default function AdminDashboardPage() {
                 </div>
 
                 <div className="p-6">
+                  {/* Smart Matching Section */}
+                  <div className="mb-8 p-6 bg-indigo-50/50 rounded-3xl border border-indigo-100">
+                    <div className="flex items-center gap-2 mb-6">
+                      <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
+                        <Star className="w-4 h-4 text-white" />
+                      </div>
+                      <h3 className="text-lg font-bold text-slate-900">Recommended Partners</h3>
+                      <span className="text-xs text-slate-500 font-medium ml-2">(Auto-matched from database)</span>
+                    </div>
+
+                    {getMatchedPartners(job).length === 0 ? (
+                      <p className="text-sm text-slate-400 italic px-2">No database partners match this location or skill yet.</p>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {getMatchedPartners(job).map(partner => (
+                          <div key={partner.id} className="bg-white p-5 rounded-2xl border border-indigo-100 shadow-sm hover:shadow-md transition-all group">
+                            <div className="flex justify-between items-start mb-3">
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <h4 className="font-bold text-slate-900">{partner.name}</h4>
+                                  <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-black uppercase rounded">Top Match</span>
+                                </div>
+                                <p className="text-xs text-slate-500">{partner.experience} Exp | {partner.district}</p>
+                              </div>
+                              <a 
+                                href={`https://wa.me/${partner.whatsapp.replace(/\D/g, '')}?text=Hello ${partner.name}, we have a ${job.work_type} job for you in ${job.district}. Are you interested?`}
+                                target="_blank"
+                                className="p-2 bg-green-500 hover:bg-green-600 text-white rounded-xl transition-all"
+                                title="Contact via WhatsApp"
+                              >
+                                <MessageCircle className="w-4 h-4" />
+                              </a>
+                            </div>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {partner.matchingLogs.map((log, i) => (
+                                <span key={i} className="flex items-center gap-1 text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
+                                  <CheckCircle2 className="w-3 h-3" /> {log}
+                                </span>
+                              ))}
+                            </div>
+                            <div className="mt-3 pt-3 border-t border-slate-50">
+                                <p className="text-[10px] text-slate-400 font-medium line-clamp-1"><span className="text-slate-600">Gear:</span> {partner.equipments}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Manual Interested Applicants Section */}
+                  <div className="flex items-center gap-2 mb-4 px-2">
+                    <Users className="w-5 h-5 text-slate-400" />
+                    <h3 className="text-lg font-bold text-slate-900">Interested Applicants</h3>
+                  </div>
+                  
                   {jobApps.length === 0 ? (
                     <p className="text-slate-500 italic text-center py-4">No one has shown interest yet.</p>
                   ) : (
