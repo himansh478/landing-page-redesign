@@ -3,7 +3,7 @@
 import { PartnerRegistrationForm } from '@/components/PartnerRegistrationForm';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 
 export default function JoinAsPartnerPage() {
   return (
