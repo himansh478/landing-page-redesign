@@ -131,6 +131,13 @@ export function Header() {
               Contact
             </Link>
 
+            <Link
+              href="/join-as-partner"
+              className="text-slate-700 hover:text-indigo-600 px-3 py-2 font-semibold transition-colors text-sm whitespace-nowrap"
+            >
+              Join as Partner
+            </Link>
+
             <button
               onClick={() => {
                 if (typeof window !== 'undefined') {
@@ -227,6 +234,13 @@ export function Header() {
                   className="w-full bg-slate-50 hover:bg-indigo-50 text-slate-700 px-6 py-3 rounded-lg transition-all font-semibold border border-slate-200 text-base flex items-center justify-center"
                 >
                   Contact Us
+                </Link>
+                <Link
+                  href="/join-as-partner"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full bg-slate-50 hover:bg-indigo-50 text-slate-700 px-6 py-3 rounded-lg transition-all font-semibold border border-slate-200 text-base flex items-center justify-center"
+                >
+                  Join as Partner
                 </Link>
                 <div className="grid grid-cols-2 gap-3">
                   <Link

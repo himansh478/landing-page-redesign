@@ -18,6 +18,7 @@ const companyLinks = [
   { href: '/blog', label: 'Blog' },
   { href: '/about-us', label: 'About Us' },
   { href: '/contact-us', label: 'Contact' },
+  { href: '/join-as-partner', label: 'Join as Partner' },
 ];
 
 export function Footer() {
