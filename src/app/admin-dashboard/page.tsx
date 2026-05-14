@@ -2,7 +2,8 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Loader2, Users, Phone, IndianRupee, Link as LinkIcon, Briefcase, Activity, Lock, AlertTriangle, Mail, MessageCircle, ImageIcon } from 'lucide-react';
+import { Loader2, Users, Phone, IndianRupee, Link as LinkIcon, Briefcase, Activity, Lock, AlertTriangle, Mail, MessageCircle, ImageIcon, LogOut } from 'lucide-react';
+import { verifyAdminPassword, checkAdminAuth, logoutAdmin } from '@/app/actions/auth';
 
 interface ShootJob {
   id: string;
@@ -48,18 +49,24 @@ function isSafeUrl(url: string): boolean {
 function AdminAuthGate({ onAuthenticated }: { onAuthenticated: () => void }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(false);
-  const ADMIN_PASSWORD = 'admin@2026';
+  const [isVerifying, setIsVerifying] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === ADMIN_PASSWORD) {
-      if (typeof window !== 'undefined') {
-        sessionStorage.setItem('admin_authenticated', 'true');
+    setIsVerifying(true);
+    
+    try {
+      const result = await verifyAdminPassword(password);
+      if (result.success) {
+        onAuthenticated();
+      } else {
+        setError(true);
+        setPassword('');
       }
-      onAuthenticated();
-    } else {
+    } catch (err) {
       setError(true);
-      setPassword('');
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -90,8 +97,10 @@ function AdminAuthGate({ onAuthenticated }: { onAuthenticated: () => void }) {
           )}
           <button
             type="submit"
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition-all shadow-md"
+            disabled={isVerifying}
+            className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white font-bold py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
           >
+            {isVerifying && <Loader2 className="w-4 h-4 animate-spin" />}
             Unlock Dashboard
           </button>
         </form>
@@ -109,10 +118,17 @@ export default function AdminDashboardPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setIsAuthenticated(sessionStorage.getItem('admin_authenticated') === 'true');
-    }
+    const initAuth = async () => {
+      const authed = await checkAdminAuth();
+      setIsAuthenticated(authed);
+    };
+    initAuth();
   }, []);
+
+  const handleLogout = async () => {
+    await logoutAdmin();
+    setIsAuthenticated(false);
+  };
 
   const fetchData = useCallback(async () => {
     try {
@@ -203,13 +219,22 @@ export default function AdminDashboardPage() {
     <div className="min-h-screen bg-slate-50 py-24 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center gap-2 mb-4">
+          <div className="inline-flex items-center justify-center gap-4 mb-4">
             <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight">
               Admin <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Dashboard</span>
             </h1>
-            <span className="flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold animate-pulse">
-              <Activity className="w-3 h-3" /> Live
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold animate-pulse">
+                <Activity className="w-3 h-3" /> Live
+              </span>
+              <button 
+                onClick={handleLogout}
+                className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                title="Logout"
+              >
+                <LogOut className="w-5 h-5" />
+              </button>
+            </div>
           </div>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
             Viewing real-time updates for job postings and interested applicants

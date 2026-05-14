@@ -88,7 +88,7 @@ const HeroSection = React.memo(function HeroSection() {
             href="/find-to-fill"
             className="group relative inline-flex items-center justify-center px-12 py-7 rounded-[24px] bg-slate-900 text-white font-bold text-xl transition-all duration-500 hover:scale-105 active:scale-95 shadow-xl hover:shadow-2xl overflow-hidden"
           >
-            <span className="relative z-10 uppercase tracking-widest">Start a Project</span>
+            <span className="relative z-10 uppercase tracking-widest">I have work</span>
             <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 opacity-0 group-hover:opacity-20 transition-opacity" />
           </Link>
           
