@@ -112,7 +112,7 @@ export function ServiceHub() {
               </div>
 
               <div className="flex items-center gap-2 text-slate-900 text-xs font-bold uppercase tracking-widest group-hover:gap-4 transition-all group-hover:text-indigo-600">
-                Enter Studio
+                Book Now
                 <ArrowRight className="w-4 h-4" />
               </div>
             </motion.div>

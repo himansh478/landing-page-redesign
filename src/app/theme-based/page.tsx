@@ -158,9 +158,7 @@ export default function ThemeBasedPage() {
               <button 
                 className="px-12 py-7 rounded-3xl bg-slate-900 text-white font-black text-xl uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl flex items-center gap-4"
               >
-                <Zap className="w-6 h-6 fill-current" />
-                Initialize
-              </button>
+                <Zap className="w-6 h-6 fill-current" />Book Now</button>
             </div>
           </div>
         </div>

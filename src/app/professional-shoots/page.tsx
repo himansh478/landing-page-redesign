@@ -208,9 +208,7 @@ export default function ProfessionalShootPage() {
                     <button 
                       onClick={() => handleBookNow(service.title)}
                       className="h-14 rounded-2xl bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all shadow-md"
-                    >
-                      Initialize
-                    </button>
+                    >Book Now</button>
                   </div>
                 </div>
               </motion.div>

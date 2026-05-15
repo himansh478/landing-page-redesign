@@ -170,7 +170,7 @@ export function TechnicalBookingForm({ isOpen, onClose, selectedService }: Techn
                         Synchronizing...
                       </>
                     ) : (
-                      'Initiate Protocol'
+                      'Book Now'
                     )}
                   </motion.button>
                 </form>

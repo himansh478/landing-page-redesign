@@ -211,7 +211,7 @@ export default function TechnicalSolutionsPage() {
                     onClick={() => setSelectedService(service)}
                     className="w-full h-16 rounded-2xl bg-slate-900 text-white font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-blue-600 transition-all shadow-md active:scale-95"
                   >
-                    Initiate Protocol
+                    Book Now
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>

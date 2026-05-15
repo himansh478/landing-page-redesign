@@ -59,7 +59,7 @@ export default function FindToFillPage() {
         workDuration: '', workType: '', referenceVideo: '',
         price: '', deviceType: ''
       });
-      
+
       setTimeout(() => setIsSuccess(false), 5000);
     } catch (error: any) {
       console.error("Error saving data:", error);
@@ -82,8 +82,8 @@ export default function FindToFillPage() {
 
       <section className="relative pt-40 pb-32 overflow-hidden">
         <div className="container mx-auto px-6 max-w-4xl relative z-10">
-          <Link 
-            href="/" 
+          <Link
+            href="/"
             className="group inline-flex items-center gap-3 text-slate-500 hover:text-slate-900 transition-all mb-16 text-xs font-black uppercase tracking-[0.3em]"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-2 transition-transform" />
@@ -138,7 +138,7 @@ export default function FindToFillPage() {
                   <p className="text-slate-500 font-light max-w-sm mb-10">
                     Your production brief has been successfully archived. Our team will review and contact you shortly.
                   </p>
-                  <button 
+                  <button
                     onClick={() => setIsSuccess(false)}
                     className="px-10 py-4 rounded-2xl bg-slate-900 text-white font-black text-xs uppercase tracking-widest"
                   >
@@ -221,11 +221,11 @@ export default function FindToFillPage() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                   <div>
-                    <label className={labelClass}>Work Type *</label>
+                    <label className={labelClass}> your Work Type *</label>
                     <input type="text" name="workType" value={formData.workType} required onChange={handleChange} className={inputClass} placeholder="e.g. Ad Film" />
                   </div>
                   <div>
-                    <label className={labelClass}>Duration *</label>
+                    <label className={labelClass}>Duration and time  *</label>
                     <input type="text" name="workDuration" value={formData.workDuration} required onChange={handleChange} className={inputClass} placeholder="e.g. 2 Days" />
                   </div>
                   <div>
@@ -235,11 +235,11 @@ export default function FindToFillPage() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className={labelClass}>Gear Requirements *</label>
+                    <label className={labelClass}>required Gadgets *</label>
                     <input type="text" name="deviceType" value={formData.deviceType} required onChange={handleChange} className={inputClass} placeholder="e.g. RED, Arri, Drone" />
                   </div>
                   <div>
-                    <label className={labelClass}>Inspiration Link *</label>
+                    <label className={labelClass}>video Reference Link *</label>
                     <input type="url" name="referenceVideo" value={formData.referenceVideo} required onChange={handleChange} className={inputClass} placeholder="YouTube/Drive Reference" />
                   </div>
                 </div>
@@ -260,6 +260,6 @@ export default function FindToFillPage() {
           </motion.div>
         </div>
       </section>
-</main>
+    </main>
   );
 }

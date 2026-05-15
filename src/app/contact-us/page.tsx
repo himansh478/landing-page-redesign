@@ -165,7 +165,7 @@ export default function ContactUsPage() {
                       ) : (
                         <>
                           <Send className="w-4 h-4" />
-                          Initialize Connection
+                          Book Now
                         </>
                       )}
                     </button>
