@@ -8,7 +8,7 @@ import React from 'react';
 const services = [
   {
     id: 1,
-    title: 'Masterful Editing',
+    title: 'Editing Types',
     icon: Film,
     description: 'Cinematic storytelling with elite color grading and sound design.',
     href: '/masterful-editing',

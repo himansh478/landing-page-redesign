@@ -4,7 +4,7 @@ import { Mail, Phone, MapPin, Instagram, PlayCircle, Send, Sparkles } from 'luci
 import Link from 'next/link';
 
 const serviceLinks = [
-  { href: '/masterful-editing', label: 'Video Editing' },
+  { href: '/masterful-editing', label: 'Editing Types' },
   { href: '/professional-shoots', label: 'Professional Shoots' },
   { href: '/social-media-management', label: 'Social Media Management' },
   { href: '/technical-solutions', label: 'Web Development' },

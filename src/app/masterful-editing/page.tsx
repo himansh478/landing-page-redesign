@@ -81,8 +81,8 @@ export default function MasterfulEditingPage() {
               Elite Post-Production
             </div>
             <h1 className="text-5xl md:text-8xl font-bold mb-8 tracking-tighter leading-none text-slate-900">
-              Masterful <br />
-              <span className="text-purple-600">Editing</span>
+              Editing <br />
+              <span className="text-purple-600">Types</span>
             </h1>
             <p className="text-xl md:text-2xl text-slate-500 max-w-3xl mx-auto font-light leading-relaxed mb-12">
               Transform raw footage into captivating cinematic experiences. 
