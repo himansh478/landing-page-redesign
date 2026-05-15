@@ -35,6 +35,16 @@ const services = [
     features: ['Growth Systems', 'Content Strategy', 'Analytics'],
     gradient: 'from-orange-500 via-amber-500 to-yellow-500',
     glow: 'group-hover:shadow-orange-500/10'
+  },
+  {
+    id: 4,
+    title: 'Digital Architecture',
+    icon: Globe,
+    description: 'Advanced web deployment and AI-driven automation systems.',
+    href: '/technical-solutions',
+    features: ['Next.js Apps', 'AI Automation', 'Enterprise Scale'],
+    gradient: 'from-cyan-500 via-blue-500 to-indigo-500',
+    glow: 'group-hover:shadow-cyan-500/10'
   }
 ];
 
@@ -69,7 +79,7 @@ export function ServiceHub() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-8">
           {services.map((service, idx) => (
             <motion.div
               key={service.id}
