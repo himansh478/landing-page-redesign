@@ -10,8 +10,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
 import { ServiceBookingForm } from '@/components/ServiceBookingForm';
 import { ViewSamplesModal } from '@/components/ViewSamplesModal';
 import { socialVideoHighlights } from '@/data/socialVideoHighlights';
@@ -28,8 +26,7 @@ export default function SocialVideoPortfolioPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white font-sans">
-      <Header />
+    <div className="min-h-screen bg-white font-sans text-slate-900">
       
       <main className="pt-32">
         {/* back button */}
@@ -154,8 +151,6 @@ export default function SocialVideoPortfolioPage() {
             </div>
         </section>
       </main>
-
-      <Footer />
 
       {/* video player */}
       {selectedVideo && (

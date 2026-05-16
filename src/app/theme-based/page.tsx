@@ -3,8 +3,6 @@
 import { motion } from 'motion/react';
 import { ArrowLeft, Film, Clapperboard, Crown, Mountain, Music, Camera, CheckCircle2, Zap, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
 import Link from 'next/link';
 
 const themes = [
@@ -51,7 +49,6 @@ export default function ThemeBasedPage() {
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900 selection:bg-purple-500/30">
-      <Header />
       
       {/* Background Blobs */}
       <div className="fixed inset-0 pointer-events-none">
@@ -164,7 +161,6 @@ export default function ThemeBasedPage() {
         </div>
       </section>
 
-      <Footer />
-    </main>
+      </main>
   );
 }

@@ -3,8 +3,6 @@
 import { motion } from 'motion/react';
 import { ArrowLeft, BarChart3, Users, Calendar, TrendingUp, Sparkles, Share2 } from 'lucide-react';
 import Link from 'next/link';
-import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
 
 export default function SocialMediaManagementPage() {
   const managementFeatures = [
@@ -31,8 +29,7 @@ export default function SocialMediaManagementPage() {
   ];
 
   return (
-    <div className="bg-white min-h-screen font-sans selection:bg-pink-100 selection:text-pink-900">
-      <Header />
+    <div className="bg-white min-h-screen font-sans selection:bg-pink-100 selection:text-pink-900 text-slate-900">
       
       <main className="pt-32 pb-24 relative overflow-hidden">
         {/* Background Decorative Elements */}
@@ -97,8 +94,6 @@ export default function SocialMediaManagementPage() {
           </motion.div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }
