@@ -50,7 +50,7 @@ export const metadata: Metadata = {
     images: ["https://www.cwaya.me/images/og-thumbnail.png"],
   },
   verification: {
-    google: "sbl0VI_lyg8JzwXYwZ0ZgIzS8IroR2CA0idqkJ9r72I",
+    google: "s6QSrxxeZCt_kNqHjS6dfSxWqw_QHeLjWL8-fYTyA3Q",
   },
 };
 
