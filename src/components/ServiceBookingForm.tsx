@@ -5,7 +5,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from './ui/dialog';
 import { Turnstile } from '@marsidev/react-turnstile';
-import { supabase } from '@/lib/supabase';
+import { createBooking } from '@/app/actions/bookings';
 import { Check, Loader2, User, Video, CreditCard, Link as LinkIcon, MapPin } from 'lucide-react';
 
 interface ServiceBookingFormProps {
@@ -93,32 +93,14 @@ export function ServiceBookingForm({ isOpen, onOpenChange, selectedService }: Se
     setIsSubmitting(true);
     setSubmitError(null);
 
-    const commonData = {
-      name: formData.name,
-      email: formData.email,
-      whatsapp_number: formData.whatsappNumber,
-      location: formData.location,
-      budget: formData.budget,
-      timeline: formData.timeline,
-      reference_video_link: formData.referenceVideoLink || null,
-    };
-
     try {
-      if (isShootBooking) {
-        const { error } = await supabase.from('shoot_bookings').insert([{
-          ...commonData,
-          shoot_type: formData.editingOption,
-          event_details: formData.description,
-        }]);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.from('bookings').insert([{
-          ...commonData,
-          service_type: formData.editingOption,
-          project_title: formData.projectTitle,
-          description: formData.description,
-        }]);
-        if (error) throw error;
+      const result = await createBooking({
+        ...formData,
+        turnstileToken: turnstileToken,
+      });
+
+      if (!result.success) {
+        throw new Error(result.error || 'Something went wrong.');
       }
 
       setIsSuccess(true);

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Turnstile } from '@marsidev/react-turnstile';
-import { supabase } from '@/lib/supabase';
+import { registerPartner } from '@/app/actions/partners';
 import { Check, Loader2, User, Camera, MapPin, Instagram, Mail, Briefcase, Wrench, Smartphone, Link as LinkIcon } from 'lucide-react';
 
 const inputClass = "w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all";
@@ -47,21 +47,14 @@ export function PartnerRegistrationForm() {
     setSubmitError(null);
 
     try {
-      const { error } = await supabase.from('partners').insert([{
-        name: formData.name,
-        whatsapp: formData.whatsapp,
-        insta_id: formData.insta_id,
-        gmail: formData.gmail,
-        state: formData.state,
-        district: formData.district,
-        exact_location: formData.exact_location,
-        skills: formData.skills,
-        equipments: formData.equipments,
-        experience: formData.experience,
-        portfolio_link: formData.portfolio_link,
-      }]);
+      const result = await registerPartner({
+        ...formData,
+        turnstileToken: turnstileToken,
+      });
 
-      if (error) throw error;
+      if (!result.success) {
+        throw new Error(result.error || 'Something went wrong.');
+      }
 
       setIsSuccess(true);
       setFormData({

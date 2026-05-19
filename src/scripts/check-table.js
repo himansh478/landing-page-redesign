@@ -22,14 +22,27 @@ if (!supabaseUrl || !supabaseAnonKey) {
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 async function checkTable() {
-  const { error } = await supabase.from('partners').select('*').limit(1);
+  console.log('🔍 Fetching newly registered partners from live Supabase...');
+  
+  const { data, error } = await supabase
+    .from('partners')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(3);
+
   if (error) {
-    console.error('❌ Table check failed:', error.message);
-    if (error.code === '42P01') {
-      console.log('💡 The "partners" table does NOT exist in your database.');
-    }
+    console.error('❌ Error fetching data:', error.message);
   } else {
-    console.log('✅ The "partners" table exists and is accessible.');
+    console.log('✅ DATABASE QUERY SUCCESSFUL! HERE IS THE LIVE DATA IN SUPABASE:');
+    console.table(data.map(row => ({
+      Name: row.name,
+      WhatsApp: row.whatsapp,
+      Gmail: row.gmail,
+      State: row.state,
+      District: row.district,
+      'Portfolio Link': row.portfolio_link,
+      'Created At': row.created_at
+    })));
   }
 }
 

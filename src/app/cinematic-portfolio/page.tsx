@@ -41,8 +41,8 @@ export default function CinematicPortfolioPage() {
 
       <section className="relative pt-40 pb-32">
         <div className="container mx-auto px-6 relative z-10">
-          <Link 
-            href="/professional-shoots" 
+          <Link
+            href="/professional-shoots"
             className="group inline-flex items-center gap-3 text-slate-500 hover:text-slate-900 transition-all mb-16 text-xs font-black uppercase tracking-[0.3em]"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-2 transition-transform" />
@@ -90,13 +90,13 @@ export default function CinematicPortfolioPage() {
                 className="group relative cursor-pointer"
               >
                 <div className="relative aspect-[9/16] md:aspect-[16/10] rounded-[60px] overflow-hidden bg-white border border-slate-200 shadow-sm group-hover:border-purple-300 transition-all duration-700">
-                  <img 
-                    src={video.thumbnail} 
-                    alt={video.title} 
+                  <img
+                    src={video.thumbnail}
+                    alt={video.title}
                     className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-1000"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-90" />
-                  
+
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 transform scale-50 group-hover:scale-100">
                     <div className="w-24 h-24 rounded-full bg-indigo-600 text-white flex items-center justify-center shadow-3xl">
                       <Play className="w-10 h-10 fill-current" />
@@ -127,7 +127,7 @@ export default function CinematicPortfolioPage() {
                   Ready to deploy high-authority cinematic protocols for your vision? Let's initiate the session.
                 </p>
               </div>
-              <button 
+              <button
                 onClick={() => setIsBookingModalOpen(true)}
                 className="px-12 py-7 rounded-3xl bg-slate-900 text-white font-black text-xl uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-3xl flex items-center gap-4"
               >
@@ -150,7 +150,7 @@ export default function CinematicPortfolioPage() {
             <button className="absolute top-8 right-8 text-slate-500 hover:text-slate-900 transition-colors">
               <X className="w-10 h-10" />
             </button>
-            
+
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -169,11 +169,11 @@ export default function CinematicPortfolioPage() {
         )}
       </AnimatePresence>
 
-      <ServiceBookingForm 
-        isOpen={isBookingModalOpen} 
-        onOpenChange={setIsBookingModalOpen} 
-        selectedService="Cinematic Shoot" 
+      <ServiceBookingForm
+        isOpen={isBookingModalOpen}
+        onOpenChange={setIsBookingModalOpen}
+        selectedService="Cinematic Shoot"
       />
-</main>
+    </main>
   );
 }

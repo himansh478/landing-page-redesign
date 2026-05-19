@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Check } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { createTechnicalBooking } from '@/app/actions/technical-bookings';
 import { Turnstile } from '@marsidev/react-turnstile';
 
 interface TechnicalService {
@@ -58,16 +58,14 @@ export function TechnicalSolutionForm({ service, onClose }: TechnicalSolutionFor
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.from('technical_bookings').insert([{
-        name: formData.name,
-        whatsapp_number: formData.whatsappNumber,
-        location: formData.location,
-        service_type: formData.serviceType,
-        description: formData.description,
-        message: formData.message || null,
-      }]);
+      const result = await createTechnicalBooking({
+        ...formData,
+        turnstileToken: turnstileToken,
+      });
 
-      if (error) throw error;
+      if (!result.success) {
+        throw new Error(result.error || 'Something went wrong.');
+      }
 
       setIsLoading(false);
       setIsSubmitted(true);
@@ -88,7 +86,7 @@ export function TechnicalSolutionForm({ service, onClose }: TechnicalSolutionFor
       }, 3000);
     } catch (err: any) {
       console.error('Supabase technical booking error:', err);
-      alert('Failed to submit booking. Please try again.');
+      alert(err.message || 'Failed to submit booking. Please try again.');
       setIsLoading(false);
     }
   };

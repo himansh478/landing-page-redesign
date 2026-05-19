@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { Bot, Code, Zap, MessageSquare, ArrowRight, X, Check, Cpu, Sparkles, Loader } from 'lucide-react';
 import { useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { createTechnicalBooking } from '@/app/actions/technical-bookings';
 import { Turnstile } from '@marsidev/react-turnstile';
 
 const technicalServices = [
@@ -62,18 +62,14 @@ function BookingModal({ service, onClose }: { service: any; onClose: () => void 
     }
 
     setIsLoading(true);
-    const { error } = await supabase.from('technical_bookings').insert([{
-      name: formData.name,
-      whatsapp_number: formData.whatsappNumber,
-      location: formData.location,
-      service_type: formData.serviceType,
-      description: formData.description,
-      message: formData.message,
-    }]);
+    const result = await createTechnicalBooking({
+      ...formData,
+      turnstileToken: turnstileToken,
+    });
 
     setIsLoading(false);
-    if (error) {
-      alert('Transmission failed.');
+    if (!result.success) {
+      alert(result.error || 'Transmission failed.');
       return;
     }
 

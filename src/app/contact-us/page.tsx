@@ -87,10 +87,10 @@ export default function ContactUsPage() {
 
               <div className="mt-20 flex gap-4">
                 {[
-                  { icon: <Instagram />, href: "https://instagram.com" },
-                  { icon: <Youtube />, href: "https://youtube.com" },
+                  { icon: <Instagram />, href: "https://www.instagram.com/creative_shiva_01?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" },
+                  { icon: <Youtube />, href: "https://youtube.com/@creativeshivavlogs?si=sIwTtBGWIiB3k7q1" },
                   { icon: <Linkedin />, href: "https://linkedin.com" },
-                  { icon: <MessageCircle />, href: "https://whatsapp.com" },
+                  { icon: <MessageCircle />, href: "https://chat.whatsapp.com/Ftagt0XUzkQI0zSfHZMXxI" },
                 ].map((social, i) => (
                   <motion.a
                     key={i}
