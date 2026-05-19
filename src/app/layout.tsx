@@ -69,19 +69,13 @@ export default function RootLayout({
           src="https://www.googletagmanager.com/gtag/js?id=G-Q4PY5PVJTS"
           strategy="afterInteractive"
         />
-        {/* 
-          Google AdSense Auto Ads Script:
-          Once you apply for AdSense, replace 'ca-pub-XXXXXXXXXXXXX' below with your actual Publisher ID 
-          and uncomment the Script component.
-        */}
-        {/*
+        {/* Google AdSense Auto Ads */}
         <Script
           async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXX"
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7856336500792481"
           crossOrigin="anonymous"
           strategy="afterInteractive"
         />
-        */}
         <Script id="google-analytics" strategy="afterInteractive">
           {`
             window.dataLayer = window.dataLayer || [];
