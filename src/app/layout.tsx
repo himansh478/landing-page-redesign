@@ -49,6 +49,9 @@ export const metadata: Metadata = {
     description: "Professional video editing, reels, wedding photography, corporate shoots — Budget-friendly, professional standards.",
     images: ["https://www.cwaya.me/images/og-thumbnail.png"],
   },
+  verification: {
+    google: "sbl0VI_lyg8JzwXYwZ0ZgIzS8IroR2CA0idqkJ9r72I",
+  },
 };
 
 import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
