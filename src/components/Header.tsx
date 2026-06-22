@@ -224,6 +224,13 @@ export function Header() {
                   Blog
                 </Link>
                 <Link
+                  href="/raw-clips"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-6 py-3 rounded-lg transition-all font-bold border border-indigo-200 text-base flex items-center justify-center gap-1.5"
+                >
+                  🎬 Raw Clips
+                </Link>
+                <Link
                   href="/about-us"
                   onClick={() => setMobileMenuOpen(false)}
                   className="w-full bg-slate-50 hover:bg-indigo-50 text-slate-700 px-6 py-3 rounded-lg transition-all font-semibold border border-slate-200 text-base flex items-center justify-center"
