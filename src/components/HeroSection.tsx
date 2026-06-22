@@ -98,6 +98,7 @@ const HeroSection = React.memo(function HeroSection() {
           >
             <span className="relative z-10 uppercase tracking-widest">Find Work</span>
             <div className="absolute inset-0 bg-indigo-500 opacity-0 group-hover:opacity-10 transition-opacity" />
+          </Link>
         </motion.div>
 
         {/* Prominent Raw Clips CTA Banner */}
