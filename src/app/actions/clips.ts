@@ -11,7 +11,8 @@ export async function getAllClips() {
     .order('created_at', { ascending: false });
 
   if (error) {
-    console.error('Error fetching clips:', error);
+    // Supabase table may not exist in local/dev environments.
+    // Fail gracefully without spamming server logs; caller will fallback to demo clips.
     return [];
   }
   return data || [];
