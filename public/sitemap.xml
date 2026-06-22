@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Core Pages -->
+  <url><loc>https://www.cwaya.me/</loc><priority>1.00</priority></url>
+  <url><loc>https://www.cwaya.me/about-us</loc><priority>0.80</priority></url>
+  <url><loc>https://www.cwaya.me/contact-us</loc><priority>0.80</priority></url>
+  <url><loc>https://www.cwaya.me/join-as-partner</loc><priority>0.80</priority></url>
+  <url><loc>https://www.cwaya.me/packages</loc><priority>0.90</priority></url>
+  <url><loc>https://www.cwaya.me/privacy-policy</loc><priority>0.50</priority></url>
+  <url><loc>https://www.cwaya.me/terms-conditions</loc><priority>0.50</priority></url>
+
+  <!-- Blog Index -->
+  <url><loc>https://www.cwaya.me/blog</loc><priority>0.95</priority></url>
+
+  <!-- Individual Blog Posts -->
+  <url><loc>https://www.cwaya.me/blog/ultimate-guide-professional-video-editing-brands</loc><priority>0.85</priority></url>
+  <url><loc>https://www.cwaya.me/blog/mastering-short-form-content-reels-tiktok-shorts</loc><priority>0.85</priority></url>
+  <url><loc>https://www.cwaya.me/blog/setting-the-scene-professional-photography-shoots</loc><priority>0.85</priority></url>
+  <url><loc>https://www.cwaya.me/blog/ai-revolutionizing-modern-video-production</loc><priority>0.85</priority></url>
+  <url><loc>https://www.cwaya.me/blog/wedding-videography-guide-couples</loc><priority>0.85</priority></url>
+  <url><loc>https://www.cwaya.me/blog/social-media-management-strategy-2026</loc><priority>0.85</priority></url>
+  <url><loc>https://www.cwaya.me/blog/web-development-business-growth-india</loc><priority>0.85</priority></url>
+  <url><loc>https://www.cwaya.me/blog/color-grading-cinematography-basics</loc><priority>0.85</priority></url>
+  <url><loc>https://www.cwaya.me/blog/instagram-reels-algorithm-growth-guide</loc><priority>0.85</priority></url>
+  <url><loc>https://www.cwaya.me/blog/drone-videography-commercial-shoots</loc><priority>0.85</priority></url>
+  <url><loc>https://www.cwaya.me/blog/youtube-channel-growth-strategy-creators</loc><priority>0.85</priority></url>
+  <url><loc>https://www.cwaya.me/blog/brand-photography-product-shoots-ecommerce</loc><priority>0.85</priority></url>
+  <url><loc>https://www.cwaya.me/blog/cinematic-reel-editing-techniques-2026</loc><priority>0.85</priority></url>
+  <url><loc>https://www.cwaya.me/blog/corporate-event-photography-guide</loc><priority>0.85</priority></url>
+  <url><loc>https://www.cwaya.me/blog/seo-content-strategy-small-business-india</loc><priority>0.85</priority></url>
+
+  <!-- Services -->
+  <url><loc>https://www.cwaya.me/technical-solutions</loc><priority>0.85</priority></url>
+  <url><loc>https://www.cwaya.me/social-media-management</loc><priority>0.85</priority></url>
+  <url><loc>https://www.cwaya.me/professional-shoots</loc><priority>0.85</priority></url>
+  <url><loc>https://www.cwaya.me/masterful-editing</loc><priority>0.85</priority></url>
+  <url><loc>https://www.cwaya.me/theme-based</loc><priority>0.80</priority></url>
+
+  <!-- Portfolios -->
+  <url><loc>https://www.cwaya.me/wedding-portfolio</loc><priority>0.75</priority></url>
+  <url><loc>https://www.cwaya.me/vlog-edit-portfolio</loc><priority>0.75</priority></url>
+  <url><loc>https://www.cwaya.me/cinematic-portfolio</loc><priority>0.75</priority></url>
+  <url><loc>https://www.cwaya.me/commercial-portfolio</loc><priority>0.75</priority></url>
+  <url><loc>https://www.cwaya.me/documentary-portfolio</loc><priority>0.75</priority></url>
+  
+  <!-- Missing Portfolio Pages -->
+  <url><loc>https://www.cwaya.me/marketing-portfolio</loc><priority>0.75</priority></url>
+  <url><loc>https://www.cwaya.me/political-portfolio</loc><priority>0.75</priority></url>
+  <url><loc>https://www.cwaya.me/religious-portfolio</loc><priority>0.75</priority></url>
+  <url><loc>https://www.cwaya.me/reel-portfolio</loc><priority>0.75</priority></url>
+  <url><loc>https://www.cwaya.me/social-portfolio</loc><priority>0.75</priority></url>
+  <url><loc>https://www.cwaya.me/social-video-portfolio</loc><priority>0.75</priority></url>
+  <url><loc>https://www.cwaya.me/corporate-shoot-portfolio</loc><priority>0.75</priority></url>
+
+  <!-- Missing Service Pages -->
+  <url><loc>https://www.cwaya.me/shoot-booking</loc><priority>0.80</priority></url>
+  <url><loc>https://www.cwaya.me/find-clients</loc><priority>0.80</priority></url>
+  <url><loc>https://www.cwaya.me/find-to-fill</loc><priority>0.80</priority></url>
+</urlset>
