@@ -98,6 +98,30 @@ const HeroSection = React.memo(function HeroSection() {
           >
             <span className="relative z-10 uppercase tracking-widest">Find Work</span>
             <div className="absolute inset-0 bg-indigo-500 opacity-0 group-hover:opacity-10 transition-opacity" />
+        </motion.div>
+
+        {/* Prominent Raw Clips CTA Banner */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.5 }}
+          className="mt-14 max-w-2xl mx-auto"
+        >
+          <Link
+            href="/raw-clips"
+            className="inline-flex items-center gap-3 px-6 py-4 rounded-[20px] bg-gradient-to-r from-amber-500/10 via-orange-500/15 to-amber-500/10 border-2 border-amber-500/25 text-amber-800 hover:border-amber-500/40 transition-all duration-300 shadow-md hover:shadow-xl shadow-amber-500/5 backdrop-blur-md group"
+          >
+            <span className="flex h-2.5 w-2.5 relative">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-orange-500"></span>
+            </span>
+            <span className="font-extrabold text-sm tracking-wide uppercase flex items-center gap-1.5">
+              🎬 4K RAW Clips Library Is Live!
+            </span>
+            <span className="text-xs text-slate-600 font-semibold hidden sm:inline">
+              | Free & Paid Downloads
+            </span>
+            <ArrowRight className="w-4 h-4 ml-1 text-orange-600 group-hover:translate-x-1.5 transition-transform" />
           </Link>
         </motion.div>
       </div>
