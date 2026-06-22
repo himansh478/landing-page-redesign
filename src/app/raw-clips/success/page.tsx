@@ -1,20 +1,29 @@
 'use client';
 
 import { useEffect, useState, Suspense } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { CheckCircle2, Download, Loader2, ArrowRight, AlertTriangle } from 'lucide-react';
+import { CheckCircle2, Download, Loader2, ArrowRight, AlertTriangle, Play } from 'lucide-react';
 import Link from 'next/link';
 
 function SuccessPageContent() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const orderId = searchParams.get('order_id');
 
   const [status, setStatus] = useState<'PENDING' | 'SUCCESS' | 'FAILED' | 'LOADING'>('LOADING');
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [packageName, setPackageName] = useState<string>('Starter');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [isLocal, setIsLocal] = useState(false);
+  const [simulating, setSimulating] = useState(false);
+
+  // Check if we are on localhost
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const hostname = window.location.hostname;
+      setIsLocal(hostname === 'localhost' || hostname === '127.0.0.1');
+    }
+  }, []);
 
   useEffect(() => {
     if (!orderId) {
@@ -76,6 +85,30 @@ function SuccessPageContent() {
     };
   }, [orderId, status]);
 
+  // Simulate payment captured callback locally
+  const handleSimulateSuccess = async () => {
+    if (!orderId) return;
+    setSimulating(true);
+    try {
+      const res = await fetch('/api/dev-confirm-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setStatus('SUCCESS');
+      } else {
+        alert('Simulation failed: ' + data.error);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error running webhook simulator.');
+    } finally {
+      setSimulating(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl text-center space-y-6">
@@ -91,15 +124,42 @@ function SuccessPageContent() {
 
         {/* Status: Pending Payment Hook */}
         {status === 'PENDING' && (
-          <div className="space-y-4 py-8">
+          <div className="space-y-6 py-6">
             <div className="relative w-16 h-16 mx-auto">
               <Loader2 className="absolute inset-0 w-16 h-16 animate-spin text-indigo-500" />
               <div className="absolute inset-2 bg-indigo-500/10 rounded-full animate-ping" />
             </div>
-            <h2 className="text-2xl font-bold">Confirming Payment...</h2>
-            <p className="text-slate-400 text-sm px-4">
-              We are waiting for payment verification webhook from Razorpay. Keep this tab open.
-            </p>
+            <div className="space-y-2">
+              <h2 className="text-2xl font-bold">Confirming Payment...</h2>
+              <p className="text-slate-400 text-sm px-4">
+                We are waiting for payment verification webhook from Razorpay. Keep this tab open.
+              </p>
+            </div>
+
+            {/* Developer simulation panel - only visible on localhost */}
+            {isLocal && (
+              <div className="mt-8 p-4 bg-indigo-950/40 border border-indigo-500/30 rounded-2xl text-center space-y-3">
+                <p className="text-xs text-indigo-300 font-semibold tracking-wide uppercase">
+                  🛠️ Developer Sandbox
+                </p>
+                <p className="text-[11px] text-slate-400">
+                  Localhost is private so Razorpay cannot send webhooks here. Click below to bypass and verify instantly.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleSimulateSuccess}
+                  disabled={simulating}
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-1.5 transition-all shadow disabled:opacity-50"
+                >
+                  {simulating ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Play className="w-3.5 h-3.5 fill-current" />
+                  )}
+                  Simulate Webhook Success
+                </button>
+              </div>
+            )}
           </div>
         )}
 
