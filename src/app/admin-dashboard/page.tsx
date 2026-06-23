@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Loader2, Users, Phone, IndianRupee, Link as LinkIcon, Briefcase, Activity, Lock, AlertTriangle, Mail, MessageCircle, ImageIcon, LogOut, CheckCircle2, Star, Download, ShieldCheck } from 'lucide-react';
+import { Loader2, Users, Phone, IndianRupee, Link as LinkIcon, Briefcase, Activity, Lock, AlertTriangle, Mail, MessageCircle, ImageIcon, LogOut, CheckCircle2, Star, Download, ShieldCheck, Film, Upload, Trash2, Plus, X } from 'lucide-react';
 import { verifyAdminPassword, checkAdminAuth, logoutAdmin } from '@/app/actions/auth';
 import { Partner } from '@/types';
 
@@ -44,6 +44,26 @@ interface PurchaseLog {
   status: string;
   download_url?: string;
 }
+
+interface RawClip {
+  id: string;
+  title: string;
+  category: string;
+  description?: string;
+  thumbnail_url?: string;
+  free_drive_url?: string;
+  paid_drive_url?: string;
+  r2_video_key?: string;
+  r2_thumbnail_key?: string;
+  duration?: string;
+  tags?: string;
+  is_free: boolean;
+  is_active: boolean;
+  download_count?: number;
+  created_at: string;
+}
+
+const CLIP_CATEGORIES = ['Wedding', 'Cinematic', 'Commercial', 'Corporate', 'Drone', 'Reel'];
 
 function sanitizePhone(phone: string): string {
   return phone.replace(/\D/g, '');
@@ -126,11 +146,31 @@ export default function AdminDashboardPage() {
   const [applications, setApplications] = useState<ShootApplication[]>([]);
   const [partners, setPartners] = useState<Partner[]>([]);
   const [purchases, setPurchases] = useState<PurchaseLog[]>([]);
-  const [activeTab, setActiveTab] = useState<'jobs' | 'purchases'>('jobs');
+  const [clips, setClips] = useState<RawClip[]>([]);
+  const [activeTab, setActiveTab] = useState<'jobs' | 'purchases' | 'clips'>('jobs');
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Clip upload state
+  const [showUploadForm, setShowUploadForm] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const videoInputRef = useRef<HTMLInputElement>(null);
+  const thumbInputRef = useRef<HTMLInputElement>(null);
+  const [clipForm, setClipForm] = useState({
+    title: '',
+    category: 'Wedding',
+    description: '',
+    duration: '',
+    tags: '',
+    is_free: false,
+  });
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
 
   useEffect(() => {
     const initAuth = async () => {
@@ -185,6 +225,14 @@ export default function AdminDashboardPage() {
       if (!purchasesError && purchasesData) {
         setPurchases(purchasesData);
       }
+
+      // Fetch raw clips
+      const { data: clipsData } = await supabase
+        .from('raw_clips')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (clipsData) setClips(clipsData);
     } catch (err: any) {
       setError(err.message || 'Failed to load data');
     } finally {
@@ -344,6 +392,17 @@ export default function AdminDashboardPage() {
             >
               <IndianRupee className="w-4 h-4" />
               Raw Clips Sales ({purchases.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('clips')}
+              className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${
+                activeTab === 'clips'
+                  ? 'bg-indigo-600 text-white shadow-md'
+                  : 'text-slate-600 hover:text-slate-950 hover:bg-slate-300/40'
+              }`}
+            >
+              <Film className="w-4 h-4" />
+              Manage Clips ({clips.filter(c => c.is_active).length})
             </button>
           </div>
         </div>
@@ -621,6 +680,383 @@ export default function AdminDashboardPage() {
                 </table>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Tab: Manage Clips */}
+        {activeTab === 'clips' && (
+          <div className="space-y-6">
+
+            {/* Upload Button / Form Toggle */}
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                <Film className="w-5 h-5 text-indigo-600" />
+                Manage Raw Clips
+              </h2>
+              <button
+                onClick={() => { setShowUploadForm(!showUploadForm); setUploadError(null); setUploadSuccess(false); }}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
+                  showUploadForm
+                    ? 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                    : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md'
+                }`}
+              >
+                {showUploadForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                {showUploadForm ? 'Cancel' : 'Upload New Clip'}
+              </button>
+            </div>
+
+            {/* Upload Form */}
+            {showUploadForm && (
+              <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-5">
+                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <Upload className="w-5 h-5 text-indigo-500" />
+                  Upload New Clip to R2
+                </h3>
+
+                {uploadError && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm font-medium flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4" /> {uploadError}
+                  </div>
+                )}
+                {uploadSuccess && (
+                  <div className="p-3 bg-green-50 border border-green-200 rounded-xl text-green-600 text-sm font-medium flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4" /> Clip successfully upload ho gaya!
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Title */}
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1">Title *</label>
+                    <input
+                      type="text"
+                      value={clipForm.title}
+                      onChange={e => setClipForm(p => ({ ...p, title: e.target.value }))}
+                      placeholder="Golden Hour Wedding — 4K RAW"
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none text-sm"
+                    />
+                  </div>
+
+                  {/* Category */}
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1">Category *</label>
+                    <select
+                      value={clipForm.category}
+                      onChange={e => setClipForm(p => ({ ...p, category: e.target.value }))}
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none text-sm"
+                    >
+                      {CLIP_CATEGORIES.map(cat => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Duration */}
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1">Duration</label>
+                    <input
+                      type="text"
+                      value={clipForm.duration}
+                      onChange={e => setClipForm(p => ({ ...p, duration: e.target.value }))}
+                      placeholder="02:30"
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none text-sm"
+                    />
+                  </div>
+
+                  {/* Tags */}
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-1">Tags</label>
+                    <input
+                      type="text"
+                      value={clipForm.tags}
+                      onChange={e => setClipForm(p => ({ ...p, tags: e.target.value }))}
+                      placeholder="wedding, golden hour, outdoor"
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none text-sm"
+                    />
+                  </div>
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-1">Description</label>
+                  <textarea
+                    value={clipForm.description}
+                    onChange={e => setClipForm(p => ({ ...p, description: e.target.value }))}
+                    placeholder="Bhopal mein ek stunning golden hour wedding ceremony ke raw clips."
+                    rows={2}
+                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none text-sm resize-none"
+                  />
+                </div>
+
+                {/* Free/Paid Toggle */}
+                <div className="flex items-center gap-3">
+                  <label className="text-sm font-semibold text-slate-700">Pricing:</label>
+                  <button
+                    type="button"
+                    onClick={() => setClipForm(p => ({ ...p, is_free: true }))}
+                    className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+                      clipForm.is_free
+                        ? 'bg-green-500 text-white shadow-md'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    ✨ Free
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setClipForm(p => ({ ...p, is_free: false }))}
+                    className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+                      !clipForm.is_free
+                        ? 'bg-indigo-600 text-white shadow-md'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    🔒 Paid
+                  </button>
+                </div>
+
+                {/* File Uploads */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Video Upload */}
+                  <div
+                    onClick={() => videoInputRef.current?.click()}
+                    onDragOver={e => { e.preventDefault(); e.stopPropagation(); }}
+                    onDrop={e => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const file = e.dataTransfer.files[0];
+                      if (file && file.type.startsWith('video/')) setVideoFile(file);
+                    }}
+                    className="border-2 border-dashed border-slate-300 hover:border-indigo-400 rounded-2xl p-6 text-center cursor-pointer transition-all hover:bg-indigo-50/30"
+                  >
+                    <input
+                      ref={videoInputRef}
+                      type="file"
+                      accept="video/*"
+                      className="hidden"
+                      onChange={e => {
+                        const file = e.target.files?.[0];
+                        if (file) setVideoFile(file);
+                      }}
+                    />
+                    <Film className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                    {videoFile ? (
+                      <div>
+                        <p className="text-sm font-bold text-indigo-600 truncate">{videoFile.name}</p>
+                        <p className="text-xs text-slate-400 mt-1">{(videoFile.size / (1024 * 1024)).toFixed(1)} MB</p>
+                      </div>
+                    ) : (
+                      <div>
+                        <p className="text-sm font-semibold text-slate-600">Video File Upload *</p>
+                        <p className="text-xs text-slate-400 mt-1">MP4, MOV, AVI, WebM — Max 500MB</p>
+                        <p className="text-xs text-slate-400">Click or drag & drop</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Thumbnail Upload */}
+                  <div
+                    onClick={() => thumbInputRef.current?.click()}
+                    onDragOver={e => { e.preventDefault(); e.stopPropagation(); }}
+                    onDrop={e => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const file = e.dataTransfer.files[0];
+                      if (file && file.type.startsWith('image/')) setThumbnailFile(file);
+                    }}
+                    className="border-2 border-dashed border-slate-300 hover:border-purple-400 rounded-2xl p-6 text-center cursor-pointer transition-all hover:bg-purple-50/30"
+                  >
+                    <input
+                      ref={thumbInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={e => {
+                        const file = e.target.files?.[0];
+                        if (file) setThumbnailFile(file);
+                      }}
+                    />
+                    <ImageIcon className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                    {thumbnailFile ? (
+                      <div>
+                        <p className="text-sm font-bold text-purple-600 truncate">{thumbnailFile.name}</p>
+                        <p className="text-xs text-slate-400 mt-1">{(thumbnailFile.size / (1024 * 1024)).toFixed(1)} MB</p>
+                      </div>
+                    ) : (
+                      <div>
+                        <p className="text-sm font-semibold text-slate-600">Thumbnail Image *</p>
+                        <p className="text-xs text-slate-400 mt-1">JPG, PNG, WebP — Max 5MB</p>
+                        <p className="text-xs text-slate-400">Click or drag & drop</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Upload Progress */}
+                {isUploading && (
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-xs font-bold text-slate-600">
+                      <span>Uploading to Cloudflare R2...</span>
+                      <span>{uploadProgress}%</span>
+                    </div>
+                    <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+                      <div
+                        className="bg-gradient-to-r from-indigo-500 to-purple-500 h-3 rounded-full transition-all duration-300"
+                        style={{ width: `${uploadProgress}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Submit Button */}
+                <button
+                  disabled={isUploading || !clipForm.title || !videoFile || !thumbnailFile}
+                  onClick={async () => {
+                    setIsUploading(true);
+                    setUploadError(null);
+                    setUploadSuccess(false);
+                    setUploadProgress(10);
+
+                    try {
+                      const formData = new FormData();
+                      formData.append('title', clipForm.title);
+                      formData.append('category', clipForm.category);
+                      formData.append('description', clipForm.description);
+                      formData.append('duration', clipForm.duration);
+                      formData.append('tags', clipForm.tags);
+                      formData.append('is_free', String(clipForm.is_free));
+                      if (videoFile) formData.append('video', videoFile);
+                      if (thumbnailFile) formData.append('thumbnail', thumbnailFile);
+
+                      setUploadProgress(30);
+
+                      const res = await fetch('/api/upload-clip', {
+                        method: 'POST',
+                        body: formData,
+                      });
+
+                      setUploadProgress(80);
+                      const result = await res.json();
+
+                      if (!res.ok) {
+                        throw new Error(result.error || 'Upload failed');
+                      }
+
+                      setUploadProgress(100);
+                      setUploadSuccess(true);
+
+                      // Reset form
+                      setClipForm({ title: '', category: 'Wedding', description: '', duration: '', tags: '', is_free: false });
+                      setVideoFile(null);
+                      setThumbnailFile(null);
+                      if (videoInputRef.current) videoInputRef.current.value = '';
+                      if (thumbInputRef.current) thumbInputRef.current.value = '';
+
+                      // Refresh clips list
+                      fetchData();
+
+                      setTimeout(() => {
+                        setShowUploadForm(false);
+                        setUploadSuccess(false);
+                      }, 2000);
+                    } catch (err: unknown) {
+                      const message = err instanceof Error ? err.message : 'Upload failed';
+                      setUploadError(message);
+                    } finally {
+                      setIsUploading(false);
+                    }
+                  }}
+                  className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-all shadow-lg"
+                >
+                  {isUploading ? (
+                    <><Loader2 className="w-5 h-5 animate-spin" /> Uploading...</>
+                  ) : (
+                    <><Upload className="w-5 h-5" /> Upload Clip to R2</>
+                  )}
+                </button>
+              </div>
+            )}
+
+            {/* Existing Clips Grid */}
+            <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
+              <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                <Film className="w-5 h-5 text-indigo-500" />
+                All Clips ({clips.filter(c => c.is_active).length} active)
+              </h3>
+
+              {clips.filter(c => c.is_active).length === 0 ? (
+                <div className="text-center py-16">
+                  <Film className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+                  <p className="text-slate-400 text-lg font-medium">No clips uploaded yet</p>
+                  <p className="text-slate-400 text-sm mt-1">Click &quot;Upload New Clip&quot; to get started</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {clips.filter(c => c.is_active).map(clip => (
+                    <div key={clip.id} className="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden hover:shadow-md transition-all">
+                      {/* Thumbnail */}
+                      <div className="aspect-video bg-slate-200 relative overflow-hidden">
+                        {clip.thumbnail_url ? (
+                          <img
+                            src={clip.thumbnail_url}
+                            alt={clip.title}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Film className="w-10 h-10 text-slate-400" />
+                          </div>
+                        )}
+                        {/* Badge */}
+                        <span className={`absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-black tracking-wider ${
+                          clip.is_free
+                            ? 'bg-green-500 text-white'
+                            : 'bg-indigo-600 text-white'
+                        }`}>
+                          {clip.is_free ? 'FREE' : 'PAID'}
+                        </span>
+                        {clip.duration && (
+                          <span className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
+                            {clip.duration}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Info */}
+                      <div className="p-3">
+                        <p className="text-xs font-bold text-indigo-600 uppercase tracking-wider">{clip.category}</p>
+                        <p className="text-sm font-bold text-slate-900 mt-1 line-clamp-2">{clip.title}</p>
+                        <div className="flex items-center justify-between mt-3">
+                          <span className="text-[10px] text-slate-400">
+                            {new Date(clip.created_at).toLocaleDateString()}
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] text-slate-400 flex items-center gap-1">
+                              <Download className="w-3 h-3" /> {clip.download_count || 0}
+                            </span>
+                            <button
+                              onClick={async () => {
+                                if (!confirm('Kya aap yeh clip delete karna chahte hain?')) return;
+                                const { error: delError } = await supabase
+                                  .from('raw_clips')
+                                  .update({ is_active: false })
+                                  .eq('id', clip.id);
+                                if (!delError) fetchData();
+                              }}
+                              className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                              title="Delete clip"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
