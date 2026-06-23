@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Loader2, Users, Phone, IndianRupee, Link as LinkIcon, Briefcase, Activity, Lock, AlertTriangle, Mail, MessageCircle, ImageIcon, LogOut, CheckCircle2, Star, Download, ShieldCheck, Film, Upload, Trash2, Plus, X } from 'lucide-react';
 import { verifyAdminPassword, checkAdminAuth, logoutAdmin } from '@/app/actions/auth';
+import { getAllClips } from '@/app/actions/clips';
 import { Partner } from '@/types';
 
 interface ShootJob {
@@ -227,11 +228,7 @@ export default function AdminDashboardPage() {
       }
 
       // Fetch raw clips
-      const { data: clipsData } = await supabase
-        .from('raw_clips')
-        .select('*')
-        .order('created_at', { ascending: false });
-
+      const clipsData = await getAllClips();
       if (clipsData) setClips(clipsData);
     } catch (err: any) {
       setError(err.message || 'Failed to load data');

@@ -1,6 +1,7 @@
 'use server';
 
 import { supabase } from '@/lib/supabase';
+import { getPreSignedDownloadUrl, isR2Configured } from '@/lib/r2';
 
 // Sabhi active clips fetch karo
 export async function getAllClips() {
@@ -15,7 +16,33 @@ export async function getAllClips() {
     // Fail gracefully without spamming server logs; caller will fallback to demo clips.
     return [];
   }
-  return data || [];
+
+  const clips = data || [];
+
+  // Generate pre-signed URLs on the fly for R2 assets so they never expire
+  if (isR2Configured()) {
+    for (const clip of clips) {
+      // 1. Generate thumbnail pre-signed URL (expiring in 24 hours)
+      if (clip.r2_thumbnail_key) {
+        try {
+          clip.thumbnail_url = await getPreSignedDownloadUrl(clip.r2_thumbnail_key, 86400);
+        } catch (err) {
+          console.error(`Error signing thumbnail for clip ${clip.id}:`, err);
+        }
+      }
+
+      // 2. Generate free video pre-signed URL (expiring in 1 hour)
+      if (clip.is_free && clip.r2_video_key) {
+        try {
+          clip.free_drive_url = await getPreSignedDownloadUrl(clip.r2_video_key, 3600);
+        } catch (err) {
+          console.error(`Error signing free video for clip ${clip.id}:`, err);
+        }
+      }
+    }
+  }
+
+  return clips;
 }
 
 // Unlock request submit karo (after UPI payment)
