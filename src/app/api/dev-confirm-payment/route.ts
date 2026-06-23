@@ -3,13 +3,11 @@ import { supabase } from '@/lib/supabase';
 import { getPreSignedDownloadUrl } from '@/lib/r2';
 
 export async function POST(request: Request) {
-  // Only allow this API to run on localhost for security
-  const host = request.headers.get('host') || '';
-  const isLocalhost = host.includes('localhost') || host.includes('127.0.0.1');
-  
-  if (!isLocalhost) {
+  // Only allow this API to run in local development mode for security
+  if (process.env.NODE_ENV !== 'development') {
     return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
   }
+
 
   try {
     const { orderId } = await request.json();

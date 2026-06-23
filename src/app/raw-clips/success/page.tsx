@@ -36,34 +36,30 @@ function SuccessPageContent() {
 
     const checkPurchaseStatus = async () => {
       try {
-        const { data, error } = await supabase
-          .from('raw_clips_purchases')
-          .select('status, download_url, package_type')
-          .eq('order_id', orderId)
-          .single();
+        const res = await fetch(`/api/check-order?order_id=${orderId}`);
+        const data = await res.json();
 
-        if (error) {
-          console.error('Error fetching purchase:', error);
+        if (!data.success) {
+          console.error('Error fetching purchase:', data.error);
           return;
         }
 
-        if (data) {
-          setPackageName(data.package_type);
-          if (data.status === 'SUCCESS') {
-            setStatus('SUCCESS');
-            setDownloadUrl(data.download_url);
-            clearInterval(intervalId);
-          } else if (data.status === 'FAILED') {
-            setStatus('FAILED');
-            clearInterval(intervalId);
-          } else {
-            setStatus('PENDING');
-          }
+        setPackageName(data.package_type);
+        if (data.status === 'SUCCESS') {
+          setStatus('SUCCESS');
+          setDownloadUrl(data.download_url);
+          clearInterval(intervalId);
+        } else if (data.status === 'FAILED') {
+          setStatus('FAILED');
+          clearInterval(intervalId);
+        } else {
+          setStatus('PENDING');
         }
       } catch (err) {
         console.error('Error in status check:', err);
       }
     };
+
 
     // Initial check
     checkPurchaseStatus();
