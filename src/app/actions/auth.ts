@@ -2,10 +2,10 @@
 
 import { cookies } from 'next/headers';
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin@2026';
-
 export async function verifyAdminPassword(password: string) {
-  if (password === ADMIN_PASSWORD) {
+  const adminPassword = process.env.ADMIN_PASSWORD || 'admin@2026';
+  
+  if (password === adminPassword) {
     const cookieStore = await cookies();
     cookieStore.set('admin_session', 'true', {
       httpOnly: true,

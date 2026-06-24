@@ -2,15 +2,8 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function proxy(request: NextRequest) {
-  const path = request.nextUrl.pathname;
-
-  // Protect admin routes — redirect if no valid session cookie
-  if (path.startsWith('/admin-dashboard')) {
-    const adminSession = request.cookies.get('admin_session')?.value;
-    if (adminSession !== 'true') {
-      return NextResponse.redirect(new URL('/', request.url));
-    }
-  }
+  // Admin dashboard has its own built-in password auth gate (AdminAuthGate component)
+  // so no middleware-level redirect is needed for it.
 
   return NextResponse.next();
 }
