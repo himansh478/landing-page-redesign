@@ -6,6 +6,8 @@ import { Loader2, Users, Phone, IndianRupee, Link as LinkIcon, Briefcase, Activi
 import { verifyAdminPassword, checkAdminAuth, logoutAdmin } from '@/app/actions/auth';
 import { getAllClips } from '@/app/actions/clips';
 import { Partner } from '@/types';
+import { ref, uploadBytesResumable } from 'firebase/storage';
+import { storage } from '@/lib/firebase';
 
 interface ShootJob {
   id: string;
@@ -913,31 +915,72 @@ export default function AdminDashboardPage() {
                     setIsUploading(true);
                     setUploadError(null);
                     setUploadSuccess(false);
-                    setUploadProgress(10);
+                    setUploadProgress(5);
 
                     try {
-                      const formData = new FormData();
-                      formData.append('title', clipForm.title);
-                      formData.append('category', clipForm.category);
-                      formData.append('description', clipForm.description);
-                      formData.append('duration', clipForm.duration);
-                      formData.append('tags', clipForm.tags);
-                      formData.append('is_free', String(clipForm.is_free));
-                      if (videoFile) formData.append('video', videoFile);
-                      if (thumbnailFile) formData.append('thumbnail', thumbnailFile);
+                      const timestamp = Date.now();
+                      const cleanTitle = clipForm.title.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+                      
+                      // 1. Upload Thumbnail to Firebase Storage (takes 0% to 10% progress)
+                      let thumbnailKey = '';
+                      if (thumbnailFile) {
+                        const thumbExt = thumbnailFile.name.split('.').pop() || 'jpg';
+                        thumbnailKey = `thumbnails/${timestamp}-${cleanTitle}.${thumbExt}`;
+                        
+                        const thumbRef = ref(storage, thumbnailKey);
+                        await uploadBytesResumable(thumbRef, thumbnailFile);
+                      }
+                      
+                      setUploadProgress(10);
+                      
+                      // 2. Upload Video to Firebase Storage (takes 10% to 90% progress)
+                      let videoKey = '';
+                      if (videoFile) {
+                        const videoExt = videoFile.name.split('.').pop() || 'mp4';
+                        videoKey = `clips/${timestamp}-${cleanTitle}.${videoExt}`;
+                        
+                        const videoRef = ref(storage, videoKey);
+                        const uploadTask = uploadBytesResumable(videoRef, videoFile);
+                        
+                        await new Promise<void>((resolve, reject) => {
+                          uploadTask.on(
+                            'state_changed',
+                            (snapshot) => {
+                              const pct = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 80);
+                              setUploadProgress(10 + pct);
+                            },
+                            (err) => {
+                              reject(err);
+                            },
+                            () => {
+                              resolve();
+                            }
+                          );
+                        });
+                      }
+                      
+                      setUploadProgress(90);
 
-                      setUploadProgress(30);
-
+                      // 3. Save entry in Supabase database
                       const res = await fetch('/api/upload-clip', {
                         method: 'POST',
-                        body: formData,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          title: clipForm.title,
+                          category: clipForm.category,
+                          description: clipForm.description,
+                          duration: clipForm.duration,
+                          tags: clipForm.tags,
+                          isFree: clipForm.is_free,
+                          videoKey,
+                          thumbnailKey,
+                        }),
                       });
 
-                      setUploadProgress(80);
                       const result = await res.json();
 
                       if (!res.ok) {
-                        throw new Error(result.error || 'Upload failed');
+                        throw new Error(result.error || 'Database save failed');
                       }
 
                       setUploadProgress(100);
@@ -969,7 +1012,7 @@ export default function AdminDashboardPage() {
                   {isUploading ? (
                     <><Loader2 className="w-5 h-5 animate-spin" /> Uploading...</>
                   ) : (
-                    <><Upload className="w-5 h-5" /> Upload Clip to R2</>
+                    <><Upload className="w-5 h-5" /> Upload Clip</>
                   )}
                 </button>
               </div>

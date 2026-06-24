@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { getPreSignedDownloadUrl } from '@/lib/r2';
+import { getFirebaseSignedUrl } from '@/lib/firebase-admin';
 
 export async function POST(request: Request) {
   // Only allow this API to run in local development mode for security
@@ -27,14 +27,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: 'Order not found in database' }, { status: 400 });
     }
 
-    // 2. Generate secure expiring link from R2
+    // 2. Generate secure expiring link from Firebase Storage
     const fileKey = purchaseData.package_type === 'Pro' ? 'raw-clips-pro.zip' : 'raw-clips-starter.zip';
     let downloadUrl = '';
     try {
-      downloadUrl = await getPreSignedDownloadUrl(fileKey, 86400);
-    } catch (r2Error) {
-      console.warn('R2 URL generation skipped or failed during dev mock. Using a placeholder.');
-      downloadUrl = 'https://example.com/demo-download.zip'; // Fallback if R2 credentials aren't ready
+      downloadUrl = await getFirebaseSignedUrl(fileKey, 86400);
+    } catch (fbError) {
+      console.warn('Firebase URL generation skipped or failed during dev mock. Using a placeholder.');
+      downloadUrl = 'https://example.com/demo-download.zip'; // Fallback if credentials aren't ready
     }
 
     // 3. Mark DB record as SUCCESS

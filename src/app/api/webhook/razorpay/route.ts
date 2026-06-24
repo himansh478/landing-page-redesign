@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { supabase } from '@/lib/supabase';
-import { getPreSignedDownloadUrl } from '@/lib/r2';
+import { getFirebaseSignedUrl } from '@/lib/firebase-admin';
 
 const WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET || '';
 
-// Map package types to filenames in Cloudflare R2 bucket
+// Map package types to filenames in Firebase Storage bucket
 const PACKAGE_FILES: Record<string, string> = {
-  'Starter': 'raw-clips-starter.zip', // Change to your actual zip filename in R2
-  'Pro': 'raw-clips-pro.zip',         // Change to your actual zip filename in R2
+  'Starter': 'raw-clips-starter.zip', // Change to your actual zip filename in Firebase
+  'Pro': 'raw-clips-pro.zip',         // Change to your actual zip filename in Firebase
 };
 
 export async function POST(request: Request) {
@@ -56,12 +56,12 @@ export async function POST(request: Request) {
       const packageType = purchaseData.package_type;
       const fileKey = PACKAGE_FILES[packageType] || 'raw-clips-starter.zip';
 
-      // 2. Generate secure expiring link (24 hours / 86400 seconds) from Cloudflare R2
+      // 2. Generate secure expiring link (24 hours / 86400 seconds) from Firebase Storage
       let downloadUrl = '';
       try {
-        downloadUrl = await getPreSignedDownloadUrl(fileKey, 86400);
-      } catch (r2Error) {
-        console.error('R2 URL generation error:', r2Error);
+        downloadUrl = await getFirebaseSignedUrl(fileKey, 86400);
+      } catch (fbError) {
+        console.error('Firebase Storage URL generation error:', fbError);
         // Fallback or handle it. Don't block DB update, but log it.
       }
 
