@@ -1,13 +1,12 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { getFirebaseSignedUrl } from '@/lib/firebase-admin';
+import cloudinary from '@/lib/cloudinary';
 
 export async function POST(request: Request) {
   // Only allow this API to run in local development mode for security
   if (process.env.NODE_ENV !== 'development') {
     return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
   }
-
 
   try {
     const { orderId } = await request.json();
@@ -27,13 +26,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: 'Order not found in database' }, { status: 400 });
     }
 
-    // 2. Generate secure expiring link from Firebase Storage
+    // 2. Generate secure expiring link from Cloudinary
     const fileKey = purchaseData.package_type === 'Pro' ? 'raw-clips-pro.zip' : 'raw-clips-starter.zip';
     let downloadUrl = '';
     try {
-      downloadUrl = await getFirebaseSignedUrl(fileKey, 86400);
+      downloadUrl = cloudinary.utils.url(fileKey, {
+        resource_type: 'raw',
+        type: 'authenticated',
+        sign_url: true,
+        secure: true,
+        expires_at: Math.floor(Date.now() / 1000) + 86400, // 24 hours
+      });
     } catch (fbError) {
-      console.warn('Firebase URL generation skipped or failed during dev mock. Using a placeholder.');
+      console.warn('Cloudinary URL generation skipped or failed during dev mock. Using a placeholder.');
       downloadUrl = 'https://example.com/demo-download.zip'; // Fallback if credentials aren't ready
     }
 

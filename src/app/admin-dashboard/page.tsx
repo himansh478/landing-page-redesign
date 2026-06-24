@@ -6,8 +6,6 @@ import { Loader2, Users, Phone, IndianRupee, Link as LinkIcon, Briefcase, Activi
 import { verifyAdminPassword, checkAdminAuth, logoutAdmin } from '@/app/actions/auth';
 import { getAllClips } from '@/app/actions/clips';
 import { Partner } from '@/types';
-import { ref, uploadBytesResumable } from 'firebase/storage';
-import { storage } from '@/lib/firebase';
 
 interface ShootJob {
   id: string;
@@ -710,7 +708,7 @@ export default function AdminDashboardPage() {
               <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-5">
                 <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                   <Upload className="w-5 h-5 text-indigo-500" />
-                  Upload New Clip to R2
+                  Upload New Clip to Cloudinary
                 </h3>
 
                 {uploadError && (
@@ -896,7 +894,7 @@ export default function AdminDashboardPage() {
                 {isUploading && (
                   <div className="space-y-2">
                     <div className="flex justify-between text-xs font-bold text-slate-600">
-                      <span>Uploading to Cloudflare R2...</span>
+                      <span>Uploading to Cloudinary...</span>
                       <span>{uploadProgress}%</span>
                     </div>
                     <div className="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
@@ -921,42 +919,55 @@ export default function AdminDashboardPage() {
                       const timestamp = Date.now();
                       const cleanTitle = clipForm.title.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
                       
-                      // 1. Upload Thumbnail to Firebase Storage (takes 0% to 10% progress)
-                      let thumbnailKey = '';
+                      const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+                      const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+                      
+                      if (!cloudName || !uploadPreset) {
+                        throw new Error('Cloudinary configuration missing in environment variables.');
+                      }
+
+                      const uploadToCloudinary = (file: File, resourceType: 'video' | 'image', onProgress: (pct: number) => void): Promise<any> => {
+                        return new Promise((resolve, reject) => {
+                          const url = `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`;
+                          const xhr = new XMLHttpRequest();
+                          const formData = new FormData();
+                          formData.append('file', file);
+                          formData.append('upload_preset', uploadPreset);
+                          
+                          xhr.upload.onprogress = (e) => {
+                            if (e.lengthComputable) {
+                              onProgress(Math.round((e.loaded / e.total) * 100));
+                            }
+                          };
+                          
+                          xhr.onload = () => {
+                            if (xhr.status >= 200 && xhr.status < 300) {
+                              resolve(JSON.parse(xhr.responseText));
+                            } else {
+                              reject(new Error('Cloudinary upload failed: ' + xhr.responseText));
+                            }
+                          };
+                          xhr.onerror = () => reject(new Error('Network error'));
+                          
+                          xhr.open('POST', url, true);
+                          xhr.send(formData);
+                        });
+                      };
+
+                      // 1. Upload Thumbnail to Cloudinary (takes 0% to 10% progress)
+                      let thumbnailKey = ''; // this will now hold Cloudinary public_id
                       if (thumbnailFile) {
-                        const thumbExt = thumbnailFile.name.split('.').pop() || 'jpg';
-                        thumbnailKey = `thumbnails/${timestamp}-${cleanTitle}.${thumbExt}`;
-                        
-                        const thumbRef = ref(storage, thumbnailKey);
-                        await uploadBytesResumable(thumbRef, thumbnailFile);
+                        const thumbRes = await uploadToCloudinary(thumbnailFile, 'image', (pct) => setUploadProgress(Math.round(pct * 0.1)));
+                        thumbnailKey = thumbRes.public_id;
                       }
                       
                       setUploadProgress(10);
                       
-                      // 2. Upload Video to Firebase Storage (takes 10% to 90% progress)
-                      let videoKey = '';
+                      // 2. Upload Video to Cloudinary (takes 10% to 90% progress)
+                      let videoKey = ''; // this will now hold Cloudinary public_id
                       if (videoFile) {
-                        const videoExt = videoFile.name.split('.').pop() || 'mp4';
-                        videoKey = `clips/${timestamp}-${cleanTitle}.${videoExt}`;
-                        
-                        const videoRef = ref(storage, videoKey);
-                        const uploadTask = uploadBytesResumable(videoRef, videoFile);
-                        
-                        await new Promise<void>((resolve, reject) => {
-                          uploadTask.on(
-                            'state_changed',
-                            (snapshot) => {
-                              const pct = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 80);
-                              setUploadProgress(10 + pct);
-                            },
-                            (err) => {
-                              reject(err);
-                            },
-                            () => {
-                              resolve();
-                            }
-                          );
-                        });
+                        const videoRes = await uploadToCloudinary(videoFile, 'video', (pct) => setUploadProgress(10 + Math.round(pct * 0.8)));
+                        videoKey = videoRes.public_id;
                       }
                       
                       setUploadProgress(90);

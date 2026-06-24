@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { supabase } from '@/lib/supabase';
-import { getFirebaseSignedUrl } from '@/lib/firebase-admin';
+import cloudinary from '@/lib/cloudinary';
 
 const WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET || '';
 
-// Map package types to filenames in Firebase Storage bucket
+// Map package types to filenames in Cloudinary
 const PACKAGE_FILES: Record<string, string> = {
-  'Starter': 'raw-clips-starter.zip', // Change to your actual zip filename in Firebase
-  'Pro': 'raw-clips-pro.zip',         // Change to your actual zip filename in Firebase
+  'Starter': 'raw-clips-starter.zip',
+  'Pro': 'raw-clips-pro.zip',        
 };
 
 export async function POST(request: Request) {
@@ -56,12 +56,18 @@ export async function POST(request: Request) {
       const packageType = purchaseData.package_type;
       const fileKey = PACKAGE_FILES[packageType] || 'raw-clips-starter.zip';
 
-      // 2. Generate secure expiring link (24 hours / 86400 seconds) from Firebase Storage
+      // 2. Generate secure expiring link (24 hours / 86400 seconds) from Cloudinary
       let downloadUrl = '';
       try {
-        downloadUrl = await getFirebaseSignedUrl(fileKey, 86400);
+        downloadUrl = cloudinary.utils.url(fileKey, {
+          resource_type: 'raw',
+          type: 'authenticated',
+          sign_url: true,
+          secure: true,
+          expires_at: Math.floor(Date.now() / 1000) + 86400, // 24 hours
+        });
       } catch (fbError) {
-        console.error('Firebase Storage URL generation error:', fbError);
+        console.error('Cloudinary Storage URL generation error:', fbError);
         // Fallback or handle it. Don't block DB update, but log it.
       }
 

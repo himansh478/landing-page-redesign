@@ -1,7 +1,7 @@
 'use server';
 
 import { supabase } from '@/lib/supabase';
-import { getFirebaseSignedUrl, isFirebaseConfigured } from '@/lib/firebase-admin';
+import cloudinary from '@/lib/cloudinary';
 
 // Sabhi active clips fetch karo
 export async function getAllClips() {
@@ -19,25 +19,25 @@ export async function getAllClips() {
 
   const clips = data || [];
 
-  // Generate pre-signed URLs on the fly for Firebase Storage assets so they never expire
-  if (isFirebaseConfigured()) {
+  // Generate Cloudinary URLs dynamically for assets
+  if (process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME) {
     for (const clip of clips) {
-      // 1. Generate thumbnail pre-signed URL (expiring in 24 hours)
+      // 1. Generate thumbnail URL with auto optimization
       if (clip.r2_thumbnail_key) {
-        try {
-          clip.thumbnail_url = await getFirebaseSignedUrl(clip.r2_thumbnail_key, 86400);
-        } catch (err) {
-          console.error(`Error signing thumbnail for clip ${clip.id}:`, err);
-        }
+        clip.thumbnail_url = cloudinary.url(clip.r2_thumbnail_key, { 
+          resource_type: 'image', 
+          format: 'auto', 
+          quality: 'auto' 
+        });
       }
 
-      // 2. Generate free video pre-signed URL (expiring in 1 hour)
+      // 2. Generate free video URL with auto optimization
       if (clip.is_free && clip.r2_video_key) {
-        try {
-          clip.free_drive_url = await getFirebaseSignedUrl(clip.r2_video_key, 3600);
-        } catch (err) {
-          console.error(`Error signing free video for clip ${clip.id}:`, err);
-        }
+        clip.free_drive_url = cloudinary.url(clip.r2_video_key, { 
+          resource_type: 'video', 
+          format: 'auto', 
+          quality: 'auto' 
+        });
       }
     }
   }
