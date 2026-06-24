@@ -3,9 +3,11 @@
 import { cookies } from 'next/headers';
 
 export async function verifyAdminPassword(password: string) {
-  const adminPassword = process.env.ADMIN_PASSWORD || 'gour@1@#$';
+  // Pro Coder Approach: Sanitize whitespace
+  const inputPass = (password || '').trim();
+  const envPass = (process.env.ADMIN_PASSWORD || 'gour@1@#$').trim();
   
-  if (password === adminPassword) {
+  if (inputPass === envPass) {
     const cookieStore = await cookies();
     cookieStore.set('admin_session', 'true', {
       httpOnly: true,
