@@ -3,7 +3,7 @@
 import { cookies } from 'next/headers';
 
 export async function verifyAdminPassword(password: string) {
-  const adminPassword = process.env.ADMIN_PASSWORD || 'admin@2026';
+  const adminPassword = process.env.ADMIN_PASSWORD || 'gour@1@#$';
   
   if (password === adminPassword) {
     const cookieStore = await cookies();
