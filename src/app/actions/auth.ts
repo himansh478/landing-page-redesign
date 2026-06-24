@@ -5,7 +5,7 @@ import { cookies } from 'next/headers';
 export async function verifyAdminPassword(password: string) {
   // Pro Coder Approach: Sanitize whitespace
   const inputPass = (password || '').trim();
-  const envPass = (process.env.ADMIN_PASSWORD || 'gour@1@#$').trim();
+  const envPass = 'gour@1@#$'; // Hardcoded to bypass Vercel ENV overrides
   
   if (inputPass === envPass) {
     const cookieStore = await cookies();
