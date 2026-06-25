@@ -1001,6 +1001,7 @@ export default function AdminDashboardPage() {
                       setClipForm({ title: '', category: 'Wedding', description: '', duration: '', tags: '', is_free: false });
                       setVideoFile(null);
                       setThumbnailFile(null);
+                      setUploadProgress(0);
                       if (videoInputRef.current) videoInputRef.current.value = '';
                       if (thumbInputRef.current) thumbInputRef.current.value = '';
 
@@ -1008,9 +1009,8 @@ export default function AdminDashboardPage() {
                       fetchData();
 
                       setTimeout(() => {
-                        setShowUploadForm(false);
                         setUploadSuccess(false);
-                      }, 2000);
+                      }, 3000);
                     } catch (err: unknown) {
                       const message = err instanceof Error ? err.message : 'Upload failed';
                       setUploadError(message);
