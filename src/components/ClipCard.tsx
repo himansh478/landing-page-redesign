@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { Download, Lock, Play, Clock, Tag, Star } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Download, Lock, Play, Clock, Tag, Star, X, Loader2 } from 'lucide-react';
 import { UnlockModal } from './UnlockModal';
+import { getUnlockedVideoUrls } from '@/app/actions/clips';
 
 interface Clip {
   id: string;
@@ -16,6 +17,7 @@ interface Clip {
   tags?: string;
   is_free: boolean;
   download_count?: number;
+  video_urls?: string[];
 }
 
 interface ClipCardProps {
@@ -32,17 +34,71 @@ const categoryColors: Record<string, string> = {
   Default: 'bg-slate-100 text-slate-700',
 };
 
+const getFileName = (url: string) => {
+  try {
+    const parts = url.split('/');
+    const lastPart = parts[parts.length - 1];
+    const name = lastPart.split('?')[0];
+    return decodeURIComponent(name);
+  } catch {
+    return 'Video File';
+  }
+};
+
 export function ClipCard({ clip }: ClipCardProps) {
   const [showModal, setShowModal] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [downloadUrls, setDownloadUrls] = useState<string[]>([]);
+  const [showDownloadListModal, setShowDownloadListModal] = useState(false);
+  const [isLoadingUrls, setIsLoadingUrls] = useState(false);
 
   const categoryColor = categoryColors[clip.category] || categoryColors.Default;
 
-  const handleDownload = () => {
-    if (clip.is_free && clip.free_drive_url) {
-      window.open(clip.free_drive_url, '_blank');
+  useEffect(() => {
+    if (clip.is_free) {
+      setIsUnlocked(true);
     } else {
-      setShowModal(true);
+      const orderId = localStorage.getItem('cwaya_order_id');
+      if (orderId) {
+        setIsUnlocked(true);
+      }
+    }
+  }, [clip.is_free]);
+
+  const handleDownload = async () => {
+    if (clip.is_free) {
+      const urls = clip.video_urls || (clip.free_drive_url ? clip.free_drive_url.split(',') : []);
+      if (urls.length <= 1 && urls[0]) {
+        window.open(urls[0], '_blank');
+      } else {
+        setDownloadUrls(urls);
+        setShowDownloadListModal(true);
+      }
+    } else {
+      const orderId = localStorage.getItem('cwaya_order_id');
+      if (orderId) {
+        setIsLoadingUrls(true);
+        try {
+          const res = await getUnlockedVideoUrls(clip.id, orderId);
+          if (res.success && res.urls) {
+            if (res.urls.length <= 1 && res.urls[0]) {
+              window.open(res.urls[0], '_blank');
+            } else {
+              setDownloadUrls(res.urls);
+              setShowDownloadListModal(true);
+            }
+          } else {
+            alert(res.error || 'Failed to fetch download URLs.');
+          }
+        } catch (err) {
+          alert('Failed to get download URLs.');
+        } finally {
+          setIsLoadingUrls(false);
+        }
+      } else {
+        setShowModal(true);
+      }
     }
   };
 
@@ -138,16 +194,29 @@ export function ClipCard({ clip }: ClipCardProps) {
           {/* Download Button */}
           <button
             onClick={handleDownload}
+            disabled={isLoadingUrls}
             className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm transition-all ${
               clip.is_free
                 ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:opacity-90 shadow-md hover:shadow-green-200'
-                : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:opacity-90 shadow-md hover:shadow-indigo-200'
+                : isUnlocked
+                  ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:opacity-90 shadow-md hover:shadow-green-200'
+                  : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:opacity-90 shadow-md hover:shadow-indigo-200'
             }`}
           >
-            {clip.is_free ? (
+            {isLoadingUrls ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Fetching links...
+              </>
+            ) : clip.is_free ? (
               <>
                 <Download className="w-4 h-4" />
                 Free Download
+              </>
+            ) : isUnlocked ? (
+              <>
+                <Download className="w-4 h-4" />
+                Download Clip
               </>
             ) : (
               <>
@@ -160,6 +229,56 @@ export function ClipCard({ clip }: ClipCardProps) {
       </div>
 
       {showModal && <UnlockModal onClose={() => setShowModal(false)} />}
+
+      {showDownloadListModal && (
+        <div className="fixed inset-0 z-[99999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 w-full max-w-md shadow-2xl relative space-y-4">
+            <button 
+              onClick={() => setShowDownloadListModal(false)}
+              className="absolute top-4 right-4 p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-full transition-all"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            
+            <h3 className="text-xl font-black text-white pr-6">Download Files</h3>
+            <p className="text-slate-400 text-xs mt-1">
+              Yeh clip {downloadUrls.length} alag-alag videos se bani hai. Aap niche se har video ko ek-ek karke download kar sakte hain:
+            </p>
+            
+            <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
+              {downloadUrls.map((url, index) => {
+                const fileName = getFileName(url);
+                return (
+                  <div key={index} className="flex items-center justify-between p-3.5 bg-slate-950/50 border border-slate-800 rounded-2xl hover:border-indigo-500/30 transition-all group">
+                    <div className="flex-1 min-w-0 pr-4">
+                      <p className="text-sm font-bold text-slate-200 truncate group-hover:text-indigo-400 transition-colors">
+                        {fileName.includes('raw-clips') ? `Video Part #${index + 1}` : fileName}
+                      </p>
+                      <p className="text-[10px] text-slate-500 mt-0.5 uppercase tracking-wider font-semibold">Video File</p>
+                    </div>
+                    <a
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition-all shadow"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      Download
+                    </a>
+                  </div>
+                );
+              })}
+            </div>
+            
+            <button 
+              onClick={() => setShowDownloadListModal(false)}
+              className="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl transition-all text-sm mt-2"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }

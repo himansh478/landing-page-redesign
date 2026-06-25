@@ -170,7 +170,7 @@ export default function AdminDashboardPage() {
     tags: '',
     is_free: false,
   });
-  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videoFiles, setVideoFiles] = useState<File[]>([]);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
 
   useEffect(() => {
@@ -822,8 +822,8 @@ export default function AdminDashboardPage() {
                     onDrop={e => {
                       e.preventDefault();
                       e.stopPropagation();
-                      const file = e.dataTransfer.files[0];
-                      if (file && file.type.startsWith('video/')) setVideoFile(file);
+                      const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('video/'));
+                      if (files.length) setVideoFiles(files);
                     }}
                     className="border-2 border-dashed border-slate-300 hover:border-indigo-400 rounded-2xl p-6 text-center cursor-pointer transition-all hover:bg-indigo-50/30"
                   >
@@ -831,23 +831,28 @@ export default function AdminDashboardPage() {
                       ref={videoInputRef}
                       type="file"
                       accept="video/*"
+                      multiple
                       className="hidden"
                       onChange={e => {
-                        const file = e.target.files?.[0];
-                        if (file) setVideoFile(file);
+                        const files = Array.from(e.target.files || []);
+                        if (files.length) setVideoFiles(files);
                       }}
                     />
                     <Film className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                    {videoFile ? (
+                    {videoFiles.length > 0 ? (
                       <div>
-                        <p className="text-sm font-bold text-indigo-600 truncate">{videoFile.name}</p>
-                        <p className="text-xs text-slate-400 mt-1">{(videoFile.size / (1024 * 1024)).toFixed(1)} MB</p>
+                        <p className="text-sm font-bold text-indigo-600 truncate">
+                          {videoFiles.length === 1 ? videoFiles[0].name : `${videoFiles.length} videos selected`}
+                        </p>
+                        <p className="text-xs text-slate-400 mt-1">
+                          Total Size: {(videoFiles.reduce((acc, f) => acc + f.size, 0) / (1024 * 1024)).toFixed(1)} MB
+                        </p>
                       </div>
                     ) : (
                       <div>
                         <p className="text-sm font-semibold text-slate-600">Video File Upload *</p>
                         <p className="text-xs text-slate-400 mt-1">MP4, MOV, AVI, WebM — Max 500MB</p>
-                        <p className="text-xs text-slate-400">Click or drag & drop</p>
+                        <p className="text-xs text-slate-400">Click or drag & drop (Select Multiple)</p>
                       </div>
                     )}
                   </div>
@@ -908,7 +913,7 @@ export default function AdminDashboardPage() {
 
                 {/* Submit Button */}
                 <button
-                  disabled={isUploading || !clipForm.title || !videoFile || !thumbnailFile}
+                  disabled={isUploading || !clipForm.title || videoFiles.length === 0 || !thumbnailFile}
                   onClick={async () => {
                     setIsUploading(true);
                     setUploadError(null);
@@ -963,12 +968,21 @@ export default function AdminDashboardPage() {
                       
                       setUploadProgress(10);
                       
-                      // 2. Upload Video to Cloudinary (takes 10% to 90% progress)
-                      let videoKey = ''; // this will now hold Cloudinary public_id
-                      if (videoFile) {
-                        const videoRes = await uploadToCloudinary(videoFile, 'video', (pct) => setUploadProgress(10 + Math.round(pct * 0.8)));
-                        videoKey = videoRes.public_id;
+                      // 2. Upload Videos to Cloudinary (takes 10% to 90% progress)
+                      const videoKeys: string[] = [];
+                      const totalVideos = videoFiles.length;
+                      for (let i = 0; i < totalVideos; i++) {
+                        const file = videoFiles[i];
+                        const videoRes = await uploadToCloudinary(file, 'video', (pct) => {
+                          const startPct = 10 + (i * 80) / totalVideos;
+                          const sharePct = 80 / totalVideos;
+                          const currentPct = Math.round(startPct + (pct * sharePct) / 100);
+                          setUploadProgress(currentPct);
+                        });
+                        videoKeys.push(videoRes.public_id);
                       }
+                      
+                      const videoKey = videoKeys.join(',');
                       
                       setUploadProgress(90);
 
@@ -999,7 +1013,7 @@ export default function AdminDashboardPage() {
 
                       // Reset form
                       setClipForm({ title: '', category: 'Wedding', description: '', duration: '', tags: '', is_free: false });
-                      setVideoFile(null);
+                      setVideoFiles([]);
                       setThumbnailFile(null);
                       setUploadProgress(0);
                       if (videoInputRef.current) videoInputRef.current.value = '';

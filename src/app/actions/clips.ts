@@ -31,13 +31,24 @@ export async function getAllClips() {
         });
       }
 
-      // 2. Generate free video URL with auto optimization
-      if (clip.is_free && clip.r2_video_key) {
-        clip.free_drive_url = cloudinary.url(clip.r2_video_key, { 
-          resource_type: 'video', 
-          format: 'auto', 
-          quality: 'auto' 
+      // 2. Generate video URLs (high quality, direct download, no compression)
+      if (clip.r2_video_key) {
+        const keys = clip.r2_video_key.split(',').map(k => k.trim()).filter(Boolean);
+        const urls = keys.map(key => {
+          return cloudinary.url(key, { 
+            resource_type: 'video',
+            flags: 'attachment',
+            secure: true
+          });
         });
+        (clip as any).video_urls = urls;
+        
+        // Backward compatibility
+        if (clip.is_free) {
+          clip.free_drive_url = urls.join(',');
+        }
+      } else {
+        (clip as any).video_urls = [];
       }
     }
   }
@@ -127,4 +138,49 @@ export async function deleteClip(id: string) {
 // Download count increment karo
 export async function incrementDownload(id: string) {
   await supabase.rpc('increment_download', { clip_id: id });
+}
+
+// Paid clips ke download URLs generate karo after verification of purchase order
+export async function getUnlockedVideoUrls(clipId: string, orderId: string) {
+  try {
+    // 1. Verify payment status in database
+    const { data: purchase, error: purchaseError } = await supabase
+      .from('raw_clips_purchases')
+      .select('*')
+      .eq('order_id', orderId)
+      .single();
+
+    if (purchaseError || !purchase || purchase.status !== 'SUCCESS') {
+      return { success: false, error: 'Unauthorized: purchase not found or incomplete' };
+    }
+
+    // 2. Fetch the clip
+    const { data: clip, error: clipError } = await supabase
+      .from('raw_clips')
+      .select('*')
+      .eq('id', clipId)
+      .single();
+
+    if (clipError || !clip) {
+      return { success: false, error: 'Clip not found' };
+    }
+
+    if (!clip.r2_video_key) {
+      return { success: true, urls: [] };
+    }
+
+    // 3. Generate high quality secure attachment URLs
+    const keys = clip.r2_video_key.split(',').map((k: string) => k.trim()).filter(Boolean);
+    const urls = keys.map((key: string) => {
+      return cloudinary.url(key, {
+        resource_type: 'video',
+        flags: 'attachment',
+        secure: true
+      });
+    });
+
+    return { success: true, urls };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
 }

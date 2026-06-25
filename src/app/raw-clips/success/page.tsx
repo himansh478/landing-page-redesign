@@ -81,6 +81,13 @@ function SuccessPageContent() {
     };
   }, [orderId, status]);
 
+  useEffect(() => {
+    if (status === 'SUCCESS' && orderId) {
+      localStorage.setItem('cwaya_order_id', orderId);
+      localStorage.setItem('cwaya_unlocked_package', packageName);
+    }
+  }, [status, orderId, packageName]);
+
   // Simulate payment captured callback locally
   const handleSimulateSuccess = async () => {
     if (!orderId) return;
