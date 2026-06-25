@@ -823,7 +823,7 @@ export default function AdminDashboardPage() {
                       e.preventDefault();
                       e.stopPropagation();
                       const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('video/'));
-                      if (files.length) setVideoFiles(files);
+                      if (files.length) setVideoFiles(prev => [...prev, ...files]);
                     }}
                     className="border-2 border-dashed border-slate-300 hover:border-indigo-400 rounded-2xl p-6 text-center cursor-pointer transition-all hover:bg-indigo-50/30"
                   >
@@ -835,24 +835,45 @@ export default function AdminDashboardPage() {
                       className="hidden"
                       onChange={e => {
                         const files = Array.from(e.target.files || []);
-                        if (files.length) setVideoFiles(files);
+                        if (files.length) setVideoFiles(prev => [...prev, ...files]);
+                        if (e.target) e.target.value = '';
                       }}
                     />
                     <Film className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                    {videoFiles.length > 0 ? (
-                      <div>
-                        <p className="text-sm font-bold text-indigo-600 truncate">
-                          {videoFiles.length === 1 ? videoFiles[0].name : `${videoFiles.length} videos selected`}
-                        </p>
-                        <p className="text-xs text-slate-400 mt-1">
-                          Total Size: {(videoFiles.reduce((acc, f) => acc + f.size, 0) / (1024 * 1024)).toFixed(1)} MB
-                        </p>
-                      </div>
-                    ) : (
-                      <div>
-                        <p className="text-sm font-semibold text-slate-600">Video File Upload *</p>
-                        <p className="text-xs text-slate-400 mt-1">MP4, MOV, AVI, WebM — Max 500MB</p>
-                        <p className="text-xs text-slate-400">Click or drag & drop (Select Multiple)</p>
+                    <div>
+                      <p className="text-sm font-semibold text-slate-600">
+                        {videoFiles.length > 0 ? 'Add More Videos' : 'Video File Upload *'}
+                      </p>
+                      <p className="text-xs text-slate-400 mt-1">
+                        {videoFiles.length > 0 
+                          ? `${videoFiles.length} videos selected (${(videoFiles.reduce((acc, f) => acc + f.size, 0) / (1024 * 1024)).toFixed(1)} MB)`
+                          : 'MP4, MOV, AVI, WebM — Max 500MB (Select Multiple)'
+                        }
+                      </p>
+                    </div>
+
+                    {videoFiles.length > 0 && (
+                      <div className="mt-4 space-y-2 text-left" onClick={e => e.stopPropagation()}>
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider px-1">Selected Files:</p>
+                        <div className="max-h-[120px] overflow-y-auto space-y-1 pr-1">
+                          {videoFiles.map((file, idx) => (
+                            <div key={idx} className="flex items-center justify-between bg-slate-100 border border-slate-200 rounded-xl px-2.5 py-1.5 text-[11px]">
+                              <span className="font-semibold text-slate-700 truncate max-w-[150px]" title={file.name}>
+                                {file.name}
+                              </span>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-slate-400 text-[10px]">{(file.size / (1024 * 1024)).toFixed(1)} MB</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setVideoFiles(prev => prev.filter((_, i) => i !== idx))}
+                                  className="p-1 hover:bg-slate-200 text-slate-400 hover:text-red-600 rounded-lg transition-all"
+                                >
+                                  <X className="w-3 h-3" />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
