@@ -35,8 +35,8 @@ const weddingHighlights = [
   {
     id: 4,
     title: 'Ceremonial Celebration Delta',
-    thumbnail: 'https://img.youtube.com/vi/-l0cn9-bCEs/maxresdefault.jpg',
-    videoUrl: "https://www.youtube.com/embed/-l0cn9-bCEs",
+    thumbnail: 'https://api.microlink.io/?url=https://www.instagram.com/reel/DX_Ly0dKEtP/&screenshot=true&meta=false&embed=screenshot.url',
+    videoUrl: 'https://www.instagram.com/reel/DX_Ly0dKEtP/embed',
     category: 'Celebration',
     duration: '1:00',
   }
