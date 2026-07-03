@@ -11,8 +11,8 @@ const weddingHighlights = [
   {
     id: 1,
     title: 'Eternal Resonance Alpha',
-    thumbnail: 'https://img.youtube.com/vi/dIRN9hI6_Rk/maxresdefault.jpg',
-    videoUrl: 'https://www.youtube.com/embed/dIRN9hI6_Rk',
+    thumbnail: 'https://api.microlink.io/?url=https://www.instagram.com/reel/DZhPdlYINK6/&screenshot=true&meta=false&embed=screenshot.url',
+    videoUrl: 'https://www.instagram.com/reel/DZhPdlYINK6/embed',
     category: 'Highlights',
     duration: '0:45',
   },
