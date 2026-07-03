@@ -77,7 +77,7 @@ export default function ReelPortfolioPage() {
             <div className="flex items-center justify-between mb-12">
               <div className="flex items-center gap-4">
                 <Sparkles className="w-6 h-6 text-pink-500" />
-                <h2 className="text-3xl font-bold tracking-tight uppercase tracking-[0.2em]">Automotive Protocols</h2>
+                <h2 className="text-3xl font-bold tracking-tight uppercase tracking-[0.2em]">Car and Bike Delivery Videos</h2>
               </div>
               <div className="h-px flex-grow mx-8 bg-white/10" />
             </div>
