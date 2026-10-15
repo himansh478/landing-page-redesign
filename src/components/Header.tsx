@@ -1,6 +1,6 @@
 'use client';
 
-import { Menu, X, Share2, Sparkles, Package, Instagram, PlayCircle, Send } from 'lucide-react';
+import { Menu, X, Share2, Sparkles, Package, Instagram, PlayCircle, Send, GraduationCap } from 'lucide-react';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { SearchBar } from './SearchBar';
@@ -133,7 +133,13 @@ export function Header() {
               Contact
             </Link>
 
-
+            <Link
+              href="/courses"
+              className="text-slate-700 hover:text-indigo-600 px-3 py-2 font-semibold transition-colors text-sm flex items-center gap-1.5"
+            >
+              <GraduationCap className="w-4 h-4" />
+              Courses
+            </Link>
 
             <button
               onClick={() => {
@@ -231,6 +237,14 @@ export function Header() {
                   className="w-full bg-slate-50 hover:bg-indigo-50 text-slate-700 px-6 py-3 rounded-lg transition-all font-semibold border border-slate-200 text-base flex items-center justify-center"
                 >
                   Contact Us
+                </Link>
+                <Link
+                  href="/courses"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full bg-slate-50 hover:bg-indigo-50 text-slate-700 px-6 py-3 rounded-lg transition-all font-semibold border border-slate-200 text-base flex items-center justify-center gap-2"
+                >
+                  <GraduationCap className="w-5 h-5" />
+                  Courses
                 </Link>
 
                 <div className="grid grid-cols-2 gap-3">
