@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useCallback, useEffect, useState, useRef } from 'react';
+import NextLink from 'next/link';
 import { supabase } from '@/lib/supabase';
-import { Loader2, Users, Phone, IndianRupee, Link as LinkIcon, Briefcase, Activity, Lock, AlertTriangle, Mail, MessageCircle, ImageIcon, LogOut, CheckCircle2, Star, Download, ShieldCheck, Film, Upload, Trash2, Plus, X } from 'lucide-react';
+import { Loader2, Users, Phone, IndianRupee, Link as LinkIcon, Briefcase, Activity, Lock, AlertTriangle, Mail, MessageCircle, ImageIcon, LogOut, CheckCircle2, Star, Download, ShieldCheck, Film, Upload, Trash2, Plus, X, GraduationCap } from 'lucide-react';
 import { verifyAdminPassword, checkAdminAuth, logoutAdmin } from '@/app/actions/auth';
 import { getAllClips } from '@/app/actions/clips';
 import { Partner } from '@/types';
@@ -351,7 +352,7 @@ export default function AdminDashboardPage() {
               <span className="flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold animate-pulse">
                 <Activity className="w-3 h-3" /> Live
               </span>
-              <button 
+              <button
                 onClick={handleLogout}
                 className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                 title="Logout"
@@ -363,6 +364,12 @@ export default function AdminDashboardPage() {
           <p className="text-md text-slate-600 max-w-2xl mx-auto">
             Manage your shoot job matches and raw clips sales in real time.
           </p>
+          <NextLink
+            href="/admin-dashboard/courses"
+            className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 transition-all"
+          >
+            <GraduationCap className="w-4 h-4" /> Manage Courses
+          </NextLink>
         </div>
 
         {/* Tab Buttons */}

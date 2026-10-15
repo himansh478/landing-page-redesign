@@ -22,3 +22,20 @@ export async function getCurrentUser() {
         return null;
     }
 }
+
+// 3. VERIFY A BUYER'S IDENTITY FROM AN API REQUEST
+// Reads the "Authorization: Bearer <access_token>" header a logged-in
+// browser sends, and asks Supabase who that token belongs to. Server
+// routes that must know WHICH user is acting (creating a course order,
+// requesting a signed playback URL) use this — never trust a client-
+// supplied user id directly.
+export async function getUserFromBearer(req: Request) {
+    const authHeader = req.headers.get('authorization') || req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) return null;
+    const token = authHeader.slice('Bearer '.length).trim();
+    if (!token) return null;
+
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    if (error || !user) return null;
+    return user;
+}
