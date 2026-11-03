@@ -73,7 +73,7 @@ export default function LoginPage() {
         if (failed) throw failed;
         if (data.session) goBack();
         else {
-          setMessage('Check your email to confirm your account, then sign in.');
+          setMessage(`We sent a link to ${email}. Open it to finish, then sign in here. Not there in a few minutes? Check spam, or use Google above.`);
           setMode('signin');
         }
       } else if (mode === 'forgot') {
@@ -122,9 +122,11 @@ export default function LoginPage() {
       {(mode === 'signin' || mode === 'signup') && (
         <>
           <button type="button" id="google" className="primary" onClick={withGoogle} disabled={busy}>
-            Continue with Google
+            {mode === 'signup' ? 'Sign up with Google' : 'Continue with Google'}
           </button>
-          <p className="notice-line">New here? Google creates your account in one step. Already have one with a password? Sign in below.</p>
+          <p className="notice-line">
+            {mode === 'signup' ? 'Quickest: one tap, with no email to wait for. Or use your email below.' : 'Or sign in with your email and password.'}
+          </p>
         </>
       )}
       <form onSubmit={submit}>
@@ -158,16 +160,20 @@ export default function LoginPage() {
           {busy ? 'One moment…' : ACTIONS[mode]}
         </button>
       </form>
-      {/* Email sign-up waits on a confirmation email, so new accounts come through Google instead. */}
       {mode !== 'reset' && (
         <div className="links">
           {mode === 'signin' ? (
-            <button className="ghost" onClick={() => change('forgot')}>
-              Forgot password?
-            </button>
+            <>
+              <button className="ghost" id="to-signup" onClick={() => change('signup')}>
+                New here? Create an account
+              </button>
+              <button className="ghost" onClick={() => change('forgot')}>
+                Forgot password?
+              </button>
+            </>
           ) : (
             <button className="ghost" onClick={() => change('signin')}>
-              Back to sign in
+              {mode === 'signup' ? 'Have an account? Sign in' : 'Back to sign in'}
             </button>
           )}
         </div>
