@@ -19,6 +19,8 @@ const HEADER_SLACK = 2;
 const LONGEST_JOB = 240000;
 /** Seconds the host lets this run, above LONGEST_JOB so the job's own limit and refund come first. */
 export const maxDuration = 300;
+/** How often a silent job tells the phone it is still working. */
+const HEARTBEAT = 5000;
 const TOO_SLOW = 'This is taking too long, so we stopped. Your minutes were given back. Please try again.';
 
 function readHeader<T>(request: Request, name: string, fallback: T): T {
@@ -59,15 +61,40 @@ export async function POST(request: Request) {
     const minutes = Math.ceil(charge.short / 60);
     return Response.json({ error: `You need ${minutes} more minute${minutes === 1 ? '' : 's'} for this video.`, short: charge.short }, { status: 402 });
   }
+  // A failed job and a phone that left both give the minutes back, but only once.
+  let refunded = false;
   const giveBack = async () => {
-    if (charge?.ok) await refund(viewer.id, charge.usageId).catch((e) => console.warn(`Refund failed: ${e}`));
+    if (refunded || !charge?.ok) return;
+    refunded = true;
+    await refund(viewer.id, charge.usageId).catch((e) => console.warn(`Refund failed: ${e}`));
   };
 
   const encoder = new TextEncoder();
+  /** The phone closed the connection, so nothing more can reach it. */
+  let gone = false;
+  const opened = Date.now();
+  const leave = () => {
+    if (gone) return;
+    gone = true;
+    console.warn(`The phone left after ${((Date.now() - opened) / 1000).toFixed(1)} s, so its minutes go back`);
+    void giveBack();
+  };
 
   const stream = new ReadableStream({
+    cancel: leave,
     async start(controller) {
-      const send = (event: object) => controller.enqueue(encoder.encode(JSON.stringify(event) + '\n'));
+      const write = (text: string) => {
+        if (gone) return;
+        try {
+          controller.enqueue(encoder.encode(text));
+        } catch {
+          leave();
+        }
+      };
+      const send = (event: object) => write(JSON.stringify(event) + '\n');
+      // Some steps run for most of a minute with nothing to report, and phones and mobile
+      // networks cut a connection that stays silent that long. Blank lines keep it open.
+      const beat = setInterval(() => write('\n'), HEARTBEAT);
       const started = Date.now();
       const steps: string[] = [];
       const seconds = (from: number) => ((Date.now() - from) / 1000).toFixed(1);
@@ -125,7 +152,7 @@ export async function POST(request: Request) {
           }
         });
 
-        console.log(`Captions for ${length.toFixed(0)} s of sound took ${seconds(started)} s (${steps.join(', ')})`);
+        console.log(`Captions for ${length.toFixed(0)} s of sound took ${seconds(started)} s (${steps.join(', ')})${gone ? ', but the phone had left, so the minutes went back' : ''}`);
         send({ stage: 'done', result: { language, duration, tokens, envelope, speechGaps: findSpeechGaps(envelope, tokens) } });
       };
       try {
@@ -136,7 +163,8 @@ export async function POST(request: Request) {
         // Last, and as plain text: logging an Error object threw here and lost a refund.
         console.warn(`Captions failed after ${seconds(started)} s (${steps.join(', ')}): ${e}`);
       } finally {
-        controller.close();
+        clearInterval(beat);
+        if (!gone) controller.close();
       }
     },
   });
