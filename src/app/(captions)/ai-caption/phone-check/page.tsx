@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { ALL_FORMATS, BlobSource, BufferTarget, CanvasSource, Input, Mp4OutputFormat, Output, VideoSampleSink } from 'mediabunny';
 import { useEffect, useState } from 'react';
 import { loadCanvasKit } from '@/captions/engine/studio';
-import { phoneTestOn, setPhoneTest } from '@/captions/lib/phone-test';
+import { chooseFullEditor, fullEditorChosen } from '@/captions/lib/full-editor';
 
 // Phase 1 of the phone plan: what this phone's browser can do for AI Captions, as one
 // report the owner can copy and send. Nothing here is uploaded anywhere.
@@ -170,7 +170,7 @@ export default function PhoneCheck() {
   const [copied, setCopied] = useState(false);
   const [editorOn, setEditorOn] = useState(false);
 
-  useEffect(() => setEditorOn(phoneTestOn()), []);
+  useEffect(() => setEditorOn(fullEditorChosen()), []);
 
   const add = (result: Result) => setResults((all) => [...all, result]);
 
@@ -198,7 +198,7 @@ export default function PhoneCheck() {
   };
 
   const toggleEditor = () => {
-    setPhoneTest(!editorOn);
+    chooseFullEditor(!editorOn);
     setEditorOn(!editorOn);
   };
 
@@ -254,9 +254,9 @@ export default function PhoneCheck() {
       )}
 
       <p className="notice-line">
-        Test switch: {editorOn ? 'the full editor opens on this phone.' : 'the full editor is hidden on this phone, as normal.'}{' '}
+        {editorOn ? 'Projects open in the full laptop editor on this phone.' : 'Projects open in Quick Mode on this phone.'}{' '}
         <button className="ghost" onClick={toggleEditor}>
-          {editorOn ? 'Turn off' : 'Try the full editor on this phone'}
+          {editorOn ? 'Use Quick Mode' : 'Use the full editor instead'}
         </button>
       </p>
       <p>

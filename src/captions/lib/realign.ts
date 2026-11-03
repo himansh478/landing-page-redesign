@@ -107,6 +107,6 @@ export async function realignPending() {
     patch((current) => {
       for (const token of current.tokens) if (token.pending) token.pending = false;
     });
-    setNotice("Couldn't re-time the new word. Drag its caption on the timeline if it looks off.");
+    setNotice("Couldn't re-time the new word, so its timing is a guess. Play that part to check it.");
   }
 }

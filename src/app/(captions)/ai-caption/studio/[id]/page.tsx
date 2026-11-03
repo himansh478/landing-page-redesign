@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { use, useEffect, useMemo, useRef, useState } from 'react';
 import { CaptionList } from '@/captions/components/CaptionList';
 import { ExportDialog, type ExportKind } from '@/captions/components/ExportDialog';
+import { QuickMode } from '@/captions/components/mobile/QuickMode';
 import { Preview, type PreviewHandle } from '@/captions/components/Preview';
 import { StylePanel } from '@/captions/components/StylePanel';
 import { Timeline } from '@/captions/components/Timeline';
@@ -14,7 +15,7 @@ import { outputSize } from '@/captions/engine/export';
 import { useAccount } from '@/captions/lib/account';
 import { accountsOn } from '@/captions/lib/auth';
 import { useAutosave } from '@/captions/lib/autosave';
-import { phoneTestOn } from '@/captions/lib/phone-test';
+import { chooseFullEditor, fullEditorChosen, useNarrow } from '@/captions/lib/full-editor';
 import { loadProject, readMedia, saveProject } from '@/captions/lib/storage';
 import { newerCloudEdits } from '@/captions/lib/sync';
 import { useEditor } from '@/captions/state/editor';
@@ -34,10 +35,16 @@ export default function StudioPage({ params }: { params: Promise<{ id: string }>
   const [video, setVideo] = useState<File | null>(null);
   const [failed, setFailed] = useState(false);
   const [exporting, setExporting] = useState<ExportKind | null>(null);
-  const [phoneTest, setPhoneTest] = useState(false);
+  const narrow = useNarrow();
+  const [fullEditor, setFullEditor] = useState(false);
 
   // Read after the first render, so the server's page and the phone's agree.
-  useEffect(() => setPhoneTest(phoneTestOn()), []);
+  useEffect(() => setFullEditor(fullEditorChosen()), []);
+
+  const pickEditor = (full: boolean) => {
+    chooseFullEditor(full);
+    setFullEditor(full);
+  };
 
   useEffect(() => {
     Promise.all([loadProject(id), readMedia(id, 'source')])
@@ -101,24 +108,27 @@ export default function StudioPage({ params }: { params: Promise<{ id: string }>
       </main>
     );
   }
-  if (!project || !doc || !video) return <main className="home">Opening project…</main>;
+  if (!project || !doc || !video || narrow === null) return <main className="home">Opening project…</main>;
 
   const size = outputSize(project.media, !!doc.reframe);
 
   return (
     <>
-      <div className={phoneTest ? 'studio phone-test' : 'studio'}>
-        <TopBar onExport={setExporting} />
-        <CaptionList captions={captions} seek={(t) => previewRef.current?.seek(t)} />
-        <Preview key={doc.reframe ? 'vertical' : 'original'} ref={previewRef} video={video} captions={captions} size={size} />
-        <StylePanel seek={(t) => previewRef.current?.seek(t)} />
-        <Timeline captions={captions} seek={(t) => previewRef.current?.seek(t)} />
-      </div>
-      {!phoneTest && (
-        <p className="narrow-note">
-          The caption editor needs a wider screen. Open it on a laptop or desktop.{' '}
-          <Link href="/ai-caption/phone-check">Help us test phones</Link>
-        </p>
+      {narrow && !fullEditor ? (
+        <QuickMode video={video} captions={captions} size={size} previewRef={previewRef} onFullEditor={() => pickEditor(true)} />
+      ) : (
+        <div className="studio">
+          <TopBar onExport={setExporting} />
+          <CaptionList captions={captions} seek={(t) => previewRef.current?.seek(t)} />
+          <Preview key={doc.reframe ? 'vertical' : 'original'} ref={previewRef} video={video} captions={captions} size={size} />
+          <StylePanel seek={(t) => previewRef.current?.seek(t)} />
+          <Timeline captions={captions} seek={(t) => previewRef.current?.seek(t)} />
+        </div>
+      )}
+      {narrow && fullEditor && (
+        <button className="primary quick-back" onClick={() => pickEditor(false)}>
+          Quick mode
+        </button>
       )}
       {notice && (
         <div className="notice" role="status">

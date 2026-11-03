@@ -3,9 +3,15 @@
 **Date:** 3 November 2026
 **Goal:** most Cwaya users are on phones, so AI Caption must work well on a phone: upload, captions, style, fix words, export and share, with no laptop needed.
 
+## Progress
+
+- **Phase 1, done:** the phone check is live at `/ai-caption/phone-check`. The first Android (4 GB memory, Chrome 152) passed every check: all export settings including 1080p, about 29 frames a second for a plain test video, screen wake lock, and sharing to apps. Still to test: a real export timed on the phone, an iPhone.
+- **Phase 2, built:** phones open Quick Mode (`src/captions/components/mobile/`) with three steps: Style (template cards, caption language, position, size), Words (only the flagged captions, with Edit and "Looks right"), and Export. "Full editor" opens the laptop editor; a "Quick mode" button comes back.
+- **Phase 3, partly built:** export picks 1080p, or 720p when a phone's encoder refuses 1080p, keeps the screen on, and offers Save to phone, Share, and the subtitle file. Not yet: the in-memory fallback for iPhones that can't write to browser storage.
+
 ---
 
-## 1. Where we are today
+## 1. Where we were on 3 November
 
 | Part | On a phone today | Why |
 |---|---|---|

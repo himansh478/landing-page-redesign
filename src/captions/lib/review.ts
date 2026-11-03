@@ -1,4 +1,25 @@
+import type { Caption } from '@/captions/engine/types';
 import { tokenText, type ScriptId, type Token } from './project';
+
+const LOW_SCORE = 0.15;
+
+/** The words worth a second look, by caption. English captions of a Hindi video have none. */
+export function findDoubts(captions: Caption[], tokens: Token[], script: ScriptId) {
+  const doubts = new Map<string, Token[]>();
+  if (script === 'translated') return doubts;
+  const byId = new Map(tokens.map((t) => [t.id, t]));
+  // Newer projects know which words the listeners disagreed on. Older ones have only
+  // the timing score, which also flags many correct words.
+  const compared = tokens.some((t) => t.unsure !== undefined);
+  for (const caption of captions) {
+    const words = caption.words.flatMap((w) => {
+      const token = w.tokenId ? byId.get(w.tokenId) : undefined;
+      return token && (compared ? token.unsure : token.score < LOW_SCORE) ? [token] : [];
+    });
+    if (words.length) doubts.set(caption.id, words);
+  }
+  return doubts;
+}
 
 const FILLERS = new Set(['um', 'umm', 'uh', 'uhh', 'uhm', 'hmm', 'hm', 'er', 'erm', 'ah', 'aah', 'matlab', 'मतलब', 'हम्म', 'अं', 'उम्म', 'आं']);
 const LONG_SILENCE = 0.8;

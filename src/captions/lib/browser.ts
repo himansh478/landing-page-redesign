@@ -9,6 +9,15 @@ export function browserProblem() {
   return null;
 }
 
+type WakeLock = { request(type: 'screen'): Promise<{ release(): Promise<void> }> };
+
+/** Stops the phone sleeping during a long job. Returns how to let it sleep again. */
+export async function keepScreenOn() {
+  const lock = (navigator as Navigator & { wakeLock?: WakeLock }).wakeLock;
+  const held = await lock?.request('screen').catch(() => null);
+  return () => void held?.release().catch(() => {});
+}
+
 /** Whether this browser can encode the final video by itself. */
 export async function canEncodeVideo(width: number, height: number) {
   if (typeof VideoEncoder === 'undefined' || typeof VideoDecoder === 'undefined') return false;

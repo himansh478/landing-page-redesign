@@ -4,10 +4,9 @@ import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { captionEnd, captionStart, type Caption } from '@/captions/engine/types';
 import { tokenText } from '@/captions/lib/project';
 import { realignPending, syncScripts } from '@/captions/lib/realign';
+import { findDoubts } from '@/captions/lib/review';
 import { useEditor } from '@/captions/state/editor';
 import { playhead } from '@/captions/state/playhead';
-
-const LOW_SCORE = 0.15;
 
 const stamp = (t: number) => {
   const m = Math.floor(t / 60);
@@ -126,19 +125,8 @@ export function CaptionList({ captions, seek }: { captions: Caption[]; seek: (t:
 
   const doubts = useMemo(() => {
     const low = new Map<string, string>();
-    if (!tokens || !script || script === 'translated') return low;
-    const byId = new Map(tokens.map((t) => [t.id, t]));
-    // Newer projects know which words the listeners disagreed on. Older ones have only
-    // the timing score, which also flags many correct words.
-    const compared = tokens.some((t) => t.unsure !== undefined);
-    for (const caption of captions) {
-      const words = caption.words.flatMap((w) => {
-        const token = w.tokenId ? byId.get(w.tokenId) : undefined;
-        const doubt = token && (compared ? token.unsure : token.score < LOW_SCORE);
-        return doubt ? [tokenText(token, script)] : [];
-      });
-      if (words.length) low.set(caption.id, words.join(', '));
-    }
+    if (!tokens || !script) return low;
+    for (const [id, words] of findDoubts(captions, tokens, script)) low.set(id, words.map((t) => tokenText(t, script)).join(', '));
     return low;
   }, [tokens, script, captions]);
   const [activeId, setActiveId] = useState<string | null>(null);

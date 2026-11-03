@@ -115,7 +115,7 @@ export default function Home() {
       <AccountBar ready={ready} signedIn={signedIn} account={account} />
       <h1>Cwaya Captions</h1>
       <p className="lead">
-        Word-perfect captions for Hindi, Hinglish and English videos. Your video stays on this computer. Only the sound is sent for transcription.
+        Word-perfect captions for Hindi, Hinglish and English videos. Your video stays on your device. Only the sound is sent for transcription.
       </p>
       {problem && <p className="error">{problem}</p>}
 
@@ -155,7 +155,7 @@ export default function Home() {
           onDrop={drop}
         >
           <input id="file" type="file" accept="video/*" onChange={(e) => start(e.target.files?.[0])} />
-          <strong>Drop a video here, or click to choose one</strong>
+          <strong>Choose a video, or drop it here</strong>
           <span>MP4 or MOV, up to 1 minute</span>
         </label>
       )}
