@@ -6,8 +6,11 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
-      { source: '/editing', destination: '/masterful-editing', permanent: true },
-      { source: '/shoots', destination: '/professional-shoots', permanent: true },
+      { source: '/editing', destination: '/', permanent: false },
+      { source: '/shoots', destination: '/', permanent: false },
+      // These pages were removed; send old links to the homepage.
+      { source: '/masterful-editing', destination: '/', permanent: false },
+      { source: '/professional-shoots', destination: '/', permanent: false },
       { source: '/tech', destination: '/technical-solutions', permanent: true },
       { source: '/social', destination: '/social-management', permanent: true },
       { source: '/packages.html', destination: '/packages', permanent: true },

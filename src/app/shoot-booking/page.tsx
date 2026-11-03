@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Camera, Send, ArrowLeft, ImageIcon, Mail, MapPin, MessageCircle, Loader2 } from 'lucide-react';
-import Link from 'next/link';
+import { Send, ImageIcon, MessageCircle, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { PageIntro, PageShell } from '@/components/editorial/PageIntro';
+import { btnPrimary, fieldClass, fieldsetLegendClass, labelClass, textareaClass } from '@/components/editorial/styles';
 
 export default function ShootBookingPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -58,118 +59,117 @@ export default function ShootBookingPage() {
                 workDuration: '', workType: '', referenceVideo: '',
                 price: '', deviceType: ''
             });
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Error saving data:", error);
-            alert("Error: " + error.message);
+            alert("Error: " + (error instanceof Error ? error.message : (error as { message?: string })?.message));
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    const inputClass = "w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all text-slate-900";
-
     return (
-        <div className="min-h-screen bg-slate-50 py-24 px-4">
-            <div className="max-w-2xl mx-auto">
-                <div className="text-center mb-10">
-                    <h1 className="text-4xl font-black text-slate-900 mb-2">Fill to Find</h1>
-                    <p className="text-slate-500">Provide shoot details to get the best creative partner</p>
-                </div>
+        <PageShell>
+            <PageIntro
+                back={{ href: '/', label: 'Back to Home' }}
+                title={['Fill to', 'Find']}
+                lede="Provide shoot details to get the best creative partner"
+            />
 
-                <form onSubmit={handleSubmit} className="bg-white p-8 rounded-3xl shadow-xl border border-slate-100 space-y-6">
-                    {/* Basic Info */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Your Name *</label>
-                            <input type="text" name="name" value={formData.name} required onChange={handleChange} className={inputClass} placeholder="Full Name" />
+            <form
+                onSubmit={handleSubmit}
+                className="mt-14 sm:mt-20 max-w-3xl bg-paper border border-ink/15 rounded-[4px] overflow-hidden shadow-[0_40px_80px_-50px_rgb(var(--ink-rgb)/0.5)]"
+            >
+                <div className="h-1 bg-coral" aria-hidden="true" />
+                <div className="p-6 sm:p-10 space-y-10">
+                    <fieldset className="space-y-4">
+                        <legend className={fieldsetLegendClass}>01 — Contact</legend>
+                        {/* Basic Info */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label htmlFor="sk-name" className={labelClass}>Your Name *</label>
+                                <input id="sk-name" type="text" name="name" value={formData.name} required onChange={handleChange} className={fieldClass} placeholder="Full Name" />
+                            </div>
+                            <div>
+                                <label htmlFor="sk-gmail" className={labelClass}>Gmail Address *</label>
+                                <input id="sk-gmail" type="email" name="gmail" value={formData.gmail} required onChange={handleChange} className={fieldClass} placeholder="example@gmail.com" />
+                            </div>
                         </div>
-                        <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Gmail Address *</label>
-                            <input type="email" name="gmail" value={formData.gmail} required onChange={handleChange} className={inputClass} placeholder="example@gmail.com" />
-                        </div>
-                    </div>
 
-                    {/* Contact Info */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1 flex items-center gap-2">
-                                <MessageCircle className="w-4 h-4 text-green-500" /> WhatsApp Number *
-                            </label>
-                            <input type="tel" name="whatsappNumber" value={formData.whatsappNumber} required onChange={handleChange} className={inputClass} placeholder="10-digit number" />
+                        {/* Contact Info */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label htmlFor="sk-whatsapp" className={labelClass}>
+                                    {/* WhatsApp keeps its own green */}
+                                    <MessageCircle className="w-3.5 h-3.5 text-[#25D366]" aria-hidden="true" /> WhatsApp Number *
+                                </label>
+                                <input id="sk-whatsapp" type="tel" name="whatsappNumber" value={formData.whatsappNumber} required onChange={handleChange} className={fieldClass} placeholder="10-digit number" />
+                            </div>
+                            <div>
+                                <label htmlFor="sk-insta" className={labelClass}>
+                                    <ImageIcon className="w-3.5 h-3.5" aria-hidden="true" /> ImageIcon ID (Optional)
+                                </label>
+                                <input id="sk-insta" type="text" name="instaId" value={formData.instaId} onChange={handleChange} className={fieldClass} placeholder="@username" />
+                            </div>
                         </div>
-                        <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1 flex items-center gap-2">
-                                <ImageIcon className="w-4 h-4 text-pink-500" /> ImageIcon ID (Optional)
-                            </label>
-                            <input type="text" name="instaId" value={formData.instaId} onChange={handleChange} className={inputClass} placeholder="@username" />
-                        </div>
-                    </div>
+                    </fieldset>
 
-                    {/* Location */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">State *</label>
-                            <input type="text" name="state" value={formData.state} required onChange={handleChange} className={inputClass} placeholder="e.g. MP" />
+                    <fieldset className="space-y-4">
+                        <legend className={fieldsetLegendClass}>02 — Location</legend>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label htmlFor="sk-state" className={labelClass}>State *</label>
+                                <input id="sk-state" type="text" name="state" value={formData.state} required onChange={handleChange} className={fieldClass} placeholder="e.g. MP" />
+                            </div>
+                            <div>
+                                <label htmlFor="sk-district" className={labelClass}>District *</label>
+                                <input id="sk-district" type="text" name="district" value={formData.district} required onChange={handleChange} className={fieldClass} placeholder="e.g. Bhopal" />
+                            </div>
                         </div>
-                        <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">District *</label>
-                            <input type="text" name="district" value={formData.district} required onChange={handleChange} className={inputClass} placeholder="e.g. Bhopal" />
-                        </div>
-                    </div>
 
-                    <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-1">Exact Work Location *</label>
-                        <textarea name="exactLocation" value={formData.exactLocation} rows={2} required onChange={handleChange} className={inputClass} placeholder="Building, Area, Landmark..." />
-                    </div>
+                        <div>
+                            <label htmlFor="sk-location" className={labelClass}>Exact Work Location *</label>
+                            <textarea id="sk-location" name="exactLocation" value={formData.exactLocation} rows={2} required onChange={handleChange} className={textareaClass} placeholder="Building, Area, Landmark..." />
+                        </div>
+                    </fieldset>
 
-                    {/* Work Details */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Work Type *</label>
-                            <input type="text" name="workType" value={formData.workType} required onChange={handleChange} className={inputClass} placeholder="e.g. Wedding, Commercial, Vlog" />
+                    <fieldset className="space-y-4">
+                        <legend className={fieldsetLegendClass}>03 — Work Details</legend>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label htmlFor="sk-type" className={labelClass}>Work Type *</label>
+                                <input id="sk-type" type="text" name="workType" value={formData.workType} required onChange={handleChange} className={fieldClass} placeholder="e.g. Wedding, Commercial, Vlog" />
+                            </div>
+                            <div>
+                                <label htmlFor="sk-duration" className={labelClass}>Duration *</label>
+                                <input id="sk-duration" type="text" name="workDuration" value={formData.workDuration} required onChange={handleChange} className={fieldClass} placeholder="e.g. 5 Hours" />
+                            </div>
+                            <div>
+                                <label htmlFor="sk-price" className={labelClass}>I Pay (₹) *</label>
+                                <input id="sk-price" type="number" name="price" value={formData.price} required onChange={handleChange} className={fieldClass} placeholder="Your Price" />
+                            </div>
                         </div>
-                        <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Duration *</label>
-                            <input type="text" name="workDuration" value={formData.workDuration} required onChange={handleChange} className={inputClass} placeholder="e.g. 5 Hours" />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">I Pay (₹) *</label>
-                            <input type="number" name="price" value={formData.price} required onChange={handleChange} className={inputClass} placeholder="Your Price" />
-                        </div>
-                    </div>
 
-                    {/* Final Row */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Shoot Device *</label>
-                            <input type="text" name="deviceType" value={formData.deviceType} required onChange={handleChange} className={inputClass} placeholder="e.g. Sony A7III, iPhone, Drone" />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label htmlFor="sk-device" className={labelClass}>Shoot Device *</label>
+                                <input id="sk-device" type="text" name="deviceType" value={formData.deviceType} required onChange={handleChange} className={fieldClass} placeholder="e.g. Sony A7III, iPhone, Drone" />
+                            </div>
+                            <div>
+                                <label htmlFor="sk-reference" className={labelClass}>Reference Video Link *</label>
+                                <input id="sk-reference" type="url" name="referenceVideo" value={formData.referenceVideo} required onChange={handleChange} className={fieldClass} placeholder="YouTube/Drive Link" />
+                            </div>
                         </div>
-                        <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Reference Video Link *</label>
-                            <input type="url" name="referenceVideo" value={formData.referenceVideo} required onChange={handleChange} className={inputClass} placeholder="YouTube/Drive Link" />
-                        </div>
-                    </div>
+                    </fieldset>
 
-                    <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-400 text-white font-bold py-4 rounded-2xl transition-all shadow-lg flex items-center justify-center gap-2 mt-4"
-                    >
+                    <button type="submit" disabled={isSubmitting} className={`${btnPrimary} w-full`}>
                         {isSubmitting ? (
-                            <><Loader2 className="w-5 h-5 animate-spin" /> Saving...</>
+                            <><Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" /> Saving...</>
                         ) : (
-                            <><Send className="w-5 h-5" /> Find Creative Partner</>
+                            <><Send className="w-5 h-5" aria-hidden="true" /> Find Creative Partner</>
                         )}
                     </button>
-                </form>
-
-                <div className="mt-8 text-center">
-                    <Link href="/" className="inline-flex items-center gap-2 text-slate-500 hover:text-indigo-600 transition-colors">
-                        <ArrowLeft className="w-4 h-4" />
-                        <span>Back to Home</span>
-                    </Link>
                 </div>
-            </div>
-        </div>
+            </form>
+        </PageShell>
     );
 }

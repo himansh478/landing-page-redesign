@@ -1,123 +1,106 @@
 'use client';
 
-import { motion } from 'motion/react';
-import { Film, Camera, Share2, Users, Bot, ArrowRight, Sparkles, Wand2, Zap, Globe } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import React from 'react';
+import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
+import { RevealLines } from './motion/RevealLines';
 
-const services = [
+// Services without an href are shown as plain text (their pages were removed).
+const services: { title: string; description: string; href?: string; features: string[] }[] = [
   {
-    id: 1,
     title: 'Editing Types',
-    icon: Film,
     description: 'Cinematic storytelling with elite color grading and sound design.',
-    href: '/masterful-editing',
     features: ['Viral Reels', 'YouTube Systems', '3D Animation'],
-    gradient: 'from-purple-500 via-pink-500 to-rose-500',
-    glow: 'group-hover:shadow-purple-500/10'
   },
   {
-    id: 2,
     title: 'Precision Shoots',
-    icon: Camera,
     description: 'High-end production for products, weddings, and commercial ad films.',
-    href: '/professional-shoots',
     features: ['4K Production', 'Product Macro', 'Event Elite'],
-    gradient: 'from-blue-500 via-indigo-500 to-violet-500',
-    glow: 'group-hover:shadow-blue-500/10'
   },
   {
-    id: 3,
     title: 'Digital Authority',
-    icon: Share2,
     description: 'Strategic social media management that dominates the algorithm.',
     href: '/social-media-management',
     features: ['Growth Systems', 'Content Strategy', 'Analytics'],
-    gradient: 'from-orange-500 via-amber-500 to-yellow-500',
-    glow: 'group-hover:shadow-orange-500/10'
   },
   {
-    id: 4,
     title: 'Digital Architecture',
-    icon: Globe,
     description: 'Advanced web deployment and AI-driven automation systems.',
     href: '/technical-solutions',
     features: ['Next.js Apps', 'AI Automation', 'Enterprise Scale'],
-    gradient: 'from-cyan-500 via-blue-500 to-indigo-500',
-    glow: 'group-hover:shadow-cyan-500/10'
-  }
+  },
 ];
 
+// An editorial index instead of a card grid. Hovering (or keyboard-focusing)
+// a row sweeps editorial-blue ink across it from the left.
 export function ServiceHub() {
-  const router = useRouter();
-
   return (
-    <section className="relative py-32 bg-white overflow-hidden">
-      {/* Background elements */}
-      <div className="absolute inset-0">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-indigo-600/5 blur-[120px] rounded-full pointer-events-none" />
-      </div>
-
-      <div className="container mx-auto px-6 relative z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-24"
-        >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-slate-600 text-[10px] font-black uppercase tracking-[0.3em] mb-6 shadow-sm">
-            <Zap className="w-3 h-3 text-indigo-500" />
-            Ecosystem of Excellence
+    <section className="relative bg-paper py-24 sm:py-32 border-t border-ink/10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid lg:grid-cols-12 gap-8 mb-14 sm:mb-20 items-end">
+          <div className="lg:col-span-7">
+            <p className="slate slate-mark text-editorial mb-5">Sc.02 — Services</p>
+            <RevealLines as="h2" className="display-lg font-display text-ink" lines={['Your complete', 'creative arsenal']} />
           </div>
-          <h2 className="text-4xl md:text-7xl font-bold mb-8 tracking-tighter leading-none text-slate-900">
-            Your Complete <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-slate-600 to-slate-400">Creative Arsenal</span>
-          </h2>
-          <p className="text-lg md:text-xl text-slate-500 max-w-2xl mx-auto font-light leading-relaxed">
-            From viral social content to studio-grade production. 
-            Select your gateway to digital dominance.
+          <p className="lg:col-span-4 lg:col-start-9 text-lg text-ink/70 leading-relaxed">
+            From viral social content to studio-grade production. Select your gateway to digital dominance.
           </p>
-        </motion.div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-8">
-          {services.map((service, idx) => (
-            <motion.div
-              key={service.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: idx * 0.1 }}
-              onClick={() => router.push(service.href)}
-              className={`group relative bg-slate-50 border border-slate-200 rounded-[40px] p-8 cursor-pointer hover:border-slate-300 transition-all duration-500 hover:-translate-y-2 shadow-md hover:shadow-xl ${service.glow}`}
-            >
-              {/* Card Glow */}
-              <div className={`absolute inset-0 bg-gradient-to-br ${service.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-500 rounded-[40px]`} />
-              
-              <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${service.gradient} p-[1px] mb-8 group-hover:scale-110 transition-transform duration-500 shadow-md`}>
-                <div className="w-full h-full rounded-2xl bg-white flex items-center justify-center">
-                  <service.icon className="w-8 h-8 text-slate-900" />
-                </div>
-              </div>
-
-              <h3 className="text-2xl font-bold mb-4 tracking-tight uppercase text-slate-900 group-hover:text-indigo-600 transition-colors">{service.title}</h3>
-              <p className="text-slate-500 text-sm font-light leading-relaxed mb-8 group-hover:text-slate-600 transition-colors">{service.description}</p>
-              
-              <div className="space-y-3 mb-10">
-                {service.features.map((feature, i) => (
-                  <div key={i} className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-slate-500 transition-colors">
-                    <div className={`w-1.5 h-1.5 rounded-full bg-gradient-to-r ${service.gradient}`} />
-                    {feature}
-                  </div>
-                ))}
-              </div>
-
-              <div className="flex items-center gap-2 text-slate-900 text-xs font-bold uppercase tracking-widest group-hover:gap-4 transition-all group-hover:text-indigo-600">
-                Book Now
-                <ArrowRight className="w-4 h-4" />
-              </div>
-            </motion.div>
-          ))}
         </div>
+
+        <ul className="border-t border-ink/20">
+          {services.map((service, i) => {
+            const row = (
+              <>
+                {service.href && (
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-0 bg-editorial origin-left scale-x-0 transition-transform duration-700 ease-reveal group-hover:scale-x-100 group-focus-visible:scale-x-100 motion-reduce:transition-none"
+                  />
+                )}
+                <span className="relative col-span-2 sm:col-span-1 slate text-ink/45 transition-colors duration-500 group-hover:text-coral group-focus-visible:text-coral">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <h3 className="relative col-span-10 sm:col-span-11 lg:col-span-4 font-display font-extrabold tracking-[-0.03em] text-ink [font-size:clamp(1.6rem,1rem+1.9vw,2.6rem)] leading-[1.05] transition-colors duration-500 group-hover:text-ivory group-focus-visible:text-ivory">
+                  {service.title}
+                </h3>
+                <p className="relative col-span-12 sm:col-start-2 sm:col-span-10 lg:col-start-auto lg:col-span-4 text-ink/70 leading-relaxed transition-colors duration-500 group-hover:text-ivory/85 group-focus-visible:text-ivory/85">
+                  {service.description}
+                </p>
+                <div className="relative col-span-12 sm:col-start-2 sm:col-span-11 lg:col-start-auto lg:col-span-3 flex items-center justify-between gap-4">
+                  <ul className="flex flex-wrap gap-1.5" aria-label={`${service.title} includes`}>
+                    {service.features.map((f) => (
+                      <li
+                        key={f}
+                        className="slate !text-[10px] !tracking-[0.12em] px-2 py-1 rounded-[3px] border border-ink/20 text-ink/65 transition-colors duration-500 group-hover:border-ivory/30 group-hover:text-ivory/80 group-focus-visible:border-ivory/30 group-focus-visible:text-ivory/80"
+                      >
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  {service.href && (
+                    <span
+                      aria-hidden="true"
+                      className="flex-shrink-0 w-11 h-11 rounded-full bg-coral flex items-center justify-center text-ink transition-transform duration-500 ease-reveal group-hover:-rotate-45 group-hover:scale-110 group-focus-visible:-rotate-45"
+                    >
+                      <ArrowRight className="w-4 h-4" />
+                    </span>
+                  )}
+                </div>
+              </>
+            );
+            const rowClass = 'relative grid grid-cols-12 gap-x-4 gap-y-3 items-center py-7 sm:py-9 px-1 sm:px-5 overflow-hidden';
+            return (
+              <li key={service.title} className="border-b border-ink/20">
+                {service.href ? (
+                  <Link href={service.href} className={`group ${rowClass} focus-visible:outline-offset-[-2px]`}>
+                    {row}
+                  </Link>
+                ) : (
+                  <div className={rowClass}>{row}</div>
+                )}
+              </li>
+            );
+          })}
+        </ul>
       </div>
     </section>
   );

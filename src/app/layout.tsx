@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Outfit } from "next/font/google";
+import { Inter, Montserrat } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import { Header } from "@/components/Header";
@@ -13,9 +13,9 @@ const inter = Inter({
   display: "swap",
 });
 
-const outfit = Outfit({
+const montserrat = Montserrat({
   subsets: ["latin"],
-  variable: "--font-outfit",
+  variable: "--font-montserrat",
   display: "swap",
 });
 
@@ -55,6 +55,7 @@ export const metadata: Metadata = {
 };
 
 import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
+import { MotionProvider } from "@/components/motion/MotionProvider";
 
 export default function RootLayout({
   children,
@@ -62,7 +63,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" data-scroll-behavior="smooth" className={`${inter.variable} ${montserrat.variable}`}>
       <head>
         <Script
           async
@@ -83,7 +84,7 @@ export default function RootLayout({
           strategy="lazyOnload"
         />
       </head>
-      <body className={`${inter.variable} ${outfit.variable} antialiased`}>
+      <body className="antialiased">
         {/* Google AdSense Auto Ads */}
         <Script
           async
@@ -91,17 +92,19 @@ export default function RootLayout({
           crossOrigin="anonymous"
           strategy="afterInteractive"
         />
-        <AuthProvider>
-          <div className="flex min-h-screen flex-col">
-            <Header />
-            <main className="flex-grow">
-              {children}
-            </main>
-            <Footer />
-          </div>
-          <FloatingWhatsApp />
-          <Toaster position="top-right" />
-        </AuthProvider>
+        <MotionProvider>
+          <AuthProvider>
+            <div className="flex min-h-screen flex-col">
+              <Header />
+              <main className="flex-grow">
+                {children}
+              </main>
+              <Footer />
+            </div>
+            <FloatingWhatsApp />
+            <Toaster position="top-right" />
+          </AuthProvider>
+        </MotionProvider>
       </body>
     </html>
   );

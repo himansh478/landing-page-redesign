@@ -1,9 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Download, Lock, Play, Clock, Tag, Star, X, Loader2 } from 'lucide-react';
+import { useState, useSyncExternalStore } from 'react';
+import { AnimatePresence } from 'motion/react';
+import { Download, Lock, Play, Clock, Loader2 } from 'lucide-react';
 import { UnlockModal } from './UnlockModal';
-import { getUnlockedVideoUrls } from '@/app/actions/clips';
+import { ModalShell } from './editorial/ModalShell';
+import { chipClass, tagClass } from './editorial/styles';
+import { getPaidClipTelegramLink, getUnlockedVideoUrls } from '@/app/actions/clips';
 
 interface Clip {
   id: string;
@@ -18,21 +21,15 @@ interface Clip {
   is_free: boolean;
   download_count?: number;
   video_urls?: string[];
+  /** Delivered by the Telegram bot instead of a direct download */
+  on_telegram?: boolean;
+  /** Free clips on Telegram: opens the bot, which sends the clip */
+  telegram_url?: string;
 }
 
 interface ClipCardProps {
   clip: Clip;
 }
-
-const categoryColors: Record<string, string> = {
-  Wedding: 'bg-pink-100 text-pink-700',
-  Cinematic: 'bg-indigo-100 text-indigo-700',
-  Commercial: 'bg-amber-100 text-amber-700',
-  Corporate: 'bg-blue-100 text-blue-700',
-  Drone: 'bg-sky-100 text-sky-700',
-  Reel: 'bg-purple-100 text-purple-700',
-  Default: 'bg-slate-100 text-slate-700',
-};
 
 const getFileName = (url: string) => {
   try {
@@ -45,28 +42,27 @@ const getFileName = (url: string) => {
   }
 };
 
+// A paid order unlocks every clip; read it from localStorage after hydration.
+const subscribeStorage = (cb: () => void) => {
+  window.addEventListener('storage', cb);
+  return () => window.removeEventListener('storage', cb);
+};
+const hasOrder = () => !!localStorage.getItem('cwaya_order_id');
+const noOrderOnServer = () => false;
+
 export function ClipCard({ clip }: ClipCardProps) {
   const [showModal, setShowModal] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
-  const [isUnlocked, setIsUnlocked] = useState(false);
+  const orderUnlocked = useSyncExternalStore(subscribeStorage, hasOrder, noOrderOnServer);
+  const isUnlocked = clip.is_free || orderUnlocked;
   const [downloadUrls, setDownloadUrls] = useState<string[]>([]);
   const [showDownloadListModal, setShowDownloadListModal] = useState(false);
   const [isLoadingUrls, setIsLoadingUrls] = useState(false);
 
-  const categoryColor = categoryColors[clip.category] || categoryColors.Default;
-
-  useEffect(() => {
-    if (clip.is_free) {
-      setIsUnlocked(true);
-    } else {
-      const orderId = localStorage.getItem('cwaya_order_id');
-      if (orderId) {
-        setIsUnlocked(true);
-      }
-    }
-  }, [clip.is_free]);
-
   const handleDownload = async () => {
+    if (clip.is_free && clip.telegram_url) {
+      window.open(clip.telegram_url, '_blank', 'noopener');
+      return;
+    }
     if (clip.is_free) {
       const urls = clip.video_urls || (clip.free_drive_url ? clip.free_drive_url.split(',') : []);
       if (urls.length <= 1 && urls[0]) {
@@ -80,6 +76,15 @@ export function ClipCard({ clip }: ClipCardProps) {
       if (orderId) {
         setIsLoadingUrls(true);
         try {
+          // Clips stored on Telegram: a one-time bot link instead of a file URL
+          if (clip.on_telegram) {
+            const link = await getPaidClipTelegramLink(clip.id, orderId);
+            if (link) {
+              // Same tab: popup blockers stop window.open after an await
+              window.location.href = link;
+              return;
+            }
+          }
           const res = await getUnlockedVideoUrls(clip.id, orderId);
           if (res.success && res.urls) {
             if (res.urls.length <= 1 && res.urls[0]) {
@@ -91,7 +96,7 @@ export function ClipCard({ clip }: ClipCardProps) {
           } else {
             alert(res.error || 'Failed to fetch download URLs.');
           }
-        } catch (err) {
+        } catch {
           alert('Failed to get download URLs.');
         } finally {
           setIsLoadingUrls(false);
@@ -104,181 +109,174 @@ export function ClipCard({ clip }: ClipCardProps) {
 
   return (
     <>
-      <div
-        className="group relative bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 border border-slate-100 hover:border-indigo-100 hover:-translate-y-1"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
+      <article className="group relative flex flex-col h-full bg-paper rounded-[4px] overflow-hidden ring-1 ring-ink/10 transition-shadow duration-500 hover:shadow-[0_30px_60px_-35px_rgb(var(--ink-rgb)/0.55)]">
         {/* Thumbnail */}
-        <div className="relative aspect-video overflow-hidden bg-slate-900">
+        <div className="relative aspect-video overflow-hidden bg-ink">
           {clip.thumbnail_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={clip.thumbnail_url}
               alt={clip.title}
-              className={`w-full h-full object-cover transition-transform duration-700 ${isHovered ? 'scale-110' : 'scale-100'}`}
+              className="w-full h-full object-cover transition-transform duration-1000 ease-reveal group-hover:scale-[1.05]"
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900 flex items-center justify-center">
-              <Play className="w-12 h-12 text-white/30" />
+            <div className="w-full h-full flex items-center justify-center">
+              <Play className="w-10 h-10 text-ivory/30" aria-hidden="true" />
             </div>
           )}
 
           {/* Overlay on hover */}
-          <div className={`absolute inset-0 bg-black/50 flex items-center justify-center transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
-            <div className="bg-white/20 backdrop-blur-sm rounded-full p-4 border border-white/30">
-              <Play className="w-8 h-8 text-white fill-white" />
-            </div>
+          <div aria-hidden="true" className="absolute inset-0 bg-ink/40 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+            <span className="w-12 h-12 rounded-full bg-ivory text-ink flex items-center justify-center">
+              <Play className="w-5 h-5 ml-0.5 fill-current" />
+            </span>
           </div>
+
+          {/* FREE / PAID badge */}
+          <span
+            className={`absolute top-3 left-3 slate !text-[10px] !tracking-[0.14em] px-2 py-1 rounded-[3px] inline-flex items-center gap-1 ${
+              clip.is_free ? 'bg-coral text-ink' : 'bg-ink/80 text-ivory backdrop-blur-sm'
+            }`}
+          >
+            {clip.is_free ? (
+              <>Free</>
+            ) : (
+              <><Lock className="w-3 h-3" aria-hidden="true" /> ₹19</>
+            )}
+          </span>
+
+          {/* Quality badge */}
+          <span className={`absolute top-3 right-3 ${chipClass}`}>4K RAW</span>
 
           {/* Duration badge */}
           {clip.duration && (
-            <div className="absolute bottom-2 right-2 bg-black/70 text-white text-xs font-bold px-2 py-1 rounded-lg flex items-center gap-1">
-              <Clock className="w-3 h-3" />
+            <span className={`absolute bottom-3 right-3 ${chipClass} tabular`}>
+              <Clock className="w-3 h-3" aria-hidden="true" />
               {clip.duration}
-            </div>
+            </span>
           )}
-
-          {/* FREE / PAID badge */}
-          <div className={`absolute top-2 left-2 px-3 py-1 rounded-full text-xs font-black flex items-center gap-1 ${clip.is_free ? 'bg-green-500 text-white' : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white'}`}>
-            {clip.is_free ? (
-              <>✨ FREE</>
-            ) : (
-              <><Lock className="w-3 h-3" /> ₹19</>
-            )}
-          </div>
-
-          {/* Quality badge */}
-          <div className="absolute top-2 right-2 bg-amber-400 text-amber-900 text-xs font-black px-2 py-1 rounded-full flex items-center gap-1">
-            <Star className="w-3 h-3 fill-amber-900" />
-            4K RAW
-          </div>
         </div>
 
         {/* Content */}
-        <div className="p-4">
+        <div className="flex flex-col flex-1 p-4 sm:p-5">
           {/* Category */}
-          <span className={`inline-block text-xs font-bold px-2 py-0.5 rounded-full mb-2 ${categoryColor}`}>
-            {clip.category}
-          </span>
+          <span className="slate text-editorial mb-2">{clip.category}</span>
 
           {/* Title */}
-          <h3 className="font-bold text-slate-800 text-base leading-snug mb-1 line-clamp-2">
+          <h3 className="font-display font-bold text-ink text-base sm:text-lg leading-snug tracking-[-0.01em] mb-1.5 line-clamp-2">
             {clip.title}
           </h3>
 
           {/* Description */}
           {clip.description && (
-            <p className="text-slate-500 text-xs line-clamp-2 mb-3">{clip.description}</p>
+            <p className="text-ink/65 text-sm leading-relaxed line-clamp-2 mb-3">{clip.description}</p>
           )}
 
           {/* Tags */}
           {clip.tags && (
-            <div className="flex flex-wrap gap-1 mb-3">
+            <ul className="flex flex-wrap gap-1.5 mb-3" aria-label="Tags">
               {clip.tags.split(',').slice(0, 3).map((tag, i) => (
-                <span key={i} className="flex items-center gap-0.5 text-xs text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100">
-                  <Tag className="w-2.5 h-2.5" />
+                <li key={i} className={tagClass}>
                   {tag.trim()}
-                </span>
+                </li>
               ))}
-            </div>
+            </ul>
           )}
 
           {/* Download count */}
           {clip.download_count !== undefined && clip.download_count > 0 && (
-            <p className="text-xs text-slate-400 mb-3">
-              📥 {clip.download_count} downloads
+            <p className="slate text-ink/50 mb-3 flex items-center gap-1.5 tabular">
+              <Download className="w-3 h-3" aria-hidden="true" />
+              {clip.download_count} downloads
             </p>
           )}
 
           {/* Download Button */}
           <button
+            type="button"
             onClick={handleDownload}
             disabled={isLoadingUrls}
-            className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm transition-all ${
-              clip.is_free
-                ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:opacity-90 shadow-md hover:shadow-green-200'
-                : isUnlocked
-                  ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:opacity-90 shadow-md hover:shadow-green-200'
-                  : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:opacity-90 shadow-md hover:shadow-indigo-200'
+            className={`mt-auto w-full flex items-center justify-center gap-2 h-11 px-4 rounded-md font-semibold text-sm transition-colors duration-300 disabled:opacity-60 ${
+              isUnlocked ? 'bg-editorial text-ivory hover:bg-ink' : 'bg-coral text-ink hover:bg-ink hover:text-ivory'
             }`}
           >
             {isLoadingUrls ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
                 Fetching links...
               </>
             ) : clip.is_free ? (
               <>
-                <Download className="w-4 h-4" />
+                <Download className="w-4 h-4" aria-hidden="true" />
                 Free Download
               </>
             ) : isUnlocked ? (
               <>
-                <Download className="w-4 h-4" />
+                <Download className="w-4 h-4" aria-hidden="true" />
                 Download Clip
               </>
             ) : (
               <>
-                <Lock className="w-4 h-4" />
+                <Lock className="w-4 h-4" aria-hidden="true" />
                 Unlock @ ₹19
               </>
             )}
           </button>
+          {clip.on_telegram && (isUnlocked || clip.is_free) && (
+            <p className="slate !text-[10px] text-ink/50 text-center mt-2">Opens in Telegram</p>
+          )}
         </div>
-      </div>
+      </article>
 
       {showModal && <UnlockModal onClose={() => setShowModal(false)} />}
 
-      {showDownloadListModal && (
-        <div className="fixed inset-0 z-[99999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 w-full max-w-md shadow-2xl relative space-y-4">
-            <button 
-              onClick={() => setShowDownloadListModal(false)}
-              className="absolute top-4 right-4 p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white rounded-full transition-all"
-            >
-              <X className="w-4 h-4" />
-            </button>
-            
-            <h3 className="text-xl font-black text-white pr-6">Download Files</h3>
-            <p className="text-slate-400 text-xs mt-1">
-              Yeh clip {downloadUrls.length} alag-alag videos se bani hai. Aap niche se har video ko ek-ek karke download kar sakte hain:
-            </p>
-            
-            <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
-              {downloadUrls.map((url, index) => {
-                const fileName = getFileName(url);
-                return (
-                  <div key={index} className="flex items-center justify-between p-3.5 bg-slate-950/50 border border-slate-800 rounded-2xl hover:border-indigo-500/30 transition-all group">
-                    <div className="flex-1 min-w-0 pr-4">
-                      <p className="text-sm font-bold text-slate-200 truncate group-hover:text-indigo-400 transition-colors">
-                        {fileName.includes('raw-clips') ? `Video Part #${index + 1}` : fileName}
-                      </p>
-                      <p className="text-[10px] text-slate-500 mt-0.5 uppercase tracking-wider font-semibold">Video File</p>
-                    </div>
-                    <a
-                      href={url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition-all shadow"
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                      Download
-                    </a>
-                  </div>
-                );
-              })}
+      <AnimatePresence>
+        {showDownloadListModal && (
+          <ModalShell onClose={() => setShowDownloadListModal(false)} labelledBy={`dl-${clip.id}`} zClass="z-[99999]">
+            <div className="p-6 space-y-4">
+              <div className="pr-10">
+                <h3 id={`dl-${clip.id}`} className="font-display text-xl font-extrabold text-ink tracking-[-0.02em]">Download Files</h3>
+                <p className="text-ink/65 text-sm mt-1">
+                  Yeh clip {downloadUrls.length} alag-alag videos se bani hai. Aap niche se har video ko ek-ek karke download kar sakte hain:
+                </p>
+              </div>
+
+              <ul className="max-h-[300px] overflow-y-auto border-t border-ink/15">
+                {downloadUrls.map((url, index) => {
+                  const fileName = getFileName(url);
+                  return (
+                    <li key={index} className="flex items-center justify-between gap-4 py-3.5 border-b border-ink/15">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-ink truncate">
+                          {fileName.includes('raw-clips') ? `Video Part #${index + 1}` : fileName}
+                        </p>
+                        <p className="slate !text-[10px] text-ink/50 mt-0.5">Video File</p>
+                      </div>
+                      <a
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 bg-editorial hover:bg-ink text-ivory font-semibold text-xs h-9 px-3.5 rounded-md transition-colors"
+                      >
+                        <Download className="w-3.5 h-3.5" aria-hidden="true" />
+                        Download
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+
+              <button
+                type="button"
+                onClick={() => setShowDownloadListModal(false)}
+                className="w-full h-11 rounded-md border border-ink/25 text-ink font-semibold text-sm transition-colors hover:border-ink hover:bg-ink/5"
+              >
+                Close
+              </button>
             </div>
-            
-            <button 
-              onClick={() => setShowDownloadListModal(false)}
-              className="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl transition-all text-sm mt-2"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
+          </ModalShell>
+        )}
+      </AnimatePresence>
     </>
   );
 }

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { Camera, ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { RevealLines } from './motion/RevealLines';
 
 interface AiTool {
   id: number;
@@ -11,8 +12,6 @@ interface AiTool {
   icon: React.ReactNode;
   description: string;
   features: string[];
-  gradient: string;
-  glowColor: string;
   path: string;
   healthEndpoint?: string;
 }
@@ -32,12 +31,14 @@ function HealthBadge({ url }: { url: string }) {
 
   const isOnline = status === 'online';
   return (
-    <span className={`inline-flex items-center gap-1.5 text-xs px-2 py-0.5 rounded-full border ${
-      isOnline
-        ? 'border-green-300 bg-green-50 text-green-700'
-        : 'border-red-300 bg-red-50 text-red-700'
-    }`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
+    <span
+      className={`inline-flex items-center gap-1.5 slate !text-[10px] px-2 py-1 rounded-[3px] border transition-colors duration-500 ${
+        isOnline
+          ? 'border-ink/20 text-ink/70 group-hover:border-ivory/30 group-hover:text-ivory/85'
+          : 'border-destructive/40 text-destructive group-hover:border-ivory/30 group-hover:text-ivory/85'
+      }`}
+    >
+      <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'rec-dot bg-coral' : 'bg-destructive'}`} />
       {isOnline ? 'Live' : 'Offline'}
     </span>
   );
@@ -47,16 +48,15 @@ const aiTools: AiTool[] = [
   {
     id: 2,
     title: 'AI Photo Sharing',
-    icon: <Camera className="w-8 h-8" />,
+    icon: <Camera className="w-6 h-6" />,
     description: 'Event code enter karo, selfie upload karo — InsightFace AI tumhari saari photos crowd mein dhundh leta hai instantly.',
     features: ['Face Recognition (InsightFace)', 'Bulk Batch Upload', 'Event Code System', 'Cosine Similarity Matching'],
-    gradient: 'from-rose-500 to-pink-600',
-    glowColor: 'rgba(236, 72, 153, 0.15)',
     path: '/ai-photo-sharing',
     healthEndpoint: 'https://gour-himansh-ai.hf.space/api/health'
   },
 ];
 
+// Same editorial index as ServiceHub: hovering a row sweeps editorial-blue ink across it.
 export function AiToolsSection() {
   const router = useRouter();
 
@@ -69,105 +69,81 @@ export function AiToolsSection() {
   };
 
   return (
-    <section id="ai-tools" className="relative py-16 sm:py-24 bg-deep-space overflow-hidden">
-      {/* background glow */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-indigo-200/30 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-purple-200/30 rounded-full blur-[120px]" />
-      </div>
-
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="ai-tools" className="relative py-24 sm:py-32 bg-ivory border-t border-ink/10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* section header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12 sm:mb-20"
-        >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-indigo-200 bg-indigo-50 mb-6 shadow-sm">
-            <span className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-indigo-500"></span>
-            </span>
-            <span className="text-sm font-medium text-indigo-700 tracking-wide uppercase">Next-Gen AI Capabilities</span>
+        <div className="grid lg:grid-cols-12 gap-8 items-end mb-14 sm:mb-16">
+          <div className="lg:col-span-7">
+            <p className="slate text-editorial mb-5 flex items-center gap-2">
+              <span aria-hidden="true" className="rec-dot w-1.5 h-1.5 rounded-full bg-coral" />
+              Next-Gen AI Capabilities
+            </p>
+            <RevealLines as="h2" className="display-lg font-display text-ink" lines={['Supercharge with', <span key="ai" className="text-editorial">AI Tools Suite</span>]} />
           </div>
-
-          <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-900 mb-6 tracking-tight">
-            Supercharge with <br className="hidden sm:block" />
-            <span className="text-gradient">AI Tools Suite</span>
-          </h2>
-          <p className="text-lg sm:text-xl text-slate-500 max-w-2xl mx-auto font-light leading-relaxed">
+          <p className="lg:col-span-4 lg:col-start-9 text-lg text-ink/70 leading-relaxed">
             Harness the power of advanced artificial intelligence to elevate your media. Enhance, upscale, and organize with unprecedented speed and precision.
           </p>
-        </motion.div>
+        </div>
 
-        {/* tools grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10 perspective-1000">
+        {/* tools index */}
+        <ul className="border-t border-ink/20">
           {aiTools.map((tool, index) => (
-            <motion.div
+            <motion.li
               key={tool.id}
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: index * 0.15 }}
-              whileHover={{ scale: 1.03, translateZ: 40, translateY: -10 }}
-              onClick={() => handleToolClick(tool)}
-              className="group relative flex flex-col h-full rounded-3xl p-8 backdrop-blur-xl border border-slate-200 bg-white/80 transition-all duration-500 cursor-pointer overflow-hidden z-10 hover:shadow-xl"
-              style={{ boxShadow: `0 4px 24px -4px rgba(0,0,0,0.08), 0 0 12px -2px ${tool.glowColor}` }}
+              transition={{ duration: 0.8, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] }}
+              className="border-b border-ink/20"
             >
-              {/* hover gradients */}
-              <div className={`absolute inset-0 bg-gradient-to-br ${tool.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-700 ease-out`} />
-              <div className="absolute -top-32 -right-32 w-64 h-64 bg-slate-100/50 rounded-full blur-3xl group-hover:bg-slate-200/60 transition-colors duration-700" />
-              <div className={`absolute -bottom-32 -left-32 w-64 h-64 bg-gradient-to-tr ${tool.gradient} opacity-0 group-hover:opacity-10 rounded-full blur-3xl transition-opacity duration-700`} />
-
-              {/* icon */}
-              <div className="relative z-10 mb-4 inline-flex">
-                <div className={`relative flex items-center justify-center p-4 rounded-2xl bg-gradient-to-br ${tool.gradient} text-white shadow-lg group-hover:shadow-xl transition-shadow duration-500`}>
-                  <motion.div whileHover={{ rotate: 15, scale: 1.1 }} transition={{ type: "spring", stiffness: 300 }}>
-                    {tool.icon}
-                  </motion.div>
-                </div>
-              </div>
-
-              {/* health status */}
-              {tool.healthEndpoint && (
-                <div className="relative z-10 mb-6">
-                  <HealthBadge url={tool.healthEndpoint} />
-                </div>
-              )}
-
-              {/* content */}
-              <div className="relative z-10 flex-grow">
-                <h3 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-4 tracking-wide group-hover:text-indigo-700 transition-colors duration-300">
-                  {tool.title}
-                </h3>
-                <p className="text-slate-500 text-sm sm:text-base leading-relaxed mb-8 font-light group-hover:text-slate-600 transition-colors duration-300">
+              <button
+                type="button"
+                onClick={() => handleToolClick(tool)}
+                className="group relative w-full text-left grid grid-cols-12 gap-x-4 gap-y-4 items-center py-8 sm:py-10 px-1 sm:px-5 overflow-hidden focus-visible:outline-offset-[-2px]"
+              >
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-0 bg-editorial origin-left scale-x-0 transition-transform duration-700 ease-reveal group-hover:scale-x-100 group-focus-visible:scale-x-100 motion-reduce:transition-none"
+                />
+                <span className="relative col-span-2 sm:col-span-1 w-11 h-11 rounded-md border border-ink/20 text-ink flex items-center justify-center transition-colors duration-500 group-hover:border-ivory/30 group-hover:text-coral group-focus-visible:text-coral" aria-hidden="true">
+                  {tool.icon}
+                </span>
+                <span className="relative col-span-10 sm:col-span-11 lg:col-span-4 flex flex-col gap-2">
+                  <span className="font-display font-extrabold tracking-[-0.03em] text-ink [font-size:clamp(1.6rem,1rem+1.9vw,2.6rem)] leading-[1.05] transition-colors duration-500 group-hover:text-ivory group-focus-visible:text-ivory">
+                    {tool.title}
+                  </span>
+                  {tool.healthEndpoint && (
+                    <span>
+                      <HealthBadge url={tool.healthEndpoint} />
+                    </span>
+                  )}
+                </span>
+                <span className="relative col-span-12 sm:col-start-2 sm:col-span-10 lg:col-start-auto lg:col-span-4 text-ink/70 leading-relaxed transition-colors duration-500 group-hover:text-ivory/85 group-focus-visible:text-ivory/85">
                   {tool.description}
-                </p>
-
-                <ul className="space-y-3 mb-8">
-                  {tool.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-center gap-3 text-sm text-slate-600 font-medium">
-                      <div className={`w-1.5 h-1.5 rounded-full bg-gradient-to-r ${tool.gradient}`} />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* bottom cta */}
-              <div className="relative z-10 mt-auto pt-6 border-t border-slate-200">
-                <motion.div className="flex items-center text-sm font-semibold text-slate-800 gap-2 group-hover:gap-4 transition-all duration-300">
-                  <span className="tracking-wider uppercase">Launch Tool</span>
-                  <div className={`p-1.5 rounded-full bg-gradient-to-r ${tool.gradient} shadow-md`}>
-                    <ArrowRight className="w-4 h-4 text-white" />
-                  </div>
-                </motion.div>
-              </div>
-            </motion.div>
+                  <span className="flex flex-wrap gap-1.5 mt-4">
+                    {tool.features.map((feature) => (
+                      <span
+                        key={feature}
+                        className="slate !text-[10px] !tracking-[0.12em] px-2 py-1 rounded-[3px] border border-ink/20 text-ink/65 transition-colors duration-500 group-hover:border-ivory/30 group-hover:text-ivory/80"
+                      >
+                        {feature}
+                      </span>
+                    ))}
+                  </span>
+                </span>
+                <span className="relative col-span-12 sm:col-start-2 sm:col-span-11 lg:col-start-auto lg:col-span-3 flex items-center justify-between lg:justify-end gap-4">
+                  <span className="slate text-ink/60 transition-colors duration-500 group-hover:text-ivory">Launch Tool</span>
+                  <span
+                    aria-hidden="true"
+                    className="flex-shrink-0 w-11 h-11 rounded-full border border-ink/25 flex items-center justify-center text-ink transition-all duration-500 ease-reveal group-hover:bg-coral group-hover:border-coral group-hover:-rotate-45 group-focus-visible:bg-coral group-focus-visible:border-coral"
+                  >
+                    <ArrowRight className="w-4 h-4" />
+                  </span>
+                </span>
+              </button>
+            </motion.li>
           ))}
-        </div>
+        </ul>
       </div>
     </section>
   );

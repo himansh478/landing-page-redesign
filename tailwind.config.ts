@@ -1,5 +1,9 @@
 ﻿import type { Config } from "tailwindcss";
 
+// Palette colours read RGB channels from globals.css so opacity modifiers
+// (bg-ink/80, text-coral/60, …) work.
+const channel = (name: string) => `rgb(var(--${name}-rgb) / <alpha-value>)`;
+
 const config: Config = {
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
@@ -10,6 +14,12 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        ivory: channel("ivory"),
+        paper: channel("paper"),
+        sand: channel("sand"),
+        ink: channel("ink"),
+        editorial: channel("editorial"),
+        coral: channel("coral"),
         background: "var(--background)",
         foreground: "var(--foreground)",
         card: {
@@ -73,6 +83,10 @@ const config: Config = {
       fontFamily: {
         sans: ["var(--font-sans)", "sans-serif"],
         display: ["var(--font-display)", "sans-serif"],
+      },
+      transitionTimingFunction: {
+        reveal: "cubic-bezier(0.16, 1, 0.3, 1)",
+        move: "cubic-bezier(0.65, 0, 0.35, 1)",
       },
     },
   },

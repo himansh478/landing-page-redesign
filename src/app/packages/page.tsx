@@ -1,8 +1,11 @@
 'use client';
 
 import { motion } from 'motion/react';
-import { Phone, CheckCircle2, Video, Camera, Clock, CalendarDays, HelpCircle, ArrowLeft, Sparkles, Zap, Smartphone, Instagram } from 'lucide-react';
-import Link from 'next/link';
+import { Phone, Video, Camera, CalendarDays, Sparkles, Instagram, ArrowRight } from 'lucide-react';
+import { PageIntro, PageShell } from '@/components/editorial/PageIntro';
+import { CtaBand } from '@/components/editorial/CtaBand';
+import { RevealLines } from '@/components/motion/RevealLines';
+import { btnArrow, btnCoralOnInk, btnPrimary } from '@/components/editorial/styles';
 
 const WHATSAPP_LINK = `https://wa.me/+918120317074`;
 
@@ -18,7 +21,6 @@ const pricingPlans = [
       '10 photo',
     ],
     icon: Video,
-    color: 'from-blue-500 to-cyan-500',
   },
   {
     title: 'Pro Cinema',
@@ -37,7 +39,6 @@ const pricingPlans = [
       '5 photos',
     ],
     icon: Camera,
-    color: 'from-purple-500 to-pink-500',
     featured: true,
   },
   {
@@ -52,7 +53,6 @@ const pricingPlans = [
       'Priority Turnaround (24h)',
     ],
     icon: CalendarDays,
-    color: 'from-orange-500 to-red-500',
   },
   {
     title: 'Wedding & Function',
@@ -71,7 +71,6 @@ const pricingPlans = [
       'Note: Travel, Stay & Food arrangement extra',
     ],
     icon: Sparkles,
-    color: 'from-rose-500 to-pink-600',
   },
   {
     title: 'Social Media Management',
@@ -87,7 +86,6 @@ const pricingPlans = [
       'Deliverables: 15 Reels + Full Management /Month',
     ],
     icon: Instagram,
-    color: 'from-pink-500 via-rose-500 to-orange-500',
   },
 ];
 
@@ -108,155 +106,123 @@ const faqs = [
 
 export default function PackagesPage() {
   return (
-    <>
-      {/* Background Blobs */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-indigo-600/5 blur-[150px] rounded-full" />
-        <div className="absolute bottom-0 left-0 w-[800px] h-[800px] bg-purple-600/5 blur-[150px] rounded-full" />
-      </div>
+    <PageShell>
+      <PageIntro
+        back={{ href: '/', label: 'Back to Studio' }}
+        note={
+          <span className="inline-flex items-center gap-2">
+            <span aria-hidden="true" className="rec-dot w-1.5 h-1.5 rounded-full bg-coral" />
+            Pan-India Travel Active
+          </span>
+        }
+        title={['Investment', 'Architectures.']}
+        lede="Transparent, performance-driven pricing for brands that refuse to compromise on visual excellence."
+      />
 
-      <section className="relative pt-40 pb-32 overflow-hidden bg-slate-50 min-h-screen">
-        <div className="container mx-auto px-6 relative z-10">
-          <Link 
-            href="/" 
-            className="group inline-flex items-center gap-3 text-slate-500 hover:text-slate-900 transition-all mb-16 text-xs font-black uppercase tracking-[0.3em]"
+      {/* Pricing Grid — a rate card */}
+      <ul className="mt-16 sm:mt-24 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
+        {pricingPlans.map((plan, idx) => (
+          <motion.li
+            key={plan.title}
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.15 }}
+            transition={{ duration: 0.8, delay: (idx % 3) * 0.08, ease: [0.16, 1, 0.3, 1] }}
+            className={`relative flex flex-col rounded-[4px] border p-7 sm:p-8 ${
+              plan.featured
+                ? 'on-ink bg-ink border-ink shadow-[0_40px_80px_-40px_rgb(var(--ink-rgb)/0.6)]'
+                : 'bg-paper border-ink/15'
+            }`}
           >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-2 transition-transform" />
-            Back to Studio
-          </Link>
-
-          <div className="text-center mb-24">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 text-[10px] font-black uppercase tracking-[0.3em] mb-10"
-            >
-              <Zap className="w-3 h-3" />
-              Pan-India Travel Active
-            </motion.div>
-            <motion.h1
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="text-5xl md:text-8xl lg:text-9xl font-bold mb-10 tracking-tighter leading-none text-slate-900"
-            >
-              Investment <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-slate-600 to-slate-400">Architectures.</span>
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="text-lg md:text-2xl text-slate-500 max-w-3xl mx-auto font-light leading-relaxed"
-            >
-              Transparent, performance-driven pricing for brands that refuse to compromise on visual excellence.
-            </motion.p>
-          </div>
-
-          {/* Pricing Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-32">
-            {pricingPlans.map((plan, idx) => (
-              <motion.div
-                key={plan.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                className={`group relative p-10 rounded-[40px] bg-white border transition-all duration-500 flex flex-col shadow-sm hover:shadow-md ${
-                  plan.featured ? 'border-indigo-300 shadow-[0_0_40px_rgba(79,70,229,0.1)] scale-105 z-10' : 'border-slate-200 hover:border-slate-300'
-                }`}
-              >
-                {plan.featured && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-indigo-500 text-white text-[10px] font-black tracking-widest px-6 py-2 rounded-full uppercase shadow-md">
-                    Most Strategic
-                  </div>
-                )}
-                
-                <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${plan.color} flex items-center justify-center mb-10 group-hover:scale-110 transition-transform shadow-md`}>
-                  <plan.icon className="w-7 h-7 text-white" />
-                </div>
-
-                <h3 className="text-xl font-bold mb-2 tracking-tight uppercase text-slate-900">{plan.title}</h3>
-                <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-3xl font-bold text-slate-900">{plan.price}</span>
-                </div>
-                <div className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-10">{plan.subtitle}</div>
-
-                <ul className="space-y-4 mb-12 flex-grow">
-                  {plan.features.map((feature, i) => (
-                    <li key={i} className="flex items-start gap-4 text-slate-500 group/item">
-                      <CheckCircle2 className="w-4 h-4 text-indigo-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-xs font-medium leading-tight group-hover/item:text-slate-700 transition-colors">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <a
-                  href={`https://wa.me/918120317074?text=${encodeURIComponent(
-                    `Hello! I want to book the *${plan.title}* package (${plan.price}). Please share more details.`
-                  )}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full py-5 rounded-2xl bg-slate-900 text-white font-black text-[10px] uppercase tracking-[0.2em] text-center hover:bg-indigo-600 transition-all shadow-md hover:shadow-lg"
+            <div className="flex items-center justify-between gap-4 mb-8">
+              <span className={`slate tabular ${plan.featured ? 'text-ivory/50' : 'text-ink/45'}`}>
+                {String(idx + 1).padStart(2, '0')}
+              </span>
+              {plan.featured ? (
+                <span className="slate !text-[10px] bg-coral text-ink px-2 py-1 rounded-[3px]">Most Strategic</span>
+              ) : (
+                <span
+                  aria-hidden="true"
+                  className="w-10 h-10 rounded-full border border-ink/20 text-ink flex items-center justify-center"
                 >
-                  Book Now
-                </a>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Action Banner */}
-          <div className="p-16 rounded-[60px] bg-white border border-slate-200 relative overflow-hidden mb-32 shadow-sm">
-            <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-600/5 blur-[100px] -mr-48 -mt-48" />
-            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-12">
-              <div className="text-center md:text-left max-w-xl">
-                <h2 className="text-4xl md:text-6xl font-bold mb-6 tracking-tighter leading-none text-slate-900">Custom <br /> <span className="text-indigo-600">Neural Flows.</span></h2>
-                <p className="text-slate-500 text-lg font-light">
-                  Need an enterprise-scale solution? We design custom technical architectures and production workflows for large organizations.
-                </p>
-              </div>
-              <a
-                href={WHATSAPP_LINK}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-4 px-12 py-7 rounded-3xl bg-slate-900 text-white font-black text-xl uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl"
-              >
-                <Phone className="w-6 h-6" />
-                Discovery Call
-              </a>
+                  <plan.icon className="w-4 h-4" />
+                </span>
+              )}
             </div>
-          </div>
 
-          {/* FAQ */}
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-20">
-              <h2 className="text-4xl font-bold mb-4 tracking-tighter text-slate-900">Common Inquiries</h2>
-              <p className="text-slate-500 font-light">Everything you need to know about our production lifecycle.</p>
-            </div>
-            <div className="space-y-6">
-              {faqs.map((faq, idx) => (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  className="p-10 rounded-[40px] bg-white border border-slate-200 hover:border-slate-300 hover:shadow-md transition-all cursor-default group"
+            <h3 className={`font-display text-2xl font-extrabold tracking-[-0.03em] ${plan.featured ? 'text-ivory' : 'text-ink'}`}>{plan.title}</h3>
+            <p className={`font-display font-black tracking-[-0.05em] leading-none text-5xl tabular mt-4 ${plan.featured ? 'text-coral' : 'text-ink'}`}>
+              {plan.price}
+            </p>
+            <p className={`slate mt-3 mb-8 ${plan.featured ? 'text-ivory/55' : 'text-ink/55'}`}>{plan.subtitle}</p>
+
+            <ul className={`flex-grow mb-8 border-t ${plan.featured ? 'border-ivory/15' : 'border-ink/15'}`}>
+              {plan.features.map((feature, i) => (
+                <li
+                  key={i}
+                  className={`flex items-start gap-3 py-2.5 border-b text-sm leading-snug ${
+                    plan.featured ? 'border-ivory/10 text-ivory/80' : 'border-ink/10 text-ink/75'
+                  }`}
                 >
-                  <div className="flex gap-8">
-                    <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center group-hover:bg-indigo-50 transition-colors border border-slate-100">
-                      <HelpCircle className="w-7 h-7 text-slate-400 group-hover:text-indigo-500 transition-colors" />
-                    </div>
-                    <div>
-                      <h3 className="text-2xl font-bold mb-4 tracking-tight text-slate-900">{faq.q}</h3>
-                      <p className="text-slate-600 font-light leading-relaxed">{faq.a}</p>
-                    </div>
-                  </div>
-                </motion.div>
+                  <span aria-hidden="true" className="w-1.5 h-1.5 mt-[0.45em] bg-coral rotate-45 flex-shrink-0" />
+                  {feature}
+                </li>
               ))}
-            </div>
-          </div>
+            </ul>
+
+            <a
+              href={`https://wa.me/918120317074?text=${encodeURIComponent(
+                `Hello! I want to book the *${plan.title}* package (${plan.price}). Please share more details.`
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${plan.featured ? btnCoralOnInk : btnPrimary} w-full`}
+            >
+              Book Now
+              <ArrowRight className={btnArrow} aria-hidden="true" />
+            </a>
+          </motion.li>
+        ))}
+      </ul>
+
+      {/* Action Banner */}
+      <CtaBand
+        title={['Custom', 'Neural Flows.']}
+        body="Need an enterprise-scale solution? We design custom technical architectures and production workflows for large organizations."
+        className="mt-24 sm:mt-32"
+      >
+        <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer" className={`${btnCoralOnInk} w-full sm:w-auto`}>
+          <Phone className="w-5 h-5" aria-hidden="true" />
+          Discovery Call
+        </a>
+      </CtaBand>
+
+      {/* FAQ */}
+      <section className="mt-24 sm:mt-32 grid lg:grid-cols-12 gap-12">
+        <div className="lg:col-span-4">
+          <RevealLines as="h2" className="display-md font-display text-ink" lines={['Common', 'Inquiries']} />
+          <p className="text-lg text-ink/70 leading-relaxed mt-6 max-w-sm">Everything you need to know about our production lifecycle.</p>
+        </div>
+        <div className="lg:col-span-7 lg:col-start-6 border-t border-ink/20">
+          {faqs.map((faq, idx) => (
+            <details key={faq.q} name="packages-faq" className="faq-item group border-b border-ink/20">
+              <summary className="faq-summary flex items-start gap-5 sm:gap-8 py-6 sm:py-7 cursor-pointer select-none">
+                <span className="slate text-ink/45 pt-2 w-10 flex-shrink-0">Q.{String(idx + 1).padStart(2, '0')}</span>
+                <h3 className="flex-1 font-display text-lg sm:text-xl font-semibold text-ink tracking-[-0.01em] transition-colors duration-300 group-hover:text-editorial">
+                  {faq.q}
+                </h3>
+                <span aria-hidden="true" className="relative w-6 h-6 mt-1 flex-shrink-0">
+                  <span className="absolute left-0 right-0 top-1/2 h-[2px] -mt-px bg-ink" />
+                  <span className="faq-plus-v absolute top-0 bottom-0 left-1/2 w-[2px] -ml-px bg-ink transition-transform duration-500 ease-reveal" />
+                </span>
+              </summary>
+              <div className="faq-answer pb-7 pl-[3.75rem] sm:pl-[4.5rem] pr-10">
+                <p className="text-ink/75 leading-relaxed">{faq.a}</p>
+              </div>
+            </details>
+          ))}
         </div>
       </section>
-    </>
+    </PageShell>
   );
 }

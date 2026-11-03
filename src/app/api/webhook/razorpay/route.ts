@@ -1,17 +1,26 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { supabase } from '@/lib/supabase';
-import cloudinary from '@/lib/cloudinary';
+import { markPurchasePaid } from '@/lib/raw-clip-packages';
 
+// Set RAZORPAY_WEBHOOK_SECRET to the secret shown when you add this URL
+// (/api/webhook/razorpay) as a webhook in Razorpay -> Settings -> Webhooks,
+// subscribed to "payment.captured". Without it every webhook is rejected; the
+// success page still confirms payments by asking Razorpay directly.
 const WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET || '';
 
-// Map package types to filenames in Cloudinary
-const PACKAGE_FILES: Record<string, string> = {
-  'Starter': 'raw-clips-starter.zip',
-  'Pro': 'raw-clips-pro.zip',        
-};
+function validSignature(body: string, signature: string) {
+  const expected = crypto.createHmac('sha256', WEBHOOK_SECRET).update(body).digest('hex');
+  const a = Buffer.from(expected);
+  const b = Buffer.from(signature);
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
 
 export async function POST(request: Request) {
+  if (!WEBHOOK_SECRET) {
+    console.error('RAZORPAY_WEBHOOK_SECRET is not set; rejecting raw clips webhook.');
+    return NextResponse.json({ success: false, error: 'Webhook not configured' }, { status: 500 });
+  }
+
   try {
     const signature = request.headers.get('x-razorpay-signature');
     if (!signature) {
@@ -19,79 +28,28 @@ export async function POST(request: Request) {
     }
 
     const rawBody = await request.text();
-
-    // Verify signature
-    const shasum = crypto.createHmac('sha256', WEBHOOK_SECRET);
-    shasum.update(rawBody);
-    const digest = shasum.digest('hex');
-
-    if (digest !== signature) {
+    if (!validSignature(rawBody, signature)) {
       console.warn('Webhook Verification Failed!');
       return NextResponse.json({ success: false, error: 'Invalid signature' }, { status: 400 });
     }
 
-    // Parsed payload
     const payload = JSON.parse(rawBody);
     const event = payload.event;
 
-    console.log(`Razorpay Webhook Event Received: ${event}`);
-
     if (event === 'payment.captured') {
-      const paymentEntity = payload.payload.payment.entity;
-      const orderId = paymentEntity.order_id;
-      const paymentId = paymentEntity.id;
-
-      // 1. Fetch order details from database to see which package was bought
-      const { data: purchaseData, error: fetchError } = await supabase
-        .from('raw_clips_purchases')
-        .select('*')
-        .eq('order_id', orderId)
-        .single();
-
-      if (fetchError || !purchaseData) {
-        console.error('Order not found in database for Order ID:', orderId);
-        return NextResponse.json({ success: false, error: 'Order not found' }, { status: 400 });
+      const payment = payload.payload.payment.entity;
+      const ok = await markPurchasePaid(payment.order_id, payment.id, Number(payment.amount));
+      if (!ok) {
+        // Unknown order or wrong amount: acknowledge so Razorpay stops retrying,
+        // but the order stays unpaid.
+        return NextResponse.json({ success: false, error: 'Order not marked paid' });
       }
-
-      const packageType = purchaseData.package_type;
-      const fileKey = PACKAGE_FILES[packageType] || 'raw-clips-starter.zip';
-
-      // 2. Generate secure expiring link (24 hours / 86400 seconds) from Cloudinary
-      let downloadUrl = '';
-      try {
-        downloadUrl = cloudinary.utils.url(fileKey, {
-          resource_type: 'raw',
-          type: 'authenticated',
-          sign_url: true,
-          secure: true,
-          expires_at: Math.floor(Date.now() / 1000) + 86400, // 24 hours
-        });
-      } catch (fbError) {
-        console.error('Cloudinary Storage URL generation error:', fbError);
-        // Fallback or handle it. Don't block DB update, but log it.
-      }
-
-      // 3. Update the DB record as SUCCESS and store payment_id & download_url
-      const { error: updateError } = await supabase
-        .from('raw_clips_purchases')
-        .update({
-          status: 'SUCCESS',
-          payment_id: paymentId,
-          download_url: downloadUrl || null,
-        })
-        .eq('order_id', orderId);
-
-      if (updateError) {
-        console.error('Database update failed:', updateError);
-        return NextResponse.json({ success: false, error: 'Database update failed' }, { status: 500 });
-      }
-
-      console.log(`Purchase successful for Order: ${orderId}. R2 link generated.`);
+      console.log(`Raw clips purchase confirmed for order ${payment.order_id}.`);
     }
 
     return NextResponse.json({ success: true });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Webhook Error:', err);
-    return NextResponse.json({ success: false, error: err.message || 'Error occurred' }, { status: 500 });
+    return NextResponse.json({ success: false, error: err instanceof Error ? err.message : 'Error occurred' }, { status: 500 });
   }
 }

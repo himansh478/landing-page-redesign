@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
-import cloudinary from '@/lib/cloudinary';
+import { supabaseAdmin } from '@/lib/supabase-admin';
+import { RAW_CLIP_PACKAGES, isRawClipPackage, markPurchasePaid } from '@/lib/raw-clip-packages';
 
+// Local testing only: pretends Razorpay captured the right amount for an order.
 export async function POST(request: Request) {
   // Only allow this API to run in local development mode for security
   if (process.env.NODE_ENV !== 'development') {
@@ -15,49 +16,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: 'Order ID is required' }, { status: 400 });
     }
 
-    // 1. Fetch order details from database
-    const { data: purchaseData, error: fetchError } = await supabase
+    const { data: purchase, error: fetchError } = await supabaseAdmin
       .from('raw_clips_purchases')
-      .select('*')
+      .select('package_type')
       .eq('order_id', orderId)
       .single();
 
-    if (fetchError || !purchaseData) {
+    if (fetchError || !purchase) {
       return NextResponse.json({ success: false, error: 'Order not found in database' }, { status: 400 });
     }
 
-    // 2. Generate secure expiring link from Cloudinary
-    const fileKey = purchaseData.package_type === 'Pro' ? 'raw-clips-pro.zip' : 'raw-clips-starter.zip';
-    let downloadUrl = '';
-    try {
-      downloadUrl = cloudinary.utils.url(fileKey, {
-        resource_type: 'raw',
-        type: 'authenticated',
-        sign_url: true,
-        secure: true,
-        expires_at: Math.floor(Date.now() / 1000) + 86400, // 24 hours
-      });
-    } catch (fbError) {
-      console.warn('Cloudinary URL generation skipped or failed during dev mock. Using a placeholder.');
-      downloadUrl = 'https://example.com/demo-download.zip'; // Fallback if credentials aren't ready
-    }
-
-    // 3. Mark DB record as SUCCESS
-    const { error: updateError } = await supabase
-      .from('raw_clips_purchases')
-      .update({
-        status: 'SUCCESS',
-        payment_id: 'pay_dev_mock_12345',
-        download_url: downloadUrl,
-      })
-      .eq('order_id', orderId);
-
-    if (updateError) {
-      throw updateError;
+    const pkg = isRawClipPackage(purchase.package_type) ? purchase.package_type : 'Starter';
+    const ok = await markPurchasePaid(orderId, 'pay_dev_mock_12345', RAW_CLIP_PACKAGES[pkg].price * 100);
+    if (!ok) {
+      return NextResponse.json({ success: false, error: 'Could not mark the order paid.' }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });
-  } catch (err: any) {
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  } catch (err: unknown) {
+    return NextResponse.json({ success: false, error: err instanceof Error ? err.message : 'Error' }, { status: 500 });
   }
 }

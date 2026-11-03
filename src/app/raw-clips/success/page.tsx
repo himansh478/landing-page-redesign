@@ -1,10 +1,14 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, useSyncExternalStore, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
-import { CheckCircle2, Download, Loader2, ArrowRight, AlertTriangle, Play } from 'lucide-react';
+import { CheckCircle2, Download, Loader2, ArrowRight, AlertTriangle, Play, Wrench, Send } from 'lucide-react';
 import Link from 'next/link';
+import { btnCoral, btnGhost } from '@/components/editorial/styles';
+
+const noop = () => () => {};
+const isLocalHost = () => window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const notLocalOnServer = () => false;
 
 function SuccessPageContent() {
   const searchParams = useSearchParams();
@@ -12,27 +16,19 @@ function SuccessPageContent() {
 
   const [status, setStatus] = useState<'PENDING' | 'SUCCESS' | 'FAILED' | 'LOADING'>('LOADING');
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [telegramUrl, setTelegramUrl] = useState<string | null>(null);
   const [packageName, setPackageName] = useState<string>('Starter');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [isLocal, setIsLocal] = useState(false);
+  // Check if we are on localhost
+  const isLocal = useSyncExternalStore(noop, isLocalHost, notLocalOnServer);
   const [simulating, setSimulating] = useState(false);
 
-  // Check if we are on localhost
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const hostname = window.location.hostname;
-      setIsLocal(hostname === 'localhost' || hostname === '127.0.0.1');
-    }
-  }, []);
+  // Without an order ID there is nothing to verify.
+  const shownStatus = orderId ? status : 'FAILED';
+  const shownError = orderId ? errorMsg : 'Invalid Order ID. Please check your purchase.';
 
   useEffect(() => {
-    if (!orderId) {
-      setErrorMsg('Invalid Order ID. Please check your purchase.');
-      setStatus('FAILED');
-      return;
-    }
-
-    let intervalId: NodeJS.Timeout;
+    if (!orderId) return;
 
     const checkPurchaseStatus = async () => {
       try {
@@ -48,6 +44,7 @@ function SuccessPageContent() {
         if (data.status === 'SUCCESS') {
           setStatus('SUCCESS');
           setDownloadUrl(data.download_url);
+          setTelegramUrl(data.telegram_url ?? null);
           clearInterval(intervalId);
         } else if (data.status === 'FAILED') {
           setStatus('FAILED');
@@ -65,7 +62,7 @@ function SuccessPageContent() {
     checkPurchaseStatus();
 
     // Poll database every 2.5 seconds
-    intervalId = setInterval(checkPurchaseStatus, 2500);
+    const intervalId = setInterval(checkPurchaseStatus, 2500);
 
     // Timeout polling after 2 minutes to prevent infinite loops
     const timeoutId = setTimeout(() => {
@@ -113,132 +110,131 @@ function SuccessPageContent() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl text-center space-y-6">
-        
-        {/* Status: Loading / Checking */}
-        {status === 'LOADING' && (
-          <div className="space-y-4 py-8">
-            <Loader2 className="w-16 h-16 animate-spin text-indigo-500 mx-auto" />
-            <h2 className="text-2xl font-bold">Verifying Order...</h2>
-            <p className="text-slate-400 text-sm">Please wait while we locate your transaction.</p>
-          </div>
-        )}
+    <div className="grain relative bg-ivory min-h-screen flex flex-col items-center justify-center px-4 pt-28 pb-20">
+      <div className="relative z-10 w-full max-w-md bg-paper border border-ink/15 rounded-[4px] overflow-hidden shadow-[0_40px_80px_-40px_rgb(var(--ink-rgb)/0.5)]">
+        <div className="h-1 bg-coral" aria-hidden="true" />
+        <div className="p-7 sm:p-8 text-center space-y-6" aria-live="polite">
+          <p className="slate text-editorial">Cwaya · RAW library</p>
 
-        {/* Status: Pending Payment Hook */}
-        {status === 'PENDING' && (
-          <div className="space-y-6 py-6">
-            <div className="relative w-16 h-16 mx-auto">
-              <Loader2 className="absolute inset-0 w-16 h-16 animate-spin text-indigo-500" />
-              <div className="absolute inset-2 bg-indigo-500/10 rounded-full animate-ping" />
+          {/* Status: Loading / Checking */}
+          {shownStatus === 'LOADING' && (
+            <div className="space-y-4 py-6">
+              <Loader2 className="w-12 h-12 animate-spin text-editorial mx-auto" aria-hidden="true" />
+              <h2 className="font-display text-2xl font-extrabold text-ink tracking-[-0.03em]">Verifying Order...</h2>
+              <p className="text-ink/65 text-sm">Please wait while we locate your transaction.</p>
             </div>
-            <div className="space-y-2">
-              <h2 className="text-2xl font-bold">Confirming Payment...</h2>
-              <p className="text-slate-400 text-sm px-4">
-                We are waiting for payment verification webhook from Razorpay. Keep this tab open.
-              </p>
-            </div>
+          )}
 
-            {/* Developer simulation panel - only visible on localhost */}
-            {isLocal && (
-              <div className="mt-8 p-4 bg-indigo-950/40 border border-indigo-500/30 rounded-2xl text-center space-y-3">
-                <p className="text-xs text-indigo-300 font-semibold tracking-wide uppercase">
-                  🛠️ Developer Sandbox
+          {/* Status: Pending Payment Hook */}
+          {shownStatus === 'PENDING' && (
+            <div className="space-y-6 py-4">
+              <Loader2 className="w-12 h-12 animate-spin text-editorial mx-auto" aria-hidden="true" />
+              <div className="space-y-2">
+                <h2 className="font-display text-2xl font-extrabold text-ink tracking-[-0.03em]">Confirming Payment...</h2>
+                <p className="text-ink/65 text-sm px-4">
+                  We are waiting for payment verification webhook from Razorpay. Keep this tab open.
                 </p>
-                <p className="text-[11px] text-slate-400">
-                  Localhost is private so Razorpay cannot send webhooks here. Click below to bypass and verify instantly.
+              </div>
+
+              {/* Developer simulation panel - only visible on localhost */}
+              {isLocal && (
+                <div className="mt-8 p-4 bg-ivory border border-dashed border-ink/25 rounded-[4px] text-center space-y-3">
+                  <p className="slate text-ink/70 flex items-center justify-center gap-1.5">
+                    <Wrench className="w-3.5 h-3.5" aria-hidden="true" />
+                    Developer Sandbox
+                  </p>
+                  <p className="text-xs text-ink/60">
+                    Localhost is private so Razorpay cannot send webhooks here. Click below to bypass and verify instantly.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleSimulateSuccess}
+                    disabled={simulating}
+                    className="w-full h-10 bg-editorial hover:bg-ink text-ivory text-xs font-semibold rounded-md flex items-center justify-center gap-1.5 transition-colors disabled:opacity-60"
+                  >
+                    {simulating ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
+                    ) : (
+                      <Play className="w-3.5 h-3.5 fill-current" aria-hidden="true" />
+                    )}
+                    Simulate Webhook Success
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Status: Success (Files Unlocked) */}
+          {shownStatus === 'SUCCESS' && (
+            <div className="space-y-6 py-2">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-coral rounded-full">
+                <CheckCircle2 className="w-8 h-8 text-ink" aria-hidden="true" />
+              </div>
+
+              <div className="space-y-2">
+                <h2 className="font-display text-3xl font-extrabold text-ink tracking-[-0.03em]">Payment Verified!</h2>
+                <p className="text-ink/70 text-sm">
+                  Thank you! Your {packageName} Raw Clips Package is ready.
                 </p>
-                <button
-                  type="button"
-                  onClick={handleSimulateSuccess}
-                  disabled={simulating}
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-1.5 transition-all shadow disabled:opacity-50"
-                >
-                  {simulating ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  ) : (
-                    <Play className="w-3.5 h-3.5 fill-current" />
-                  )}
-                  Simulate Webhook Success
-                </button>
               </div>
-            )}
-          </div>
-        )}
 
-        {/* Status: Success (Files Unlocked) */}
-        {status === 'SUCCESS' && (
-          <div className="space-y-6 py-4">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-emerald-500/10 border border-emerald-500/30 rounded-full">
-              <CheckCircle2 className="w-12 h-12 text-emerald-400" />
-            </div>
-            
-            <div className="space-y-2">
-              <h2 className="text-3xl font-black tracking-tight text-emerald-400">Payment Verified!</h2>
-              <p className="text-slate-300 text-sm">
-                Thank you! Your {packageName} Raw Clips Package is ready.
-              </p>
-            </div>
+              <dl className="border-y border-ink/15 text-left text-xs text-ink/65 divide-y divide-ink/10">
+                <div className="flex gap-3 py-2.5"><dt className="slate text-ink/50 w-20 flex-shrink-0">Order ID</dt><dd className="tabular break-all">{orderId}</dd></div>
+                <div className="flex gap-3 py-2.5"><dt className="slate text-ink/50 w-20 flex-shrink-0">Validity</dt><dd>{telegramUrl ? 'Telegram link works for 24 hours, for one Telegram account. Later, send /myfiles to the bot.' : 'Download link is active for 24 hours.'}</dd></div>
+              </dl>
 
-            <div className="bg-slate-950 rounded-2xl p-4 border border-slate-800 text-left text-xs text-slate-400 space-y-1">
-              <p><span className="font-semibold text-slate-300">Order ID:</span> {orderId}</p>
-              <p><span className="font-semibold text-slate-300">Validity:</span> Download link is active for 24 hours.</p>
-            </div>
+              {telegramUrl ? (
+                <a href={telegramUrl} target="_blank" rel="noopener noreferrer" className={`${btnCoral} w-full`}>
+                  <Send className="w-5 h-5" aria-hidden="true" />
+                  Get files on Telegram
+                </a>
+              ) : downloadUrl ? (
+                <a href={downloadUrl} download className={`${btnCoral} w-full`}>
+                  <Download className="w-5 h-5 transition-transform group-hover:-translate-y-0.5" aria-hidden="true" />
+                  Download 4K Raw Clips ZIP
+                </a>
+              ) : (
+                <div className="p-4 bg-sand/60 border border-ink/15 rounded-[4px] text-ink/80 text-sm text-left">
+                  Download URL could not be generated. Please contact support on WhatsApp.
+                </div>
+              )}
 
-            {downloadUrl ? (
-              <a
-                href={downloadUrl}
-                download
-                className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 py-4 rounded-2xl font-extrabold text-lg hover:shadow-lg hover:shadow-emerald-500/20 transition-all flex items-center justify-center gap-2 group cursor-pointer"
-              >
-                <Download className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform" />
-                Download 4K Raw Clips ZIP
-              </a>
-            ) : (
-              <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-2xl text-yellow-500 text-sm text-left">
-                Download URL could not be generated. Please contact support on WhatsApp.
-              </div>
-            )}
-
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 text-indigo-400 hover:text-indigo-300 font-semibold text-sm transition-all"
-            >
-              Go back to Home <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-        )}
-
-        {/* Status: Failed */}
-        {status === 'FAILED' && (
-          <div className="space-y-6 py-6">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-red-500/10 border border-red-500/30 rounded-full">
-              <AlertTriangle className="w-10 h-10 text-red-500" />
-            </div>
-            
-            <div className="space-y-2">
-              <h2 className="text-2xl font-bold text-red-500">Verification Error</h2>
-              <p className="text-slate-400 text-sm px-4">
-                {errorMsg || 'We could not verify your payment. If you have completed the checkout, please contact our support team.'}
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <a
-                href="https://wa.me/917000000000?text=Hi%20Cwaya!%20My%20payment%20verification%20failed%20for%20order%20"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full bg-slate-800 text-white py-3 rounded-2xl font-bold hover:bg-slate-700 transition-all"
-              >
-                Support on WhatsApp
-              </a>
-              <Link href="/raw-clips" className="text-sm text-slate-500 hover:text-slate-400 font-semibold py-2">
-                Try Again
+              <Link href="/" className="pencil-link inline-flex items-center gap-2 text-ink font-semibold text-sm">
+                Go back to Home <ArrowRight className="w-4 h-4" aria-hidden="true" />
               </Link>
             </div>
-          </div>
-        )}
+          )}
 
+          {/* Status: Failed */}
+          {shownStatus === 'FAILED' && (
+            <div className="space-y-6 py-4">
+              <div className="inline-flex items-center justify-center w-16 h-16 border-2 border-destructive/40 rounded-full">
+                <AlertTriangle className="w-8 h-8 text-destructive" aria-hidden="true" />
+              </div>
+
+              <div className="space-y-2">
+                <h2 className="font-display text-2xl font-extrabold text-ink tracking-[-0.03em]">Verification Error</h2>
+                <p className="text-ink/65 text-sm px-4">
+                  {shownError || 'We could not verify your payment. If you have completed the checkout, please contact our support team.'}
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <a
+                  href="https://wa.me/918120317074?text=Hi%20Cwaya!%20My%20payment%20verification%20failed%20for%20order%20"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`${btnGhost} w-full`}
+                >
+                  Support on WhatsApp
+                </a>
+                <Link href="/raw-clips" className="pencil-link slate text-editorial py-2 self-center">
+                  Try Again
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -247,8 +243,8 @@ function SuccessPageContent() {
 export default function SuccessPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
-        <Loader2 className="w-10 h-10 animate-spin text-indigo-500" />
+      <div className="bg-ivory min-h-screen flex items-center justify-center">
+        <Loader2 className="w-10 h-10 animate-spin text-editorial" aria-label="Loading" />
       </div>
     }>
       <SuccessPageContent />

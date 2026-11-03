@@ -1,11 +1,61 @@
 'use server';
 
 import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 import cloudinary from '@/lib/cloudinary';
+import { botLink, paidTelegramLink, telegramConfigured } from '@/lib/telegram';
+import { checkAdminAuth } from './auth';
 
-// Sabhi active clips fetch karo
-export async function getAllClips() {
-  const { data, error } = await supabase
+async function requireAdmin() {
+  if (!(await checkAdminAuth())) throw new Error('Unauthorized');
+}
+
+type ClipRow = {
+  id: string;
+  title: string;
+  category: string;
+  description?: string;
+  duration?: string;
+  tags?: string;
+  is_free: boolean;
+  is_active: boolean;
+  download_count?: number;
+  created_at: string;
+  r2_thumbnail_key?: string | null;
+  r2_video_key?: string | null;
+  thumbnail_url?: string | null;
+  free_drive_url?: string | null;
+  paid_drive_url?: string | null;
+  telegram_message_ids?: number[] | null;
+};
+
+// What the browser receives: no storage keys, and download links only for free clips.
+export type PublicClip = Omit<
+  ClipRow,
+  'r2_thumbnail_key' | 'r2_video_key' | 'thumbnail_url' | 'free_drive_url' | 'paid_drive_url' | 'telegram_message_ids'
+> & {
+  thumbnail_url: string;
+  video_urls: string[];
+  free_drive_url?: string;
+  /** The file is delivered by the Telegram bot */
+  on_telegram: boolean;
+  /** Free clips only: opens the bot, which sends the clip */
+  telegram_url?: string;
+};
+
+const videoUrlsFor = (videoKey: string | null | undefined) =>
+  (videoKey || '')
+    .split(',')
+    .map((k) => k.trim())
+    .filter(Boolean)
+    .map((key) => cloudinary.url(key, { resource_type: 'video', flags: 'attachment', secure: true }));
+
+// Sabhi active clips fetch karo — public list.
+// Paid clips never include their video keys or download links here; those are
+// only handed out by getUnlockedVideoUrls() after a verified purchase.
+export async function getAllClips(): Promise<PublicClip[]> {
+  // Server key: raw_clips is locked to the browser (anon) key by RLS.
+  const { data, error } = await supabaseAdmin
     .from('raw_clips')
     .select('*')
     .eq('is_active', true)
@@ -17,43 +67,55 @@ export async function getAllClips() {
     return [];
   }
 
-  const clips = data || [];
+  const hasCloudinary = !!process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 
-  // Generate Cloudinary URLs dynamically for assets
-  if (process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME) {
-    for (const clip of clips) {
-      // 1. Generate thumbnail URL with auto optimization
-      if (clip.r2_thumbnail_key) {
-        clip.thumbnail_url = cloudinary.url(clip.r2_thumbnail_key, { 
-          resource_type: 'image', 
-          format: 'auto', 
-          quality: 'auto' 
-        });
-      }
+  return ((data || []) as ClipRow[]).map((row): PublicClip => {
+    // Strip storage keys and any stored download links before anything leaves the server
+    const { r2_video_key, r2_thumbnail_key, paid_drive_url: _paid, free_drive_url, telegram_message_ids, ...rest } = row;
+    void _paid;
+    const on_telegram = telegramConfigured() && (telegram_message_ids?.length ?? 0) > 0;
 
-      // 2. Generate video URLs (high quality, direct download, no compression)
-      if (clip.r2_video_key) {
-        const keys = clip.r2_video_key.split(',').map(k => k.trim()).filter(Boolean);
-        const urls = keys.map(key => {
-          return cloudinary.url(key, { 
-            resource_type: 'video',
-            flags: 'attachment',
-            secure: true
-          });
-        });
-        (clip as any).video_urls = urls;
-        
-        // Backward compatibility
-        if (clip.is_free) {
-          clip.free_drive_url = urls.join(',');
-        }
-      } else {
-        (clip as any).video_urls = [];
-      }
+    const thumbnail_url =
+      hasCloudinary && r2_thumbnail_key
+        ? cloudinary.url(r2_thumbnail_key, { resource_type: 'image', format: 'auto', quality: 'auto' })
+        : row.thumbnail_url ?? '';
+
+    if (!row.is_free) {
+      return { ...rest, thumbnail_url, video_urls: [], on_telegram };
     }
-  }
 
-  return clips;
+    const video_urls = hasCloudinary ? videoUrlsFor(r2_video_key) : [];
+    return {
+      ...rest,
+      thumbnail_url,
+      video_urls,
+      free_drive_url: video_urls.length ? video_urls.join(',') : free_drive_url ?? undefined,
+      on_telegram,
+      telegram_url: on_telegram ? botLink(`f_${row.id}`) : undefined,
+    };
+  });
+}
+
+// One-time Telegram link for a paid clip, after checking the order is paid.
+// Returns null when the clip isn't on Telegram (caller falls back to Cloudinary).
+export async function getPaidClipTelegramLink(clipId: string, orderId: string): Promise<string | null> {
+  if (!telegramConfigured()) return null;
+
+  const { data: purchase } = await supabaseAdmin
+    .from('raw_clips_purchases')
+    .select('status')
+    .eq('order_id', orderId)
+    .maybeSingle();
+  if (purchase?.status !== 'SUCCESS') return null;
+
+  const { data: clip } = await supabaseAdmin
+    .from('raw_clips')
+    .select('is_free, is_active, telegram_message_ids')
+    .eq('id', clipId)
+    .maybeSingle();
+  if (!clip || clip.is_free || !clip.is_active || !(clip.telegram_message_ids as number[] | null)?.length) return null;
+
+  return paidTelegramLink(orderId, 'paid_clip', clipId);
 }
 
 // Unlock request submit karo (after UPI payment)
@@ -91,7 +153,8 @@ export async function submitUnlockRequest(input: {
 
 // Admin: sabhi unlock requests fetch karo
 export async function getUnlockRequests() {
-  const { data, error } = await supabase
+  await requireAdmin();
+  const { data, error } = await supabaseAdmin
     .from('clip_unlock_requests')
     .select('*')
     .order('created_at', { ascending: false });
@@ -102,7 +165,8 @@ export async function getUnlockRequests() {
 
 // Admin: request approve karo
 export async function approveUnlockRequest(id: string) {
-  const { error } = await supabase
+  await requireAdmin();
+  const { error } = await supabaseAdmin
     .from('clip_unlock_requests')
     .update({ status: 'approved' })
     .eq('id', id);
@@ -122,13 +186,15 @@ export async function addClip(input: {
   tags?: string;
   is_free: boolean;
 }) {
-  const { error } = await supabase.from('raw_clips').insert([input]);
+  await requireAdmin();
+  const { error } = await supabaseAdmin.from('raw_clips').insert([input]);
   return { success: !error, error: error?.message };
 }
 
 // Admin: clip delete karo
 export async function deleteClip(id: string) {
-  const { error } = await supabase
+  await requireAdmin();
+  const { error } = await supabaseAdmin
     .from('raw_clips')
     .update({ is_active: false })
     .eq('id', id);
@@ -143,10 +209,10 @@ export async function incrementDownload(id: string) {
 // Paid clips ke download URLs generate karo after verification of purchase order
 export async function getUnlockedVideoUrls(clipId: string, orderId: string) {
   try {
-    // 1. Verify payment status in database
-    const { data: purchase, error: purchaseError } = await supabase
+    // 1. Verify payment status in database (server key: unaffected by RLS)
+    const { data: purchase, error: purchaseError } = await supabaseAdmin
       .from('raw_clips_purchases')
-      .select('*')
+      .select('status')
       .eq('order_id', orderId)
       .single();
 
@@ -155,32 +221,20 @@ export async function getUnlockedVideoUrls(clipId: string, orderId: string) {
     }
 
     // 2. Fetch the clip
-    const { data: clip, error: clipError } = await supabase
+    const { data: clip, error: clipError } = await supabaseAdmin
       .from('raw_clips')
-      .select('*')
+      .select('r2_video_key')
       .eq('id', clipId)
+      .eq('is_active', true)
       .single();
 
     if (clipError || !clip) {
       return { success: false, error: 'Clip not found' };
     }
 
-    if (!clip.r2_video_key) {
-      return { success: true, urls: [] };
-    }
-
     // 3. Generate high quality secure attachment URLs
-    const keys = clip.r2_video_key.split(',').map((k: string) => k.trim()).filter(Boolean);
-    const urls = keys.map((key: string) => {
-      return cloudinary.url(key, {
-        resource_type: 'video',
-        flags: 'attachment',
-        secure: true
-      });
-    });
-
-    return { success: true, urls };
-  } catch (err: any) {
-    return { success: false, error: err.message };
+    return { success: true, urls: videoUrlsFor(clip.r2_video_key) };
+  } catch (err: unknown) {
+    return { success: false, error: err instanceof Error ? err.message : 'Failed to fetch download URLs.' };
   }
 }

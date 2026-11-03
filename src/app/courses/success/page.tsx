@@ -83,57 +83,67 @@ function SuccessContent() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl text-center space-y-6">
-        {(status === 'LOADING' || status === 'PENDING') && (
-          <div className="space-y-4 py-6">
-            <Loader2 className="w-16 h-16 animate-spin text-indigo-500 mx-auto" />
-            <h2 className="text-2xl font-bold">Confirming Payment...</h2>
-            <p className="text-slate-400 text-sm px-4">Waiting for payment verification. Keep this tab open.</p>
+    <div className="on-ink min-h-screen bg-ink text-ivory flex flex-col items-center justify-center px-4 pt-28 pb-16">
+      <div className="w-full max-w-md border border-ivory/15 rounded-[4px] overflow-hidden" aria-live="polite">
+        <div className={`h-1 ${status === 'FAILED' ? 'bg-destructive' : 'bg-coral'}`} aria-hidden="true" />
+        <div className="p-8">
+          {(status === 'LOADING' || status === 'PENDING') && (
+            <div className="space-y-4 py-4">
+              <p className="slate text-coral flex items-center gap-2">
+                <span className="rec-dot w-1.5 h-1.5 rounded-full bg-coral" aria-hidden="true" />
+                Rendering
+              </p>
+              <h1 className="font-display text-3xl font-extrabold tracking-[-0.03em]">Confirming payment…</h1>
+              <p className="text-ivory/70">Waiting for payment verification. Keep this tab open.</p>
+              <Loader2 className="w-6 h-6 animate-spin text-ivory/50" aria-hidden="true" />
 
-            {isLocal && status === 'PENDING' && (
-              <div className="mt-4 p-4 bg-indigo-950/40 border border-indigo-500/30 rounded-2xl space-y-3">
-                <p className="text-xs text-indigo-300 font-semibold uppercase">🛠️ Developer Sandbox</p>
-                <p className="text-[11px] text-slate-400">Localhost can&apos;t receive Razorpay webhooks. Simulate it instead.</p>
-                <button
-                  onClick={handleSimulateSuccess}
-                  disabled={simulating}
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2.5 rounded-xl flex items-center justify-center gap-1.5 disabled:opacity-50"
-                >
-                  {simulating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5 fill-current" />}
-                  Simulate Webhook Success
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {status === 'SUCCESS' && (
-          <div className="space-y-6 py-4">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-emerald-500/10 border border-emerald-500/30 rounded-full">
-              <CheckCircle2 className="w-12 h-12 text-emerald-400" />
+              {isLocal && status === 'PENDING' && (
+                <div className="mt-6 p-4 border border-dashed border-ivory/25 rounded-[4px] space-y-3">
+                  <p className="slate text-ivory/60">Developer sandbox</p>
+                  <p className="text-xs text-ivory/60">Localhost can&apos;t receive Razorpay webhooks. Simulate it instead.</p>
+                  <button
+                    onClick={handleSimulateSuccess}
+                    disabled={simulating}
+                    className="w-full h-10 bg-ivory text-ink !text-sm font-semibold rounded-md flex items-center justify-center gap-1.5 hover:bg-coral transition-colors disabled:opacity-50"
+                  >
+                    {simulating ? <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" /> : <Play className="w-3.5 h-3.5 fill-current" aria-hidden="true" />}
+                    Simulate webhook success
+                  </button>
+                </div>
+              )}
             </div>
-            <h2 className="text-3xl font-black text-emerald-400">Payment Verified!</h2>
-            <p className="text-slate-300 text-sm">You now have access. Watch it only here — not downloadable.</p>
-            <Link
-              href={courseSlug ? `/my-courses/${courseSlug}` : '/my-courses'}
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 py-3.5 px-6 rounded-2xl font-extrabold"
-            >
-              Start Watching <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-        )}
+          )}
 
-        {status === 'FAILED' && (
-          <div className="space-y-6 py-6">
-            <AlertTriangle className="w-14 h-14 text-red-500 mx-auto" />
-            <h2 className="text-2xl font-bold text-red-500">Verification Error</h2>
-            <p className="text-slate-400 text-sm">We couldn&apos;t verify this payment. Contact support if you were charged.</p>
-            <Link href="/courses" className="text-sm text-slate-500 hover:text-slate-400 font-semibold">
-              Back to Courses
-            </Link>
-          </div>
-        )}
+          {status === 'SUCCESS' && (
+            <div className="space-y-5 py-2">
+              <p className="slate text-coral flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4" aria-hidden="true" /> Print it
+              </p>
+              <h1 className="font-display text-4xl font-extrabold tracking-[-0.035em]">Payment verified.</h1>
+              <p className="text-ivory/75">You now have access. Watch it only here — not downloadable.</p>
+              <Link
+                href={courseSlug ? `/my-courses/${courseSlug}` : '/my-courses'}
+                className="group inline-flex items-center gap-2 bg-coral text-ink h-12 px-6 rounded-md font-semibold transition-colors hover:bg-ivory"
+              >
+                Start watching
+                <ArrowRight className="w-4 h-4 transition-transform duration-500 ease-reveal group-hover:translate-x-1" aria-hidden="true" />
+              </Link>
+            </div>
+          )}
+
+          {status === 'FAILED' && (
+            <div className="space-y-5 py-2">
+              <p className="slate text-ivory/60 flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4" aria-hidden="true" /> Verification error
+              </p>
+              <h1 className="font-display text-3xl font-extrabold tracking-[-0.03em]">We couldn&apos;t verify this payment.</h1>
+              <p className="text-ivory/70">Contact support if you were charged.</p>
+              <Link href="/courses" className="pencil-link inline-block font-semibold text-ivory">
+                Back to courses
+              </Link>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -141,7 +151,7 @@ function SuccessContent() {
 
 export default function CourseSuccessPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-slate-950" />}>
+    <Suspense fallback={<div className="min-h-screen bg-ink" />}>
       <SuccessContent />
     </Suspense>
   );

@@ -1,8 +1,12 @@
 import { blogPosts } from '@/data/blogPosts';
-import { Calendar, User, Tag, ArrowLeft, Clock, Share2 } from 'lucide-react';
+import { Calendar, User, ArrowLeft, Clock, Share2, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
+import { PageShell } from '@/components/editorial/PageIntro';
+import { CtaBand } from '@/components/editorial/CtaBand';
+import { RevealLines } from '@/components/motion/RevealLines';
+import { btnArrow, btnCoralOnInk } from '@/components/editorial/styles';
 
 // Next.js static params generation
 export async function generateStaticParams() {
@@ -31,6 +35,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+// Article body comes in as HTML strings (p, h2, ul/li, strong, em); style
+// them here since the typography plugin isn't installed.
+const bodyClass = [
+  '[&_p]:text-lg sm:[&_p]:text-xl [&_p]:leading-[1.75] [&_p]:text-ink/80 [&_p]:mb-7',
+  '[&_h2]:font-display [&_h2]:text-ink [&_h2]:text-[1.75rem] sm:[&_h2]:text-4xl [&_h2]:font-extrabold [&_h2]:tracking-[-0.03em] [&_h2]:leading-[1.1] [&_h2]:mt-16 [&_h2]:mb-6 [&_h2]:pt-6 [&_h2]:border-t [&_h2]:border-ink/15',
+  '[&_ul]:mb-8 [&_ul]:border-t [&_ul]:border-ink/15',
+  '[&_li]:relative [&_li]:pl-6 [&_li]:py-3 [&_li]:border-b [&_li]:border-ink/10 [&_li]:text-lg [&_li]:text-ink/80',
+  "[&_li]:before:content-[''] [&_li]:before:absolute [&_li]:before:left-0 [&_li]:before:top-[1.35em] [&_li]:before:w-1.5 [&_li]:before:h-1.5 [&_li]:before:bg-coral [&_li]:before:rotate-45",
+  '[&_strong]:text-ink [&_strong]:font-semibold [&_em]:text-ink',
+].join(' ');
+
 export default async function BlogPostPage({ params }: Props) {
   const { slug } = await params;
   const post = blogPosts.find((p) => p.slug === slug);
@@ -40,98 +55,84 @@ export default async function BlogPostPage({ params }: Props) {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900 selection:bg-indigo-500/30">
-      {/* Background elements */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-indigo-600/5 blur-[150px] rounded-full" />
-        <div className="absolute bottom-0 left-0 w-[800px] h-[800px] bg-purple-600/5 blur-[150px] rounded-full" />
-      </div>
-
-      <article className="relative z-10 pt-40 pb-32">
-        <div className="container mx-auto px-6 max-w-4xl">
-          {/* Breadcrumb */}
-          <Link 
-            href="/blog" 
-            className="group inline-flex items-center gap-3 text-slate-500 hover:text-slate-900 transition-all mb-16 text-xs font-black uppercase tracking-[0.3em]"
-          >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-2 transition-transform" />
+    <PageShell>
+      <article className="max-w-3xl mx-auto">
+        {/* Breadcrumb */}
+        <div className="flex justify-between items-center gap-4 pb-5 mb-10 sm:mb-12 border-b border-ink/15">
+          <Link href="/blog" className="pencil-link slate text-editorial inline-flex items-center gap-2">
+            <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" />
             Back to Journal
           </Link>
+          <span className="slate !text-[10px] bg-coral text-ink px-2 py-1 rounded-[3px]">{post.category}</span>
+        </div>
 
-          {/* Header */}
-          <header className="mb-20">
-            <div className="flex flex-wrap items-center gap-6 mb-10 text-[10px] font-black uppercase tracking-widest">
-              <span className="px-4 py-1.5 rounded-full bg-indigo-100 border border-indigo-200 text-indigo-600">
-                {post.category}
-              </span>
-              <div className="flex items-center gap-2 text-slate-500">
-                <Calendar className="w-3.5 h-3.5" />
-                {post.date}
-              </div>
-              <div className="flex items-center gap-2 text-slate-500">
-                <Clock className="w-3.5 h-3.5" />
-                6 min read
-              </div>
+        {/* Header */}
+        <header className="mb-12 sm:mb-14">
+          <p className="slate text-ink/55 flex flex-wrap items-center gap-x-5 gap-y-2 mb-8">
+            <span className="flex items-center gap-2 tabular">
+              <Calendar className="w-3.5 h-3.5" aria-hidden="true" />
+              {post.date}
+            </span>
+            <span className="flex items-center gap-2">
+              <Clock className="w-3.5 h-3.5" aria-hidden="true" />
+              6 min read
+            </span>
+          </p>
+
+          <RevealLines
+            as="h1"
+            onScroll={false}
+            className="font-display font-extrabold text-ink tracking-[-0.04em] !leading-[1.02] [font-size:clamp(2.25rem,1.2rem+3.6vw,4.5rem)]"
+            lines={[post.title]}
+          />
+
+          <div className="flex items-center gap-4 mt-10 py-6 border-y border-ink/15">
+            <span aria-hidden="true" className="w-11 h-11 rounded-full bg-ink text-ivory flex items-center justify-center">
+              <User className="w-5 h-5" />
+            </span>
+            <div>
+              <div className="slate text-ink/50 mb-1">Written by</div>
+              <div className="text-sm font-semibold text-ink">{post.author}</div>
             </div>
-
-            <h1 className="text-4xl md:text-7xl font-bold mb-12 tracking-tighter leading-none">
-              {post.title}
-            </h1>
-
-            <div className="flex items-center gap-4 py-8 border-y border-slate-200">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 p-[1px]">
-                <div className="w-full h-full rounded-full bg-white flex items-center justify-center">
-                  <User className="w-5 h-5 text-indigo-600" />
-                </div>
-              </div>
-              <div>
-                <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Written by</div>
-                <div className="text-sm font-bold text-slate-900">{post.author}</div>
-              </div>
-              <button className="ml-auto w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-100 transition-colors shadow-sm">
-                <Share2 className="w-4 h-4 text-slate-500" />
-              </button>
-            </div>
-          </header>
-
-          {/* Feature Image */}
-          <div className="mb-20 rounded-[40px] overflow-hidden border border-slate-200 bg-white p-2 shadow-2xl">
-            <img
-              src={post.imageUrl}
-              alt={post.title}
-              className="w-full h-full object-cover rounded-[32px] aspect-video"
-            />
-          </div>
-
-          {/* Content */}
-          <div className="prose prose-zinc max-w-none 
-            prose-h2:text-4xl prose-h2:font-bold prose-h2:tracking-tighter prose-h2:mt-20 prose-h2:mb-8 prose-h2:text-slate-900
-            prose-h3:text-2xl prose-h3:font-bold prose-h3:tracking-tight prose-h3:mt-12 prose-h3:mb-6 prose-h3:text-slate-800
-            prose-p:text-xl prose-p:font-light prose-p:leading-relaxed prose-p:text-slate-600 prose-p:mb-10
-            prose-ul:list-disc prose-ul:pl-8 prose-ul:mb-10 prose-ul:space-y-4 prose-ul:text-slate-600
-            prose-li:text-lg
-            prose-strong:text-slate-900 prose-strong:font-bold
-          ">
-            {post.content.map((paragraph, index) => (
-              <div key={index} dangerouslySetInnerHTML={{ __html: paragraph }} />
-            ))}
-          </div>
-
-          {/* Footer CTA */}
-          <div className="mt-32 p-12 rounded-[40px] bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-100 text-center">
-            <h3 className="text-3xl font-bold mb-6 tracking-tighter text-slate-900">Loved this insight?</h3>
-            <p className="text-slate-600 mb-10 max-w-md mx-auto font-light">
-              We bring the same strategic thinking to our creative projects. Let's build something elite together.
-            </p>
-            <Link 
-              href="/contact-us"
-              className="inline-flex items-center gap-3 px-10 py-5 rounded-2xl bg-slate-900 text-white font-bold uppercase tracking-widest hover:bg-indigo-600 hover:scale-105 transition-all shadow-lg"
+            <button
+              type="button"
+              aria-label="Share"
+              className="ml-auto w-11 h-11 rounded-full border border-ink/20 text-ink/70 flex items-center justify-center transition-colors hover:bg-ink hover:text-ivory hover:border-ink"
             >
-              Start a Conversation
-            </Link>
+              <Share2 className="w-4 h-4" aria-hidden="true" />
+            </button>
           </div>
+        </header>
+
+        {/* Feature Image */}
+        <figure className="mb-14 sm:mb-16">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={post.imageUrl}
+            alt={post.title}
+            className="w-full aspect-video object-cover rounded-[4px] ring-1 ring-ink/10 bg-ink"
+          />
+        </figure>
+
+        {/* Content */}
+        <div className={bodyClass}>
+          {post.content.map((paragraph, index) => (
+            <div key={index} dangerouslySetInnerHTML={{ __html: paragraph }} />
+          ))}
         </div>
       </article>
-</main>
+
+      {/* Footer CTA */}
+      <CtaBand
+        title={['Loved this', 'insight?']}
+        body="We bring the same strategic thinking to our creative projects. Let's build something elite together."
+        className="mt-24 sm:mt-32"
+      >
+        <Link href="/contact-us" className={`${btnCoralOnInk} w-full sm:w-auto`}>
+          Start a Conversation
+          <ArrowRight className={btnArrow} aria-hidden="true" />
+        </Link>
+      </CtaBand>
+    </PageShell>
   );
 }

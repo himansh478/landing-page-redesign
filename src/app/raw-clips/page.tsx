@@ -1,10 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { getAllClips } from '@/app/actions/clips';
 import { ClipCard } from '@/components/ClipCard';
 import { UnlockModal } from '@/components/UnlockModal';
-import { Film, Download, Zap, ChevronDown } from 'lucide-react';
+import { Film, Download, Zap, Lock } from 'lucide-react';
+import { PageIntro, PageShell } from '@/components/editorial/PageIntro';
+import { CtaBand } from '@/components/editorial/CtaBand';
+import { Em } from '@/components/editorial/Showcase';
+import { btnCoralOnInk, btnGhostOnInk } from '@/components/editorial/styles';
 
 const CATEGORIES = ['All', 'Wedding', 'Cinematic', 'Commercial', 'Corporate', 'Drone', 'Reel'];
 
@@ -124,7 +128,6 @@ const DEMO_CLIPS: Clip[] = [
 
 export default function RawClipsPage() {
   const [clips, setClips] = useState<Clip[]>([]);
-  const [filtered, setFiltered] = useState<Clip[]>([]);
   const [activeCategory, setActiveCategory] = useState('All');
   const [activeFilter, setActiveFilter] = useState<'all' | 'free' | 'paid'>('all');
   const [isLoading, setIsLoading] = useState(true);
@@ -137,193 +140,176 @@ export default function RawClipsPage() {
       const data = await getAllClips();
       const clipsToShow = data.length > 0 ? data : DEMO_CLIPS;
       setClips(clipsToShow);
-      setFiltered(clipsToShow);
       setIsLoading(false);
     }
     load();
   }, []);
 
-  useEffect(() => {
+  // Derived from the filters (was state synced in an effect)
+  const filtered = useMemo(() => {
     let result = clips;
     if (activeCategory !== 'All') {
       result = result.filter(c => c.category === activeCategory);
     }
     if (activeFilter === 'free') result = result.filter(c => c.is_free);
     if (activeFilter === 'paid') result = result.filter(c => !c.is_free);
-    setFiltered(result);
+    return result;
   }, [activeCategory, activeFilter, clips]);
 
   const freeCount = clips.filter(c => c.is_free).length;
   const paidCount = clips.filter(c => !c.is_free).length;
 
+  const stats = [
+    { value: <span className="tabular">{freeCount}</span>, label: 'Free Clips' },
+    { value: <span className="tabular">{paidCount}+</span>, label: 'Premium Clips' },
+    { value: '4K', label: 'RAW Quality' },
+    { value: <span className="tabular">₹19</span>, label: 'Unlimited Access' },
+  ];
+
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-
-      {/* Hero */}
-      <section className="relative pt-28 pb-20 px-4 overflow-hidden">
-        {/* Background glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute top-20 right-10 w-[300px] h-[300px] bg-purple-600/15 rounded-full blur-[100px] pointer-events-none" />
-
-        <div className="max-w-5xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 px-4 py-2 rounded-full text-sm font-semibold mb-6">
-            <Film className="w-4 h-4" />
-            Raw Footage Library
-          </div>
-
-          <h1 className="text-5xl md:text-7xl font-black mb-6 leading-tight">
-            Download{' '}
-            <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-              Raw Clips
+    <>
+      <PageShell>
+        <PageIntro
+          label="Raw Footage Library"
+          note={
+            <span className="inline-flex items-center gap-2">
+              <span aria-hidden="true" className="rec-dot w-1.5 h-1.5 rounded-full bg-coral" />
+              4K RAW
             </span>
-          </h1>
+          }
+          title={['Download', 'Raw Clips']}
+          lede={
+            <>
+              Professional <Em>4K RAW footage</Em> — weddings, cinematic, drone, commercial aur bahut kuch.
+              Seedha color grade karo aur apne projects mein use karo.
+            </>
+          }
+        />
 
-          <p className="text-slate-400 text-xl max-w-2xl mx-auto mb-8 leading-relaxed">
-            Professional <span className="text-white font-semibold">4K RAW footage</span> — weddings, cinematic, drone, commercial aur bahut kuch. 
-            Seedha color grade karo aur apne projects mein use karo.
-          </p>
-
-          {/* Stats */}
-          <div className="flex flex-wrap items-center justify-center gap-8 mb-10">
-            <div className="text-center">
-              <p className="text-4xl font-black text-green-400">{freeCount}</p>
-              <p className="text-slate-400 text-sm mt-1">Free Clips</p>
+        {/* Stats */}
+        <dl className="mt-14 sm:mt-20 grid grid-cols-2 lg:grid-cols-4 border-t border-ink/20">
+          {stats.map((stat, i) => (
+            <div
+              key={stat.label}
+              className={`py-6 sm:py-8 border-b border-ink/15 lg:border-b-0 ${i % 2 === 1 ? 'pl-5 sm:pl-8 border-l' : 'lg:pl-8'} ${i === 0 ? '!pl-0' : ''} ${i === 2 ? 'lg:border-l' : ''}`}
+            >
+              <dt className="slate text-ink/55 mb-3">{stat.label}</dt>
+              <dd className="font-display font-extrabold text-ink tracking-[-0.04em] leading-none [font-size:clamp(2.25rem,1.6rem+2.4vw,4rem)]">
+                {stat.value}
+              </dd>
             </div>
-            <div className="w-px h-10 bg-slate-700" />
-            <div className="text-center">
-              <p className="text-4xl font-black text-indigo-400">{paidCount}+</p>
-              <p className="text-slate-400 text-sm mt-1">Premium Clips</p>
-            </div>
-            <div className="w-px h-10 bg-slate-700" />
-            <div className="text-center">
-              <p className="text-4xl font-black text-amber-400">4K</p>
-              <p className="text-slate-400 text-sm mt-1">RAW Quality</p>
-            </div>
-            <div className="w-px h-10 bg-slate-700" />
-            <div className="text-center">
-              <p className="text-4xl font-black text-purple-400">₹19</p>
-              <p className="text-slate-400 text-sm mt-1">Unlimited Access</p>
-            </div>
-          </div>
+          ))}
+        </dl>
 
-          {/* Scroll hint */}
-          <div className="flex flex-col items-center gap-2 text-slate-500 animate-bounce">
-            <ChevronDown className="w-6 h-6" />
-          </div>
-        </div>
-      </section>
+        {/* Filters */}
+        <div className="sticky top-16 z-30 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 mt-10 py-4 bg-ivory/90 backdrop-blur-md border-y border-ink/10">
+          <div className="flex flex-col md:flex-row gap-4 md:items-center justify-between">
+            {/* Category filter */}
+            <div className="flex flex-wrap gap-2" role="group" aria-label="Category">
+              {CATEGORIES.map(cat => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setActiveCategory(cat)}
+                  aria-pressed={activeCategory === cat}
+                  className={`h-9 px-3.5 rounded-[3px] text-sm font-semibold transition-colors duration-300 ${
+                    activeCategory === cat
+                      ? 'bg-ink text-ivory'
+                      : 'border border-ink/20 text-ink/70 hover:border-ink hover:text-ink'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
 
-      {/* Filters */}
-      <div className="sticky top-16 z-30 bg-slate-950/90 backdrop-blur-xl border-b border-slate-800 px-4 py-4">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row gap-4 items-center justify-between">
-          {/* Category filter */}
-          <div className="flex flex-wrap gap-2">
-            {CATEGORIES.map(cat => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`px-3 py-1.5 rounded-xl text-sm font-semibold transition-all ${
-                  activeCategory === cat
-                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-900/50'
-                    : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-
-          {/* Free/Paid toggle */}
-          <div className="flex bg-slate-800 rounded-xl p-1 gap-1">
-            {(['all', 'free', 'paid'] as const).map(f => (
-              <button
-                key={f}
-                onClick={() => setActiveFilter(f)}
-                className={`px-4 py-1.5 rounded-lg text-sm font-bold capitalize transition-all ${
-                  activeFilter === f
-                    ? f === 'free' ? 'bg-green-500 text-white' : f === 'paid' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-900'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                {f === 'free' ? '✨ Free' : f === 'paid' ? '🔒 Paid' : 'All'}
-              </button>
-            ))}
+            {/* Free/Paid toggle */}
+            <div className="inline-flex self-start md:self-auto bg-sand rounded-md p-1 gap-1" role="group" aria-label="Price">
+              {(['all', 'free', 'paid'] as const).map(f => (
+                <button
+                  key={f}
+                  type="button"
+                  onClick={() => setActiveFilter(f)}
+                  aria-pressed={activeFilter === f}
+                  className={`h-8 px-4 rounded-[3px] text-sm font-semibold inline-flex items-center gap-1.5 transition-colors duration-300 ${
+                    activeFilter === f
+                      ? f === 'free' ? 'bg-coral text-ink' : f === 'paid' ? 'bg-editorial text-ivory' : 'bg-ink text-ivory'
+                      : 'text-ink/65 hover:text-ink'
+                  }`}
+                >
+                  {f === 'paid' && <Lock className="w-3.5 h-3.5" aria-hidden="true" />}
+                  {f === 'free' ? 'Free' : f === 'paid' ? 'Paid' : 'All'}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Clips Grid */}
-      <section className="max-w-6xl mx-auto px-4 py-10">
-        {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="bg-slate-800 rounded-2xl overflow-hidden animate-pulse">
-                <div className="aspect-video bg-slate-700" />
-                <div className="p-4 space-y-3">
-                  <div className="h-4 bg-slate-700 rounded w-1/3" />
-                  <div className="h-5 bg-slate-700 rounded" />
-                  <div className="h-4 bg-slate-700 rounded w-2/3" />
-                  <div className="h-10 bg-slate-700 rounded-xl mt-2" />
+        {/* Clips Grid */}
+        <section className="pt-10" aria-live="polite">
+          {isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="bg-paper ring-1 ring-ink/10 rounded-[4px] overflow-hidden animate-pulse motion-reduce:animate-none">
+                  <div className="aspect-video bg-sand" />
+                  <div className="p-4 space-y-3">
+                    <div className="h-3 bg-sand rounded w-1/3" />
+                    <div className="h-5 bg-sand rounded" />
+                    <div className="h-4 bg-sand rounded w-2/3" />
+                    <div className="h-11 bg-sand rounded-md mt-2" />
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="text-center py-20 text-slate-500">
-            <Film className="w-12 h-12 mx-auto mb-4 opacity-30" />
-            <p className="text-lg">Is category mein koi clip nahi hai abhi.</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filtered.map(clip => (
-              <ClipCard key={clip.id} clip={clip} />
-            ))}
-          </div>
-        )}
-      </section>
+              ))}
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="text-center py-20 border-y border-ink/15">
+              <Film className="w-8 h-8 mx-auto mb-4 text-ink/30" aria-hidden="true" />
+              <p className="text-lg text-ink/65">Is category mein koi clip nahi hai abhi.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {filtered.map(clip => (
+                <ClipCard key={clip.id} clip={clip} />
+              ))}
+            </div>
+          )}
+        </section>
 
-      {/* Bottom CTA */}
-      <section className="border-t border-slate-800 bg-gradient-to-b from-slate-950 to-indigo-950/30 py-20 px-4">
-        <div className="max-w-2xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 bg-amber-500/20 border border-amber-500/30 text-amber-300 px-4 py-2 rounded-full text-sm font-semibold mb-6">
-            <Zap className="w-4 h-4" />
-            Unlimited Access — Sirf ₹19
-          </div>
-          <h2 className="text-3xl md:text-4xl font-black mb-4">
-            Saare Premium Clips Unlock Karo
-          </h2>
-          <p className="text-slate-400 mb-8">
-            Ek baar ₹19 pay karo, poori library access karo. 
-            Weddings, corporate, cinematic — sab kuch!
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <button
-              onClick={() => {
-                setModalPrice(19);
-                setShowUnlockModal(true);
-              }}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:opacity-90 transition-all shadow-xl shadow-indigo-900/50"
-            >
-              <Download className="w-5 h-5" />
-              Abhi Unlock Karo @ ₹19
-            </button>
-            <button
-              onClick={() => {
-                setModalPrice(99);
-                setShowUnlockModal(true);
-              }}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:opacity-90 transition-all shadow-xl shadow-orange-900/50 border border-amber-400/30"
-            >
-              <Zap className="w-5 h-5" />
-              Unlock ALL Clips @ ₹99
-            </button>
-          </div>
-        </div>
-      </section>
+        {/* Bottom CTA */}
+        <CtaBand
+          label="Unlimited Access — Sirf ₹19"
+          title={['Saare Premium Clips', 'Unlock Karo']}
+          body="Ek baar ₹19 pay karo, poori library access karo. Weddings, corporate, cinematic — sab kuch!"
+          className="mt-24 sm:mt-32"
+        >
+          <button
+            type="button"
+            onClick={() => {
+              setModalPrice(19);
+              setShowUnlockModal(true);
+            }}
+            className={`${btnCoralOnInk} w-full sm:w-auto`}
+          >
+            <Download className="w-5 h-5" aria-hidden="true" />
+            Abhi Unlock Karo @ ₹19
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setModalPrice(99);
+              setShowUnlockModal(true);
+            }}
+            className={`${btnGhostOnInk} w-full sm:w-auto`}
+          >
+            <Zap className="w-5 h-5" aria-hidden="true" />
+            Unlock ALL Clips @ ₹99
+          </button>
+        </CtaBand>
+      </PageShell>
 
       {showUnlockModal && (
         <UnlockModal onClose={() => setShowUnlockModal(false)} price={modalPrice} />
       )}
-    </div>
+    </>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Cookie, X, CheckCircle } from 'lucide-react';
+import { X } from 'lucide-react';
 import Link from 'next/link';
 
 export function CookieConsentBanner() {
@@ -30,46 +30,43 @@ export function CookieConsentBanner() {
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          initial={{ y: 120, opacity: 0 }}
+          role="region"
+          aria-label="Cookie consent"
+          initial={{ y: 40, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 120, opacity: 0 }}
-          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 sm:max-w-md z-[100]"
+          exit={{ y: 40, opacity: 0 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-24 sm:bottom-6 sm:max-w-sm z-[100]"
         >
-          <div className="bg-white border border-slate-200 rounded-3xl shadow-2xl p-6">
-            <div className="flex items-start gap-4 mb-4">
-              <div className="w-10 h-10 bg-indigo-50 rounded-2xl flex items-center justify-center flex-shrink-0">
-                <Cookie className="w-5 h-5 text-indigo-600" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-black text-slate-900 text-base mb-1">We use cookies 🍪</h3>
-                <p className="text-slate-500 text-sm leading-relaxed">
-                  We use cookies to improve your experience. By clicking "Accept All", you consent to our use of cookies.{' '}
-                  <Link href="/privacy-policy" className="text-indigo-600 hover:underline font-medium">
-                    Learn more
-                  </Link>
-                </p>
-              </div>
+          <div className="bg-paper border border-ink/15 rounded-md shadow-[0_24px_60px_-20px_rgb(var(--ink-rgb)/0.35)] p-5">
+            <div className="flex items-start justify-between gap-4 mb-2">
+              <p className="slate text-editorial">Cookies</p>
               <button
                 onClick={acceptNecessary}
-                className="text-slate-400 hover:text-slate-600 transition-colors flex-shrink-0 mt-1"
+                aria-label="Dismiss — necessary cookies only"
+                className="-mt-1 -mr-1 w-8 h-8 flex items-center justify-center rounded-md text-ink/50 hover:text-ink hover:bg-ink/5 transition-colors"
               >
-                <X className="w-4 h-4" />
+                <X className="w-4 h-4" aria-hidden="true" />
               </button>
             </div>
-            <div className="flex gap-3">
+            <p className="text-ink/75 text-sm leading-relaxed mb-4">
+              We use cookies to improve your experience. By clicking &ldquo;Accept all&rdquo;, you consent to our use of cookies.{' '}
+              <Link href="/privacy-policy" className="text-editorial underline underline-offset-2 hover:text-ink">
+                Learn more
+              </Link>
+            </p>
+            <div className="flex gap-2">
               <button
                 onClick={acceptNecessary}
-                className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-sm font-bold transition-colors"
+                className="flex-1 h-10 border border-ink/20 text-ink rounded-md !text-sm font-semibold hover:bg-ink/5 transition-colors"
               >
-                Necessary
+                Necessary only
               </button>
               <button
                 onClick={acceptAll}
-                className="flex-1 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-black transition-colors flex items-center justify-center gap-2 shadow-lg"
+                className="flex-1 h-10 bg-editorial text-ivory rounded-md !text-sm font-semibold hover:bg-ink transition-colors"
               >
-                <CheckCircle className="w-4 h-4" />
-                Accept All
+                Accept all
               </button>
             </div>
           </div>

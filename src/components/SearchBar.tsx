@@ -41,12 +41,13 @@ export function SearchBar() {
 
   return (
     <>
-      <div className="relative w-full max-w-sm ml-4" ref={searchRef}>
+      <div className="relative w-full max-w-sm md:ml-4" ref={searchRef}>
         <div className="relative flex items-center">
-          <Search className="absolute left-3 w-5 h-5 text-slate-400" />
+          <Search className="absolute left-3 w-4 h-4 text-ink/45" aria-hidden="true" />
           <input
             type="text"
-            className="w-full bg-slate-100 border border-slate-200 text-slate-800 placeholder-slate-400 rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:bg-white transition-all font-medium shadow-sm"
+            aria-label="Search services"
+            className="w-full h-10 bg-paper border border-ink/15 text-ink placeholder:text-ink/45 rounded-md pl-9 pr-4 !text-sm focus:outline-none focus-visible:outline-2 focus-visible:outline-editorial focus:border-editorial/40 transition-colors"
             placeholder="Search services..."
             value={query}
             onChange={(e) => { setQuery(e.target.value); setIsOpen(true); }}
@@ -60,7 +61,7 @@ export function SearchBar() {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xl z-50"
+              className="absolute top-full left-0 right-0 mt-2 bg-paper border border-ink/15 rounded-md overflow-hidden shadow-[0_18px_40px_-12px_rgb(var(--ink-rgb)/0.25)] z-50"
             >
               <div className="max-h-60 overflow-y-auto">
                 {filteredServices.length > 0 ? (
@@ -68,13 +69,13 @@ export function SearchBar() {
                     <button
                       key={i}
                       onClick={() => handleSelectService(service)}
-                      className="w-full text-left px-4 py-3 text-sm text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 transition-colors border-b border-slate-100 last:border-0"
+                      className="w-full text-left px-4 py-3 !text-sm text-ink/75 hover:bg-editorial hover:text-ivory transition-colors border-b border-ink/10 last:border-0"
                     >
                       {service}
                     </button>
                   ))
                 ) : (
-                  <div className="px-4 py-3 text-sm text-slate-400 text-center">No matching services</div>
+                  <div className="px-4 py-3 text-sm text-ink/50 text-center">No matching services</div>
                 )}
               </div>
             </motion.div>

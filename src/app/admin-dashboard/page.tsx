@@ -2,39 +2,10 @@
 
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 import NextLink from 'next/link';
-import { supabase } from '@/lib/supabase';
-import { Loader2, Users, Phone, IndianRupee, Link as LinkIcon, Briefcase, Activity, Lock, AlertTriangle, Mail, MessageCircle, ImageIcon, LogOut, CheckCircle2, Star, Download, ShieldCheck, Film, Upload, Trash2, Plus, X, GraduationCap } from 'lucide-react';
+import { Loader2, IndianRupee, Activity, Lock, AlertTriangle, ImageIcon, LogOut, CheckCircle2, Download, ShieldCheck, Film, Upload, Trash2, Plus, X, GraduationCap, Sparkles, Send } from 'lucide-react';
 import { verifyAdminPassword, checkAdminAuth, logoutAdmin } from '@/app/actions/auth';
-import { getAllClips } from '@/app/actions/clips';
-import { Partner } from '@/types';
-
-interface ShootJob {
-  id: string;
-  name: string;
-  gmail: string;
-  whatsapp_number: string;
-  insta_id?: string;
-  state: string;
-  district: string;
-  exact_location: string;
-  work_duration: string;
-  work_type: string;
-  reference_video?: string;
-  device_type?: string;
-  price?: number;
-  status?: string;
-  created_at: string;
-}
-
-interface ShootApplication {
-  id: string;
-  job_id: string;
-  phone_number: string;
-  equipments: string;
-  charges?: string;
-  portfolio_link: string;
-  created_at: string;
-}
+import { getAllClips, deleteClip } from '@/app/actions/clips';
+import { listRawClipPurchasesAdmin } from '@/app/actions/telegram-admin';
 
 interface PurchaseLog {
   id: string;
@@ -67,19 +38,6 @@ interface RawClip {
 
 const CLIP_CATEGORIES = ['Wedding', 'Cinematic', 'Commercial', 'Corporate', 'Drone', 'Reel'];
 
-function sanitizePhone(phone: string): string {
-  return phone.replace(/\D/g, '');
-}
-
-function isSafeUrl(url: string): boolean {
-  try {
-    const parsed = new URL(url);
-    return ['http:', 'https:'].includes(parsed.protocol);
-  } catch {
-    return false;
-  }
-}
-
 function AdminAuthGate({ onAuthenticated }: { onAuthenticated: () => void }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(false);
@@ -97,7 +55,7 @@ function AdminAuthGate({ onAuthenticated }: { onAuthenticated: () => void }) {
         setError(true);
         setPassword('');
       }
-    } catch (err) {
+    } catch {
       setError(true);
     } finally {
       setIsVerifying(false);
@@ -144,14 +102,10 @@ function AdminAuthGate({ onAuthenticated }: { onAuthenticated: () => void }) {
 }
 
 export default function AdminDashboardPage() {
-  const [jobs, setJobs] = useState<ShootJob[]>([]);
-  const [applications, setApplications] = useState<ShootApplication[]>([]);
-  const [partners, setPartners] = useState<Partner[]>([]);
   const [purchases, setPurchases] = useState<PurchaseLog[]>([]);
   const [clips, setClips] = useState<RawClip[]>([]);
-  const [activeTab, setActiveTab] = useState<'jobs' | 'purchases' | 'clips'>('jobs');
+  const [activeTab, setActiveTab] = useState<'purchases' | 'clips'>('purchases');
   const [loading, setLoading] = useState(true);
-  const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -189,147 +143,33 @@ export default function AdminDashboardPage() {
 
   const fetchData = useCallback(async () => {
     try {
-      setLoading(true);
-      setError(null);
-
-      const { data: jobsData, error: jobsError } = await supabase
-        .from('I_have_work')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(100);
-
-      if (jobsError) throw jobsError;
-
-      const { data: appsData, error: appsError } = await supabase
-        .from('admin_dashboard')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(500);
-
-      if (appsError) throw appsError;
-
-      if (jobsData) setJobs(jobsData);
-      if (appsData) setApplications(appsData);
-
-      const { data: partnersData } = await supabase
-        .from('partners')
-        .select('*');
-      
-      if (partnersData) setPartners(partnersData);
-
-      // Fetch raw clips purchases
-      const { data: purchasesData, error: purchasesError } = await supabase
-        .from('raw_clips_purchases')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(100);
-
-      if (!purchasesError && purchasesData) {
-        setPurchases(purchasesData);
-      }
+      // Fetch raw clips purchases (server-side: the table is locked to the browser)
+      const purchasesData = await listRawClipPurchasesAdmin();
+      setPurchases(purchasesData as PurchaseLog[]);
 
       // Fetch raw clips
       const clipsData = await getAllClips();
       if (clipsData) setClips(clipsData);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load data');
+      setError(null);
+    } catch (err: unknown) {
+      setError((err instanceof Error && err.message) || 'Failed to load data');
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const getMatchedPartners = (job: ShootJob) => {
-    if (!partners || partners.length === 0) return [];
-    
-    return partners.map(partner => {
-      let score = 0;
-      const matchingLogs: string[] = [];
-
-      // Priority 1: Location (State -> District -> Location)
-      if (partner.state.toLowerCase() === job.state.toLowerCase()) {
-        score += 10;
-        matchingLogs.push("State Match");
-        if (partner.district.toLowerCase() === job.district.toLowerCase()) {
-          score += 20;
-          matchingLogs.push("District Match");
-          if (partner.exact_location.toLowerCase().includes(job.exact_location.toLowerCase()) || 
-              job.exact_location.toLowerCase().includes(partner.exact_location.toLowerCase())) {
-            score += 40;
-            matchingLogs.push("Exact Location Match");
-          }
-        }
-      }
-
-      // Priority 2: Work Type / Skills
-      const workType = (job.work_type || "").toLowerCase();
-      const skills = (partner.skills || "").toLowerCase();
-      if (skills.includes(workType) || workType.includes(skills)) {
-        score += 30;
-        matchingLogs.push("Skill Match");
-      }
-
-      return { ...partner, score, matchingLogs };
-    })
-    .filter(p => p.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 5); // Top 5 matches
-  };
-
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    fetchData();
-
-    const jobSubscription = supabase
-      .channel('public:I_have_work_admin')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'I_have_work' }, () => {
-        fetchData();
-      })
-      .subscribe();
-
-    const appSubscription = supabase
-      .channel('public:admin_dashboard_admin')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'admin_dashboard' }, () => {
-        fetchData();
-      })
-      .subscribe();
-
-    const purchasesSubscription = supabase
-      .channel('public:raw_clips_purchases_admin')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'raw_clips_purchases' }, () => {
-        fetchData();
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(jobSubscription);
-      supabase.removeChannel(appSubscription);
-      supabase.removeChannel(purchasesSubscription);
-    };
+    // Load after the effect body so no state is set synchronously inside it
+    void Promise.resolve().then(fetchData);
   }, [isAuthenticated, fetchData]);
-
-  const handleStatusUpdate = async (jobId: string, newStatus: string) => {
-    setUpdatingId(jobId);
-    try {
-      const { error } = await supabase
-        .from('I_have_work')
-        .update({ status: newStatus })
-        .eq('id', jobId);
-
-      if (error) throw error;
-      fetchData();
-    } catch (err: any) {
-      alert("Error: " + err.message);
-    } finally {
-      setUpdatingId(null);
-    }
-  };
 
   if (!isAuthenticated) {
     return <AdminAuthGate onAuthenticated={() => setIsAuthenticated(true)} />;
   }
 
-  if (loading && jobs.length === 0) {
+  if (loading && purchases.length === 0 && clips.length === 0) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center">
         <Loader2 className="w-12 h-12 text-indigo-600 animate-spin mb-4" />
@@ -362,30 +202,33 @@ export default function AdminDashboardPage() {
             </div>
           </div>
           <p className="text-md text-slate-600 max-w-2xl mx-auto">
-            Manage your shoot job matches and raw clips sales in real time.
+            Manage raw clips sales, courses and prompts.
           </p>
-          <NextLink
-            href="/admin-dashboard/courses"
-            className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 transition-all"
-          >
-            <GraduationCap className="w-4 h-4" /> Manage Courses
-          </NextLink>
+          <div className="flex flex-wrap justify-center gap-2 mt-4">
+            <NextLink
+              href="/admin-dashboard/courses"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 transition-all"
+            >
+              <GraduationCap className="w-4 h-4" /> Manage Courses
+            </NextLink>
+            <NextLink
+              href="/admin-dashboard/prompts"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 transition-all"
+            >
+              <Sparkles className="w-4 h-4" /> Manage Prompts
+            </NextLink>
+            <NextLink
+              href="/admin-dashboard/telegram"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 transition-all"
+            >
+              <Send className="w-4 h-4" /> Telegram Files
+            </NextLink>
+          </div>
         </div>
 
         {/* Tab Buttons */}
         <div className="flex justify-center mb-8">
           <div className="bg-slate-200/60 p-1 rounded-2xl flex gap-1 border border-slate-300/30">
-            <button
-              onClick={() => setActiveTab('jobs')}
-              className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${
-                activeTab === 'jobs'
-                  ? 'bg-indigo-600 text-white shadow-md'
-                  : 'text-slate-600 hover:text-slate-950 hover:bg-slate-300/40'
-              }`}
-            >
-              <Briefcase className="w-4 h-4" />
-              Shoot Jobs & Matches ({jobs.length})
-            </button>
             <button
               onClick={() => setActiveTab('purchases')}
               className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${
@@ -415,189 +258,6 @@ export default function AdminDashboardPage() {
            <div className="mb-8 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-center">
              {error}
            </div>
-        )}
-
-        {/* Tab: Shoot Jobs */}
-        {activeTab === 'jobs' && (
-          <div className="space-y-8">
-            {jobs.length === 0 && !loading && (
-              <div className="text-center py-20 bg-white border border-slate-200 rounded-3xl">
-                <Briefcase className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                <p className="text-slate-400 text-lg font-medium">No job postings yet</p>
-              </div>
-            )}
-
-            {jobs.map((job) => {
-              const jobApps = applications.filter(app => app.job_id === job.id);
-              const isCompleted = job.status === 'completed';
-
-              return (
-                <div key={job.id} className={`bg-white rounded-2xl shadow-sm border ${isCompleted ? 'border-slate-200 opacity-75' : 'border-slate-200'} overflow-hidden transition-all`}>
-                  <div className={`p-6 ${isCompleted ? 'bg-slate-50' : 'bg-slate-100'} border-b border-slate-200 flex justify-between items-center flex-wrap gap-4`}>
-                    <div className="flex-grow">
-                      <div className="flex items-center gap-3">
-                        <h2 className="text-xl font-bold text-slate-900">
-                          {job.work_type} at {job.district}, {job.state}
-                        </h2>
-                        {isCompleted && (
-                          <span className="px-2 py-0.5 bg-slate-200 text-slate-600 text-xs font-bold rounded uppercase">Completed</span>
-                        )}
-                      </div>
-                      <p className="text-sm text-slate-600">Posted by: {job.name || 'Anonymous'} | Location: {job.exact_location}</p>
-
-                      <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-slate-500">
-                        {job.whatsapp_number && (
-                          <a href={`https://wa.me/${sanitizePhone(job.whatsapp_number)}`} target="_blank" rel="noreferrer" className="flex items-center gap-1 hover:text-green-600 transition-colors">
-                            <MessageCircle className="w-3 h-3" /> {job.whatsapp_number}
-                          </a>
-                        )}
-                        {job.gmail && (
-                          <a href={`mailto:${job.gmail}`} className="flex items-center gap-1 hover:text-indigo-600 transition-colors">
-                            <Mail className="w-3 h-3" /> {job.gmail}
-                          </a>
-                        )}
-                        {job.insta_id && (
-                          <span className="flex items-center gap-1">
-                            <ImageIcon className="w-3 h-3" /> {job.insta_id}
-                          </span>
-                        )}
-                        {job.price != null && (
-                          <span className="flex items-center gap-1 font-semibold text-green-600">
-                            <IndianRupee className="w-3 h-3" /> ₹{job.price}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-2 px-4 py-2 bg-indigo-100 text-indigo-800 rounded-lg font-bold">
-                        <Users className="w-5 h-5" />
-                        <span>{jobApps.length} Interested</span>
-                      </div>
-
-                      {!isCompleted ? (
-                        <button 
-                          onClick={() => handleStatusUpdate(job.id, 'completed')}
-                          disabled={updatingId === job.id}
-                          className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-slate-400 text-white rounded-lg font-bold text-sm shadow-md transition-all active:scale-95 flex items-center gap-2"
-                        >
-                          {updatingId === job.id ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                          {updatingId === job.id ? 'Updating...' : 'Mark as Done'}
-                        </button>
-                      ) : (
-                        <button 
-                          onClick={() => handleStatusUpdate(job.id, 'open')}
-                          disabled={updatingId === job.id}
-                          className="px-4 py-2 border-2 border-slate-300 text-slate-500 hover:bg-slate-100 disabled:opacity-50 rounded-lg font-bold text-sm transition-all flex items-center gap-2"
-                        >
-                          {updatingId === job.id ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                          {updatingId === job.id ? 'Updating...' : 'Re-open'}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="p-6">
-                    {/* Smart Matching Section */}
-                    <div className="mb-8 p-6 bg-indigo-50/50 rounded-3xl border border-indigo-100">
-                      <div className="flex items-center gap-2 mb-6">
-                        <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center">
-                          <Star className="w-4 h-4 text-white" />
-                        </div>
-                        <h3 className="text-lg font-bold text-slate-900">Recommended Partners</h3>
-                        <span className="text-xs text-slate-500 font-medium ml-2">(Auto-matched from database)</span>
-                      </div>
-
-                      {getMatchedPartners(job).length === 0 ? (
-                        <p className="text-sm text-slate-400 italic px-2">No database partners match this location or skill yet.</p>
-                      ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {getMatchedPartners(job).map(partner => (
-                            <div key={partner.id} className="bg-white p-5 rounded-2xl border border-indigo-100 shadow-sm hover:shadow-md transition-all group">
-                              <div className="flex justify-between items-start mb-3">
-                                <div>
-                                  <div className="flex items-center gap-2">
-                                    <h4 className="font-bold text-slate-900">{partner.name}</h4>
-                                    <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-black uppercase rounded">Top Match</span>
-                                  </div>
-                                  <p className="text-xs text-slate-500">{partner.experience} Exp | {partner.district}</p>
-                                </div>
-                                <a 
-                                  href={`https://wa.me/${partner.whatsapp.replace(/\D/g, '')}?text=Hello ${partner.name}, we have a ${job.work_type} job for you in ${job.district}. Are you interested?`}
-                                  target="_blank"
-                                  className="p-2 bg-green-500 hover:bg-green-600 text-white rounded-xl transition-all"
-                                  title="Contact via WhatsApp"
-                                >
-                                  <MessageCircle className="w-4 h-4" />
-                                </a>
-                              </div>
-                              <div className="flex flex-wrap gap-2 mt-2">
-                                {partner.matchingLogs.map((log, i) => (
-                                  <span key={i} className="flex items-center gap-1 text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
-                                    <CheckCircle2 className="w-3 h-3" /> {log}
-                                  </span>
-                                ))}
-                              </div>
-                              <div className="mt-3 pt-3 border-t border-slate-50">
-                                  <p className="text-[10px] text-slate-400 font-medium line-clamp-1"><span className="text-slate-600">Gear:</span> {partner.equipments}</p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Manual Interested Applicants Section */}
-                    <div className="flex items-center gap-2 mb-4 px-2">
-                      <Users className="w-5 h-5 text-slate-400" />
-                      <h3 className="text-lg font-bold text-slate-900">Interested Applicants</h3>
-                    </div>
-                    
-                    {jobApps.length === 0 ? (
-                      <p className="text-slate-500 italic text-center py-4">No one has shown interest yet.</p>
-                    ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {jobApps.map((app) => (
-                          <div key={app.id} className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-                            <div className="flex items-center gap-2 text-sm text-slate-800 font-medium">
-                              <Phone className="w-4 h-4 text-green-600" />
-                              <a href={`https://wa.me/${sanitizePhone(app.phone_number)}`} target="_blank" rel="noreferrer" className="hover:underline">{app.phone_number}</a>
-                            </div>
-                            
-                            <div className="flex items-start gap-2 text-sm text-slate-600">
-                              <Briefcase className="w-4 h-4 text-slate-400 mt-0.5" />
-                              <span><span className="font-semibold">Equipments:</span> {app.equipments}</span>
-                            </div>
-
-                            {app.charges && (
-                              <div className="flex items-center gap-2 text-sm text-slate-600">
-                                <IndianRupee className="w-4 h-4 text-slate-400" />
-                                <span><span className="font-semibold">Charges:</span> ₹{app.charges}</span>
-                              </div>
-                            )}
-
-                            {app.portfolio_link && (
-                              <div className="flex items-center gap-2 text-sm text-indigo-600 font-medium">
-                                <LinkIcon className="w-4 h-4" />
-                                {isSafeUrl(app.portfolio_link) ? (
-                                  <a href={app.portfolio_link} target="_blank" rel="noreferrer noopener" className="hover:underline truncate">View Portfolio</a>
-                                ) : (
-                                  <span className="text-slate-400 truncate">{app.portfolio_link}</span>
-                                )}
-                              </div>
-                            )}
-                            <div className="text-xs text-slate-400 text-right mt-2">
-                              Applied: {new Date(app.created_at).toLocaleDateString()}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
         )}
 
         {/* Tab: Raw Clips Sales */}
@@ -949,8 +609,6 @@ export default function AdminDashboardPage() {
                     setUploadProgress(5);
 
                     try {
-                      const timestamp = Date.now();
-                      const cleanTitle = clipForm.title.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
                       
                       const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
                       const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
@@ -959,7 +617,7 @@ export default function AdminDashboardPage() {
                         throw new Error('Cloudinary configuration missing in environment variables.');
                       }
 
-                      const uploadToCloudinary = (file: File, resourceType: 'video' | 'image', onProgress: (pct: number) => void): Promise<any> => {
+                      const uploadToCloudinary = (file: File, resourceType: 'video' | 'image', onProgress: (pct: number) => void): Promise<{ public_id: string }> => {
                         return new Promise((resolve, reject) => {
                           const url = `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`;
                           const xhr = new XMLHttpRequest();
@@ -1131,11 +789,8 @@ export default function AdminDashboardPage() {
                             <button
                               onClick={async () => {
                                 if (!confirm('Kya aap yeh clip delete karna chahte hain?')) return;
-                                const { error: delError } = await supabase
-                                  .from('raw_clips')
-                                  .update({ is_active: false })
-                                  .eq('id', clip.id);
-                                if (!delError) fetchData();
+                                const res = await deleteClip(clip.id);
+                                if (res.success) fetchData();
                               }}
                               className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                               title="Delete clip"

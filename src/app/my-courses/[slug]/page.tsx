@@ -4,7 +4,7 @@ import { useEffect, useState, use as usePromise } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { getCourseBySlug, getPublicLessons } from '@/app/actions/courses';
-import { Loader2, PlayCircle } from 'lucide-react';
+import { Loader2, PlayCircle, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import type { Course, Lesson } from '@/types';
 
@@ -82,53 +82,84 @@ export default function WatchCoursePage({ params }: { params: Promise<{ slug: st
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+      <div className="min-h-screen flex items-center justify-center bg-ink">
+        <Loader2 className="w-7 h-7 animate-spin text-coral" aria-label="Loading course" />
       </div>
     );
   }
 
   if (error && !owned) {
-    return <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white">{error}</div>;
+    return <div className="on-ink min-h-screen flex items-center justify-center bg-ink px-4 text-center">{error}</div>;
   }
 
-  return (
-    <div className="min-h-screen bg-slate-950 text-white py-10 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto">
-        <Link href="/my-courses" className="text-sm text-slate-400 hover:text-white mb-6 inline-block">
-          &larr; My Courses
-        </Link>
-        <h1 className="text-2xl font-black mb-6">{course?.title}</h1>
+  const activeIndex = lessons.findIndex((l) => l.id === activeLessonId);
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
-            <div className="aspect-video bg-black rounded-2xl overflow-hidden flex items-center justify-center">
+  // The "screening room": dark so the video is the brightest thing on screen.
+  return (
+    <div className="on-ink min-h-screen bg-ink text-ivory pt-24 sm:pt-28 pb-16 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex justify-between items-center gap-4 pb-5 mb-8 border-b border-ivory/10">
+          <Link href="/my-courses" className="pencil-link slate text-ivory/70 inline-flex items-center gap-2">
+            <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" />
+            My courses
+          </Link>
+          {activeIndex >= 0 && (
+            <p className="slate text-coral tabular">
+              Lesson {String(activeIndex + 1).padStart(2, '0')} / {String(lessons.length).padStart(2, '0')}
+            </p>
+          )}
+        </div>
+
+        <h1 className="font-display text-3xl sm:text-4xl font-extrabold tracking-[-0.03em] mb-8">{course?.title}</h1>
+
+        <div className="grid lg:grid-cols-12 gap-8">
+          <div className="lg:col-span-8">
+            <div className="relative aspect-video bg-black rounded-[4px] overflow-hidden flex items-center justify-center ring-1 ring-ivory/10">
               {videoLoading ? (
-                <Loader2 className="w-10 h-10 animate-spin text-indigo-500" />
+                <Loader2 className="w-8 h-8 animate-spin text-coral" aria-label="Loading video" />
               ) : videoUrl ? (
                 <video key={videoUrl} src={videoUrl} controls controlsList="nodownload" className="w-full h-full" autoPlay />
               ) : (
-                <p className="text-slate-500 text-sm px-6 text-center">{error || 'Select a lesson to begin.'}</p>
+                <p className="text-ivory/60 text-sm px-6 text-center">{error || 'Select a lesson to begin.'}</p>
               )}
             </div>
+            {activeIndex >= 0 && (
+              <div className="mt-5">
+                <h2 className="font-display text-xl font-bold">{lessons[activeIndex].title}</h2>
+                {lessons[activeIndex].description && (
+                  <p className="text-ivory/70 mt-2 leading-relaxed">{lessons[activeIndex].description}</p>
+                )}
+              </div>
+            )}
           </div>
 
-          <div className="space-y-2">
-            {lessons.map((lesson, i) => (
-              <button
-                key={lesson.id}
-                onClick={() => setActiveLessonId(lesson.id)}
-                className={`w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-all ${
-                  activeLessonId === lesson.id ? 'bg-indigo-600' : 'bg-slate-900 hover:bg-slate-800'
-                }`}
-              >
-                <PlayCircle className="w-4 h-4 flex-shrink-0" />
-                <span className="text-sm font-medium">
-                  {i + 1}. {lesson.title}
-                </span>
-              </button>
-            ))}
-          </div>
+          <nav className="lg:col-span-4" aria-label="Lessons">
+            <p className="slate text-ivory/45 mb-3">Reel log</p>
+            <ol className="border-t border-ivory/10">
+              {lessons.map((lesson, i) => {
+                const isActive = activeLessonId === lesson.id;
+                return (
+                  <li key={lesson.id} className="border-b border-ivory/10">
+                    <button
+                      onClick={() => setActiveLessonId(lesson.id)}
+                      aria-current={isActive ? 'true' : undefined}
+                      className={`relative w-full text-left py-4 pl-4 pr-3 flex items-center gap-3 transition-colors ${
+                        isActive ? 'bg-ivory/[0.06] text-ivory' : 'text-ivory/70 hover:text-ivory hover:bg-ivory/[0.03]'
+                      }`}
+                    >
+                      <span
+                        aria-hidden="true"
+                        className={`absolute left-0 top-0 bottom-0 w-[3px] transition-colors ${isActive ? 'bg-coral' : 'bg-transparent'}`}
+                      />
+                      <span className="slate text-ivory/45 w-7 flex-shrink-0 tabular">{String(i + 1).padStart(2, '0')}</span>
+                      <span className="flex-1 !text-sm font-medium">{lesson.title}</span>
+                      <PlayCircle className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-coral' : 'text-ivory/40'}`} aria-hidden="true" />
+                    </button>
+                  </li>
+                );
+              })}
+            </ol>
+          </nav>
         </div>
       </div>
     </div>

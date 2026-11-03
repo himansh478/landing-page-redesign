@@ -2,8 +2,12 @@
 
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { MapPin, Clock, Video, Loader2, X, Phone, Briefcase, IndianRupee, Globe, Send, Zap, ShieldCheck } from 'lucide-react';
+import { MapPin, Clock, Video, Loader2, IndianRupee, Send, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { PageIntro, PageShell } from '@/components/editorial/PageIntro';
+import { ModalShell } from '@/components/editorial/ModalShell';
+import { Em } from '@/components/editorial/Showcase';
+import { btnPrimary, fieldClass, labelClass, tagClass } from '@/components/editorial/styles';
 
 interface ShootJob {
   id: string;
@@ -22,8 +26,9 @@ interface ShootJob {
 export default function FindClientsPage() {
   const [jobs, setJobs] = useState<ShootJob[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  
+  // Kept for parity with the original; the message isn't shown anywhere yet.
+  const [, setError] = useState<string | null>(null);
+
   // Modal states
   const [selectedJob, setSelectedJob] = useState<ShootJob | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -34,23 +39,23 @@ export default function FindClientsPage() {
     portfolio: ''
   });
 
-  const fetchJobs = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('I_have_work')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      if (data) setJobs(data);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('I_have_work')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        if (data) setJobs(data);
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : (err as { message?: string })?.message ?? null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchJobs();
 
     // REAL-TIME: Listen for status updates and new jobs
@@ -69,7 +74,7 @@ export default function FindClientsPage() {
   const handleApplySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedJob) return;
-    
+
     setIsSubmitting(true);
     try {
       const { error } = await supabase
@@ -87,228 +92,188 @@ export default function FindClientsPage() {
       setSelectedJob(null);
       setAppFormData({ phone: '', equipments: '', portfolio: '' });
       setTimeout(() => setIsSuccess(false), 5000);
-    } catch (err: any) {
-      alert("Error submitting application: " + err.message);
+    } catch (err: unknown) {
+      alert("Error submitting application: " + (err instanceof Error ? err.message : (err as { message?: string })?.message));
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900 selection:bg-indigo-500/30">
-      
-      {/* Background Blobs */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-indigo-600/5 blur-[150px] rounded-full" />
-        <div className="absolute bottom-0 left-0 w-[800px] h-[800px] bg-purple-600/5 blur-[150px] rounded-full" />
-      </div>
+    <>
+      <PageShell>
+        <PageIntro
+          label="Creative Marketplace"
+          title={['Find', 'Work.']}
+          lede={
+            <>
+              Elite opportunities for cinematographers, editors, and technical artists.
+              Deploy your skills on <Em>premium projects</Em> across the globe.
+            </>
+          }
+        />
 
-      <section className="relative pt-40 pb-32">
-        <div className="container mx-auto px-6 relative z-10">
-          <div className="text-center mb-24">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-100 border border-indigo-200 text-indigo-600 text-[10px] font-black uppercase tracking-[0.3em] mb-10"
-            >
-              <Zap className="w-3 h-3" />
-              Creative Marketplace
-            </motion.div>
-            <motion.h1
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="text-5xl md:text-8xl lg:text-9xl font-bold mb-10 tracking-tighter leading-none"
-            >
-              Find <span className="text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-slate-600 to-slate-400">Work.</span>
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="text-lg md:text-2xl text-slate-500 max-w-3xl mx-auto font-light leading-relaxed"
-            >
-              Elite opportunities for cinematographers, editors, and technical artists. 
-              Deploy your skills on <span className="text-slate-900 font-medium">premium projects</span> across the globe.
-            </motion.p>
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-32" role="status">
+            <Loader2 className="w-8 h-8 text-editorial animate-spin mb-5" aria-hidden="true" />
+            <p className="slate text-ink/55">Scanning Pipeline...</p>
           </div>
-
-          <AnimatePresence>
-            {isSuccess && (
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="fixed top-24 left-1/2 -translate-x-1/2 z-50 px-8 py-4 rounded-2xl bg-emerald-100 text-emerald-800 border border-emerald-200 font-black text-xs uppercase tracking-widest flex items-center gap-3 shadow-xl"
-              >
-                <ShieldCheck className="w-5 h-5" />
-                Interest Submitted Successfully
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-40">
-              <Loader2 className="w-12 h-12 text-indigo-600 animate-spin mb-6" />
-              <p className="text-slate-500 font-black uppercase tracking-[0.3em] text-[10px]">Scanning Pipeline...</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {jobs.map((job, idx) => {
-                const isCompleted = job.status === 'completed';
-                return (
-                  <motion.div
-                    key={job.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: idx * 0.1 }}
-                    className={`group relative p-8 rounded-[40px] bg-white border transition-all duration-500 flex flex-col ${
-                      isCompleted ? 'opacity-60 grayscale border-slate-200 bg-slate-50' : 'border-slate-200 hover:border-indigo-300 shadow-sm hover:shadow-xl'
-                    }`}
-                  >
-                    <div className="flex justify-between items-start mb-8">
-                      <span className="px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-600 text-[10px] font-black uppercase tracking-widest">
-                        {job.work_type}
+        ) : (
+          <ul className="mt-16 sm:mt-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {jobs.map((job, idx) => {
+              const isCompleted = job.status === 'completed';
+              return (
+                <motion.li
+                  key={job.id}
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                  transition={{ duration: 0.8, delay: (idx % 3) * 0.08, ease: [0.16, 1, 0.3, 1] }}
+                  className={`group relative flex flex-col p-6 sm:p-7 rounded-[4px] border transition-shadow duration-500 ${
+                    isCompleted
+                      ? 'opacity-60 bg-sand/40 border-ink/10'
+                      : 'bg-paper border-ink/15 hover:shadow-[0_30px_60px_-35px_rgb(var(--ink-rgb)/0.55)]'
+                  }`}
+                >
+                  <div className="flex justify-between items-start gap-3 mb-6">
+                    <span className={tagClass}>{job.work_type}</span>
+                    {isCompleted && (
+                      <span className="slate !text-[10px] px-2 py-1 rounded-[3px] border border-destructive/40 text-destructive">
+                        Closed
                       </span>
-                      {isCompleted && (
-                        <span className="px-3 py-1 bg-red-50 text-red-600 text-[10px] font-black uppercase rounded-lg border border-red-100">
-                          Closed
-                        </span>
-                      )}
-                    </div>
+                    )}
+                  </div>
 
-                    <h3 className="text-2xl font-bold mb-6 tracking-tight text-slate-900 group-hover:text-indigo-600 transition-colors">
-                      {job.district}, {job.state}
-                    </h3>
+                  <h3 className="font-display text-2xl font-extrabold text-ink tracking-[-0.03em] leading-tight mb-5 transition-colors group-hover:text-editorial">
+                    {job.district}, {job.state}
+                  </h3>
 
-                    <div className="space-y-4 mb-10 flex-grow">
-                      <div className="flex items-center gap-4 text-xs text-slate-500 font-light">
-                        <MapPin className="w-4 h-4 text-indigo-500" />
+                  <dl className="mb-8 flex-grow border-t border-ink/15 text-sm text-ink/75">
+                    <div className="py-2.5 border-b border-ink/10">
+                      <dt className="sr-only">Location</dt>
+                      <dd className="flex items-center gap-3 min-w-0">
+                        <MapPin className="w-4 h-4 text-ink/45 flex-shrink-0" aria-hidden="true" />
                         <span className="line-clamp-1">{job.exact_location}</span>
-                      </div>
-                      <div className="flex items-center gap-4 text-xs text-slate-500 font-light">
-                        <Clock className="w-4 h-4 text-indigo-500" />
+                      </dd>
+                    </div>
+                    <div className="py-2.5 border-b border-ink/10">
+                      <dt className="sr-only">Duration</dt>
+                      <dd className="flex items-center gap-3 min-w-0">
+                        <Clock className="w-4 h-4 text-ink/45 flex-shrink-0" aria-hidden="true" />
                         <span>{job.work_duration}</span>
-                      </div>
-                      <div className="flex items-center gap-4 text-xs text-slate-500 font-light">
-                        <Video className="w-4 h-4 text-indigo-500" />
+                      </dd>
+                    </div>
+                    <div className="py-2.5 border-b border-ink/10">
+                      <dt className="sr-only">Gear</dt>
+                      <dd className="flex items-center gap-3 min-w-0">
+                        <Video className="w-4 h-4 text-ink/45 flex-shrink-0" aria-hidden="true" />
                         <span>Gear: {job.device_type}</span>
-                      </div>
+                      </dd>
                     </div>
+                  </dl>
 
-                    <div className="flex items-center justify-between pt-8 border-t border-slate-100">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
-                          <IndianRupee className="w-4 h-4 text-emerald-600" />
-                        </div>
-                        <div>
-                          <div className="text-[10px] font-black uppercase tracking-widest text-slate-400">Payout</div>
-                          <div className="text-sm font-bold text-emerald-600">₹{Math.round(job.price * 0.9)}</div>
-                        </div>
+                  <div className="flex items-end justify-between gap-4">
+                    <div>
+                      <div className="slate text-ink/50 mb-1 flex items-center gap-1">
+                        <IndianRupee className="w-3 h-3" aria-hidden="true" />
+                        Payout
                       </div>
-                      <button 
-                        onClick={() => setSelectedJob(job)}
-                        disabled={isCompleted}
-                        className={`px-6 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all ${
-                          isCompleted 
-                          ? 'bg-slate-100 text-slate-400 cursor-not-allowed' 
-                          : 'bg-slate-900 text-white hover:bg-indigo-600'
-                        }`}
-                      >
-                        {isCompleted ? 'Filled' : "Interest"}
-                      </button>
+                      <div className="font-display text-3xl font-extrabold text-ink tracking-[-0.04em] tabular leading-none">
+                        ₹{Math.round(job.price * 0.9)}
+                      </div>
                     </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </section>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedJob(job)}
+                      disabled={isCompleted}
+                      className={`h-11 px-5 rounded-md text-sm font-semibold transition-colors duration-300 ${
+                        isCompleted
+                          ? 'bg-ink/5 text-ink/40 cursor-not-allowed'
+                          : 'bg-editorial text-ivory hover:bg-ink'
+                      }`}
+                    >
+                      {isCompleted ? 'Filled' : "Interest"}
+                    </button>
+                  </div>
+                </motion.li>
+              );
+            })}
+          </ul>
+        )}
+      </PageShell>
+
+      <AnimatePresence>
+        {isSuccess && (
+          <motion.div
+            initial={{ opacity: 0, y: -16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -16 }}
+            role="status"
+            className="on-ink fixed top-24 left-1/2 -translate-x-1/2 z-[60] w-[calc(100%-2rem)] sm:w-auto px-5 py-3.5 rounded-md bg-ink text-ivory slate flex items-center gap-3 shadow-[0_20px_40px_-20px_rgb(var(--ink-rgb)/0.6)]"
+          >
+            <ShieldCheck className="w-4 h-4 text-coral flex-shrink-0" aria-hidden="true" />
+            Interest Submitted Successfully
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Interest Modal */}
       <AnimatePresence>
         {selectedJob && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm">
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="bg-white w-full max-w-xl rounded-[48px] border border-slate-200 shadow-2xl overflow-hidden"
-            >
-              <div className="p-10 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                <div>
-                  <div className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-600 mb-2">Project Application</div>
-                  <h2 className="text-3xl font-bold tracking-tighter text-slate-900">Interest Brief</h2>
-                </div>
-                <button 
-                  onClick={() => setSelectedJob(null)}
-                  className="w-12 h-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-100 transition-all"
-                >
-                  <X className="w-6 h-6 text-slate-500" />
-                </button>
+          <ModalShell onClose={() => setSelectedJob(null)} labelledBy="interest-title" className="max-w-xl" zClass="z-50">
+            <div className="p-6 sm:p-8 pr-16 border-b border-ink/15">
+              <p className="slate text-editorial mb-2">Project Application</p>
+              <h2 id="interest-title" className="font-display text-3xl font-extrabold text-ink tracking-[-0.03em]">Interest Brief</h2>
+            </div>
+
+            <form onSubmit={handleApplySubmit} className="p-6 sm:p-8 space-y-5">
+              <div>
+                <label htmlFor="fc-phone" className={labelClass}>WhatsApp Connectivity</label>
+                <input
+                  id="fc-phone"
+                  type="tel" required
+                  className={fieldClass}
+                  placeholder="+91 00000 00000"
+                  value={appFormData.phone}
+                  onChange={(e) => setAppFormData({...appFormData, phone: e.target.value})}
+                />
               </div>
 
-              <form onSubmit={handleApplySubmit} className="p-10 space-y-8">
-                <div className="grid grid-cols-1 gap-6">
-                  <div>
-                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 ml-1">
-                      WhatsApp Connectivity
-                    </label>
-                    <input 
-                      type="tel" required
-                      className="w-full px-6 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-300 outline-none transition-all text-slate-900 shadow-sm placeholder:text-slate-400"
-                      placeholder="+91 00000 00000"
-                      value={appFormData.phone}
-                      onChange={(e) => setAppFormData({...appFormData, phone: e.target.value})}
-                    />
-                  </div>
+              <div>
+                <label htmlFor="fc-equipment" className={labelClass}>Equipment Arsenal</label>
+                <input
+                  id="fc-equipment"
+                  type="text" required
+                  className={fieldClass}
+                  placeholder="e.g. Sony A7SIII, Gimbal, DJI Mini 4"
+                  value={appFormData.equipments}
+                  onChange={(e) => setAppFormData({...appFormData, equipments: e.target.value})}
+                />
+              </div>
 
-                  <div>
-                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 ml-1">
-                      Equipment Arsenal
-                    </label>
-                    <input 
-                      type="text" required
-                      className="w-full px-6 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-300 outline-none transition-all text-slate-900 shadow-sm placeholder:text-slate-400"
-                      placeholder="e.g. Sony A7SIII, Gimbal, DJI Mini 4"
-                      value={appFormData.equipments}
-                      onChange={(e) => setAppFormData({...appFormData, equipments: e.target.value})}
-                    />
-                  </div>
+              <div>
+                <label htmlFor="fc-portfolio" className={labelClass}>Visual Portfolio Link</label>
+                <input
+                  id="fc-portfolio"
+                  type="url" required
+                  className={fieldClass}
+                  placeholder="Behance, IG or Drive link"
+                  value={appFormData.portfolio}
+                  onChange={(e) => setAppFormData({...appFormData, portfolio: e.target.value})}
+                />
+              </div>
 
-                  <div>
-                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 ml-1">
-                      Visual Portfolio Link
-                    </label>
-                    <input 
-                      type="url" required
-                      className="w-full px-6 py-4 bg-white border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-300 outline-none transition-all text-slate-900 shadow-sm placeholder:text-slate-400"
-                      placeholder="Behance, IG or Drive link"
-                      value={appFormData.portfolio}
-                      onChange={(e) => setAppFormData({...appFormData, portfolio: e.target.value})}
-                    />
-                  </div>
-                </div>
-
-                <button 
-                  type="submit" 
-                  disabled={isSubmitting}
-                  className="w-full group bg-slate-900 text-white font-black py-6 rounded-3xl text-xs uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 disabled:opacity-50 hover:bg-indigo-600 shadow-md hover:shadow-xl"
-                >
-                  {isSubmitting ? (
-                    <><Loader2 className="w-5 h-5 animate-spin" /> Transmitting...</>
-                  ) : (
-                    <><Send className="w-4 h-4 group-hover:translate-x-2 group-hover:-translate-y-2 transition-transform" /> Deploy Application</>
-                  )}
-                </button>
-              </form>
-            </motion.div>
-          </div>
+              <button type="submit" disabled={isSubmitting} className={`${btnPrimary} w-full`}>
+                {isSubmitting ? (
+                  <><Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" /> Transmitting...</>
+                ) : (
+                  <><Send className="w-4 h-4 transition-transform duration-500 ease-reveal group-hover:translate-x-1 group-hover:-translate-y-1" aria-hidden="true" /> Deploy Application</>
+                )}
+              </button>
+            </form>
+          </ModalShell>
         )}
       </AnimatePresence>
-
-    </main>
+    </>
   );
 }

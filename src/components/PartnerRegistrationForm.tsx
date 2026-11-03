@@ -1,11 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Turnstile } from '@marsidev/react-turnstile';
 import { registerPartner } from '@/app/actions/partners';
-import { Check, Loader2, User, Camera, MapPin, Instagram, Mail, Briefcase, Wrench, Smartphone, Link as LinkIcon } from 'lucide-react';
-
-const inputClass = "w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 transition-all";
+import { Check, Loader2, User, Camera, MapPin, Instagram, Mail, Briefcase, Wrench, Smartphone, Link as LinkIcon, ArrowRight } from 'lucide-react';
+import { btnArrow, btnGhost, btnPrimary, fieldClass, fieldsetLegendClass, labelClass, textareaClass } from './editorial/styles';
 
 export function PartnerRegistrationForm() {
   const [formData, setFormData] = useState({
@@ -25,7 +23,6 @@ export function PartnerRegistrationForm() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
 
   const handleInputChange = (
@@ -57,8 +54,8 @@ export function PartnerRegistrationForm() {
         portfolio_link: '',
         website_url: '',
       });
-    } catch (err: any) {
-      setSubmitError(err.message || 'Something went wrong. Please try again.');
+    } catch (err: unknown) {
+      setSubmitError((err instanceof Error && err.message) || 'Something went wrong. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -66,141 +63,144 @@ export function PartnerRegistrationForm() {
 
   if (isSuccess) {
     return (
-      <div className="py-20 text-center bg-zinc-900/50 border border-white/10 rounded-[32px] p-8">
-        <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-          <Check className="w-10 h-10 text-green-500" />
+      <div className="bg-paper border border-ink/15 rounded-[4px] overflow-hidden" role="status">
+        <div className="h-1 bg-coral" aria-hidden="true" />
+        <div className="py-16 px-6 sm:px-10 text-center">
+          <div className="w-16 h-16 bg-coral rounded-full flex items-center justify-center mx-auto mb-6">
+            <Check className="w-8 h-8 text-ink" aria-hidden="true" />
+          </div>
+          <h3 className="font-display text-3xl font-extrabold text-ink tracking-[-0.03em] mb-3">Application Received!</h3>
+          <p className="text-ink/65 text-lg max-w-md mx-auto">Thank you for joining our partner network. We&apos;ll review your details and get in touch soon.</p>
+          <button type="button" onClick={() => setIsSuccess(false)} className={`${btnGhost} mt-8`}>
+            Submit Another Response
+          </button>
         </div>
-        <h3 className="text-3xl font-bold mb-2 text-white">Application Received!</h3>
-        <p className="text-zinc-400 text-lg">Thank you for joining our partner network. We'll review your details and get in touch soon.</p>
-        <button 
-          onClick={() => setIsSuccess(false)}
-          className="mt-8 px-8 py-3 bg-white text-black font-bold rounded-xl hover:bg-purple-500 hover:text-white transition-all"
-        >
-          Submit Another Response
-        </button>
       </div>
     );
   }
 
   return (
-    <div className="bg-zinc-900/50 border border-white/10 rounded-[32px] p-8 shadow-2xl backdrop-blur-sm">
-      <div className="mb-10">
-        <h2 className="text-4xl font-bold text-white mb-2">
-          Partner <span className="text-purple-500">Registration</span>
-        </h2>
-        <p className="text-zinc-400 text-lg">
-          Join our professional network and start getting high-quality shoot leads.
-        </p>
+    <div className="bg-paper border border-ink/15 rounded-[4px] overflow-hidden shadow-[0_40px_80px_-50px_rgb(var(--ink-rgb)/0.5)]">
+      <div className="h-1 bg-coral" aria-hidden="true" />
+      <div className="p-6 sm:p-10">
+        <div className="mb-10">
+          <p className="slate text-editorial mb-3">Cwaya · Partner network</p>
+          <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-ink tracking-[-0.03em] mb-2">
+            Partner <span className="text-editorial">Registration</span>
+          </h2>
+          <p className="text-ink/65 text-lg">
+            Join our professional network and start getting high-quality shoot leads.
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-10">
+          {/* Personal Info Section */}
+          <fieldset>
+            <legend className={fieldsetLegendClass}>
+              <User className="w-3.5 h-3.5" aria-hidden="true" />
+              01 — Contact Information
+            </legend>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="pr-name" className={labelClass}>Full Name</label>
+                <input id="pr-name" name="name" value={formData.name} onChange={handleInputChange} placeholder="Your Name" className={fieldClass} required />
+              </div>
+              <div>
+                <label htmlFor="pr-whatsapp" className={labelClass}>
+                  <Smartphone className="w-3 h-3" aria-hidden="true" /> WhatsApp Number
+                </label>
+                <input id="pr-whatsapp" name="whatsapp" value={formData.whatsapp} onChange={handleInputChange} placeholder="+91 00000 00000" className={fieldClass} required />
+              </div>
+              <div>
+                <label htmlFor="pr-insta" className={labelClass}>
+                  <Instagram className="w-3 h-3" aria-hidden="true" /> Instagram ID
+                </label>
+                <input id="pr-insta" name="insta_id" value={formData.insta_id} onChange={handleInputChange} placeholder="@your_id" className={fieldClass} />
+              </div>
+              <div>
+                <label htmlFor="pr-gmail" className={labelClass}>
+                  <Mail className="w-3 h-3" aria-hidden="true" /> Gmail Address
+                </label>
+                <input id="pr-gmail" type="email" name="gmail" value={formData.gmail} onChange={handleInputChange} placeholder="your.name@gmail.com" className={fieldClass} />
+              </div>
+            </div>
+          </fieldset>
+
+          {/* Location Section */}
+          <fieldset className="space-y-4">
+            <legend className={fieldsetLegendClass}>
+              <MapPin className="w-3.5 h-3.5" aria-hidden="true" />
+              02 — Service Area
+            </legend>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="pr-state" className={labelClass}>State</label>
+                <input id="pr-state" name="state" value={formData.state} onChange={handleInputChange} placeholder="e.g. Madhya Pradesh" className={fieldClass} required />
+              </div>
+              <div>
+                <label htmlFor="pr-district" className={labelClass}>District</label>
+                <input id="pr-district" name="district" value={formData.district} onChange={handleInputChange} placeholder="e.g. Indore" className={fieldClass} required />
+              </div>
+            </div>
+            <div>
+              <label htmlFor="pr-location" className={labelClass}>Exact Location / Address</label>
+              <input id="pr-location" name="exact_location" value={formData.exact_location} onChange={handleInputChange} placeholder="Your specific area or studio address" className={fieldClass} required />
+            </div>
+          </fieldset>
+
+          {/* Professional Details Section */}
+          <fieldset className="space-y-4">
+            <legend className={fieldsetLegendClass}>
+              <Briefcase className="w-3.5 h-3.5" aria-hidden="true" />
+              03 — Skills &amp; Experience
+            </legend>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="pr-skills" className={labelClass}>
+                  <Wrench className="w-3 h-3" aria-hidden="true" /> Your Skills
+                </label>
+                <input id="pr-skills" name="skills" value={formData.skills} onChange={handleInputChange} placeholder="e.g. Cinematic Shoot, Video Editing" className={fieldClass} required />
+              </div>
+              <div>
+                <label htmlFor="pr-experience" className={labelClass}>Years of Experience</label>
+                <input id="pr-experience" name="experience" value={formData.experience} onChange={handleInputChange} placeholder="e.g. 3 Years" className={fieldClass} required />
+              </div>
+            </div>
+            <div>
+              <label htmlFor="pr-equipments" className={labelClass}>
+                <Camera className="w-3 h-3" aria-hidden="true" /> Equipments You Own
+              </label>
+              <textarea id="pr-equipments" name="equipments" value={formData.equipments} onChange={handleInputChange} rows={3} placeholder="List your camera, lenses, gimbal, etc." className={textareaClass} required />
+            </div>
+            <div>
+              <label htmlFor="pr-portfolio" className={labelClass}>
+                <LinkIcon className="w-3 h-3" aria-hidden="true" /> Portfolio Link (Website / Drive / PDF)
+              </label>
+              <input id="pr-portfolio" name="portfolio_link" value={formData.portfolio_link} onChange={handleInputChange} placeholder="https://..." className={fieldClass} />
+            </div>
+          </fieldset>
+
+          {/* Honeypot */}
+          <div style={{ display: 'none' }} aria-hidden="true">
+            <input name="website_url" value={formData.website_url} onChange={handleInputChange} tabIndex={-1} autoComplete="off" />
+          </div>
+
+          <div className="space-y-3">
+            {submitError && <p role="alert" className="text-destructive text-sm">{submitError}</p>}
+
+            <button type="submit" disabled={isSubmitting} className={`${btnPrimary} w-full`}>
+              {isSubmitting ? (
+                <Loader2 className="w-5 h-5 animate-spin" aria-label="Submitting" />
+              ) : (
+                <>
+                  Register as Partner
+                  <ArrowRight className={btnArrow} aria-hidden="true" />
+                </>
+              )}
+            </button>
+          </div>
+        </form>
       </div>
-
-      <form onSubmit={handleSubmit} className="space-y-8">
-        {/* Personal Info Section */}
-        <div className="space-y-6">
-          <div className="flex items-center gap-2 text-white font-bold uppercase tracking-wider text-sm mb-4">
-            <User className="w-4 h-4 text-purple-500" />
-            Contact Information
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm text-zinc-400 ml-1">Full Name</label>
-              <input name="name" value={formData.name} onChange={handleInputChange} placeholder="Your Name" className={inputClass} required />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm text-zinc-400 ml-1 flex items-center gap-2">
-                <Smartphone className="w-3 h-3" /> WhatsApp Number
-              </label>
-              <input name="whatsapp" value={formData.whatsapp} onChange={handleInputChange} placeholder="+91 00000 00000" className={inputClass} required />
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm text-zinc-400 ml-1 flex items-center gap-2">
-                <Instagram className="w-3 h-3" /> Instagram ID
-              </label>
-              <input name="insta_id" value={formData.insta_id} onChange={handleInputChange} placeholder="@your_id" className={inputClass} />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm text-zinc-400 ml-1 flex items-center gap-2">
-                <Mail className="w-3 h-3" /> Gmail Address
-              </label>
-              <input type="email" name="gmail" value={formData.gmail} onChange={handleInputChange} placeholder="your.name@gmail.com" className={inputClass} />
-            </div>
-          </div>
-        </div>
-
-        {/* Location Section */}
-        <div className="space-y-6">
-          <div className="flex items-center gap-2 text-white font-bold uppercase tracking-wider text-sm mb-4">
-            <MapPin className="w-4 h-4 text-purple-500" />
-            Service Area
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm text-zinc-400 ml-1">State</label>
-              <input name="state" value={formData.state} onChange={handleInputChange} placeholder="e.g. Madhya Pradesh" className={inputClass} required />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm text-zinc-400 ml-1">District</label>
-              <input name="district" value={formData.district} onChange={handleInputChange} placeholder="e.g. Indore" className={inputClass} required />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm text-zinc-400 ml-1">Exact Location / Address</label>
-            <input name="exact_location" value={formData.exact_location} onChange={handleInputChange} placeholder="Your specific area or studio address" className={inputClass} required />
-          </div>
-        </div>
-
-        {/* Professional Details Section */}
-        <div className="space-y-6">
-          <div className="flex items-center gap-2 text-white font-bold uppercase tracking-wider text-sm mb-4">
-            <Briefcase className="w-4 h-4 text-purple-500" />
-            Skills & Experience
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm text-zinc-400 ml-1 flex items-center gap-2">
-                <Wrench className="w-3 h-3" /> Your Skills
-              </label>
-              <input name="skills" value={formData.skills} onChange={handleInputChange} placeholder="e.g. Cinematic Shoot, Video Editing" className={inputClass} required />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm text-zinc-400 ml-1">Years of Experience</label>
-              <input name="experience" value={formData.experience} onChange={handleInputChange} placeholder="e.g. 3 Years" className={inputClass} required />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm text-zinc-400 ml-1 flex items-center gap-2">
-              <Camera className="w-3 h-3" /> Equipments You Own
-            </label>
-            <textarea name="equipments" value={formData.equipments} onChange={handleInputChange} rows={3} placeholder="List your camera, lenses, gimbal, etc." className={inputClass + " resize-none"} required />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm text-zinc-400 ml-1 flex items-center gap-2">
-              <LinkIcon className="w-3 h-3" /> Portfolio Link (Website / Drive / PDF)
-            </label>
-            <input name="portfolio_link" value={formData.portfolio_link} onChange={handleInputChange} placeholder="https://..." className={inputClass} />
-          </div>
-        </div>
-
-        {/* Honeypot */}
-        <div style={{ display: 'none' }} aria-hidden="true">
-          <input name="website_url" value={formData.website_url} onChange={handleInputChange} tabIndex={-1} autoComplete="off" />
-        </div>
-
-
-
-          {submitError && <p className="text-red-400 text-sm">{submitError}</p>}
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full group relative overflow-hidden bg-white text-black py-5 rounded-2xl font-bold text-lg transition-all hover:bg-purple-500 hover:text-white disabled:opacity-50"
-          >
-            <div className="relative z-10 flex items-center justify-center gap-2">
-              {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Register as Partner'}
-            </div>
-          </button>
-      </form>
     </div>
   );
 }

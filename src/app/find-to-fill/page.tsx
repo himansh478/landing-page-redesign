@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Camera, Send, ArrowLeft, ImageIcon, Mail, MapPin, MessageCircle, Loader2, Sparkles, Zap, ShieldCheck } from 'lucide-react';
-import Link from 'next/link';
+import { Camera, Send, MapPin, MessageCircle, Loader2, Sparkles, ShieldCheck } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { motion, AnimatePresence } from 'motion/react';
+import { PageIntro, PageShell } from '@/components/editorial/PageIntro';
+import { Em } from '@/components/editorial/Showcase';
+import { btnPrimary, fieldClass, fieldsetLegendClass, labelClass } from '@/components/editorial/styles';
 
 export default function FindToFillPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -61,205 +63,159 @@ export default function FindToFillPage() {
       });
 
       setTimeout(() => setIsSuccess(false), 5000);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error saving data:", error);
-      alert("Error: " + error.message);
+      alert("Error: " + (error instanceof Error ? error.message : (error as { message?: string })?.message));
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const inputClass = "w-full px-6 py-4 bg-zinc-900/50 border border-white/5 rounded-2xl focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-all text-white placeholder:text-slate-400";
-  const labelClass = "block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1";
-
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900 selection:bg-indigo-500/30">
-      {/* Background Blobs */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-0 w-[800px] h-[800px] bg-indigo-600/5 blur-[150px] rounded-full" />
-        <div className="absolute bottom-0 right-0 w-[800px] h-[800px] bg-purple-600/5 blur-[150px] rounded-full" />
-      </div>
+    <PageShell>
+      <PageIntro
+        back={{ href: '/', label: 'Back to Studio' }}
+        note="Project Deployment"
+        title={['Fill to', 'Find.']}
+        lede={
+          <>
+            Provide your production requirements and we&apos;ll connect you with the <Em>elite talent</Em> your brand deserves.
+          </>
+        }
+      />
 
-      <section className="relative pt-40 pb-32 overflow-hidden">
-        <div className="container mx-auto px-6 max-w-4xl relative z-10">
-          <Link
-            href="/"
-            className="group inline-flex items-center gap-3 text-slate-500 hover:text-slate-900 transition-all mb-16 text-xs font-black uppercase tracking-[0.3em]"
-          >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-2 transition-transform" />
-            Back to Studio
-          </Link>
-
-          <div className="text-center mb-16">
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.9, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+        className="relative mt-14 sm:mt-20 max-w-4xl bg-paper border border-ink/15 rounded-[4px] overflow-hidden shadow-[0_40px_80px_-50px_rgb(var(--ink-rgb)/0.5)]"
+      >
+        <div className="h-1 bg-coral" aria-hidden="true" />
+        <AnimatePresence>
+          {isSuccess && (
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-50 border border-slate-200 text-indigo-400 text-[10px] font-black uppercase tracking-[0.3em] mb-10"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="on-ink absolute inset-0 z-20 bg-ink/95 backdrop-blur-sm flex flex-col items-center justify-center text-center p-10"
+              role="status"
             >
-              <Zap className="w-3 h-3" />
-              Project Deployment
+              <div className="w-16 h-16 rounded-full bg-coral flex items-center justify-center mb-8">
+                <ShieldCheck className="w-8 h-8 text-ink" aria-hidden="true" />
+              </div>
+              <h2 className="font-display text-3xl font-extrabold text-ivory tracking-[-0.03em] mb-4">Request Received.</h2>
+              <p className="text-ivory/70 max-w-sm mb-10">
+                Your production brief has been successfully archived. Our team will review and contact you shortly.
+              </p>
+              <button
+                type="button"
+                onClick={() => setIsSuccess(false)}
+                className="h-12 px-8 rounded-md border border-ivory/25 text-ivory font-semibold transition-colors hover:bg-ivory hover:text-ink"
+              >
+                Dismiss
+              </button>
             </motion.div>
-            <motion.h1
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="text-5xl md:text-7xl font-bold mb-8 tracking-tighter leading-none"
-            >
-              Fill to <span className="text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-slate-600 to-slate-400">Find.</span>
-            </motion.h1>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="text-lg md:text-xl text-slate-500 max-w-2xl mx-auto font-light leading-relaxed"
-            >
-              Provide your production requirements and we'll connect you with the <span className="text-slate-900 font-medium">elite talent</span> your brand deserves.
-            </motion.p>
+          )}
+        </AnimatePresence>
+
+        <form onSubmit={handleSubmit} className="p-6 sm:p-10 space-y-10">
+          {/* Identity Section */}
+          <fieldset>
+            <legend className={fieldsetLegendClass}>
+              <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
+              Core Identity
+            </legend>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="ff-name" className={labelClass}>Full Name *</label>
+                <input id="ff-name" type="text" name="name" value={formData.name} required onChange={handleChange} className={fieldClass} placeholder="Elite Client Name" />
+              </div>
+              <div>
+                <label htmlFor="ff-gmail" className={labelClass}>Gmail Address *</label>
+                <input id="ff-gmail" type="email" name="gmail" value={formData.gmail} required onChange={handleChange} className={fieldClass} placeholder="client@studio.com" />
+              </div>
+            </div>
+          </fieldset>
+
+          {/* Contact & Location */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+            <fieldset className="space-y-4">
+              <legend className={fieldsetLegendClass}>
+                <MessageCircle className="w-3.5 h-3.5" aria-hidden="true" />
+                Connectivity
+              </legend>
+              <div>
+                <label htmlFor="ff-whatsapp" className={labelClass}>WhatsApp Number *</label>
+                <input id="ff-whatsapp" type="tel" name="whatsappNumber" value={formData.whatsappNumber} required onChange={handleChange} className={fieldClass} placeholder="+91 00000 00000" />
+              </div>
+              <div>
+                <label htmlFor="ff-insta" className={labelClass}>ImageIcon ID</label>
+                <input id="ff-insta" type="text" name="instaId" value={formData.instaId} onChange={handleChange} className={fieldClass} placeholder="@brand_handle" />
+              </div>
+            </fieldset>
+            <fieldset className="space-y-4">
+              <legend className={fieldsetLegendClass}>
+                <MapPin className="w-3.5 h-3.5" aria-hidden="true" />
+                Geography
+              </legend>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="ff-state" className={labelClass}>State *</label>
+                  <input id="ff-state" type="text" name="state" value={formData.state} required onChange={handleChange} className={fieldClass} placeholder="State" />
+                </div>
+                <div>
+                  <label htmlFor="ff-district" className={labelClass}>District *</label>
+                  <input id="ff-district" type="text" name="district" value={formData.district} required onChange={handleChange} className={fieldClass} placeholder="District" />
+                </div>
+              </div>
+              <div>
+                <label htmlFor="ff-venue" className={labelClass}>Exact Venue *</label>
+                <input id="ff-venue" type="text" name="exactLocation" value={formData.exactLocation} required onChange={handleChange} className={fieldClass} placeholder="Production Location Details" />
+              </div>
+            </fieldset>
           </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-zinc-900/30 backdrop-blur-3xl p-8 md:p-12 rounded-[48px] border border-white/5 shadow-2xl relative overflow-hidden"
-          >
-            <AnimatePresence>
-              {isSuccess && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                  className="absolute inset-0 z-50 bg-black/90 backdrop-blur-xl flex flex-col items-center justify-center text-center p-10"
-                >
-                  <div className="w-20 h-20 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center mb-8">
-                    <ShieldCheck className="w-10 h-10 text-emerald-500" />
-                  </div>
-                  <h2 className="text-3xl font-bold mb-4 tracking-tighter">Request Received.</h2>
-                  <p className="text-slate-500 font-light max-w-sm mb-10">
-                    Your production brief has been successfully archived. Our team will review and contact you shortly.
-                  </p>
-                  <button
-                    onClick={() => setIsSuccess(false)}
-                    className="px-10 py-4 rounded-2xl bg-slate-900 text-white font-black text-xs uppercase tracking-widest"
-                  >
-                    Dismiss
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <form onSubmit={handleSubmit} className="space-y-10">
-              {/* Identity Section */}
+          {/* Project Brief */}
+          <fieldset className="space-y-4">
+            <legend className={fieldsetLegendClass}>
+              <Camera className="w-3.5 h-3.5" aria-hidden="true" />
+              Technical Brief
+            </legend>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <div className="flex items-center gap-3 mb-8">
-                  <div className="w-8 h-8 rounded-xl bg-indigo-100 border border-indigo-200 flex items-center justify-center">
-                    <Sparkles className="w-4 h-4 text-indigo-400" />
-                  </div>
-                  <h3 className="text-xs font-black uppercase tracking-[0.3em] text-slate-500">Core Identity</h3>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className={labelClass}>Full Name *</label>
-                    <input type="text" name="name" value={formData.name} required onChange={handleChange} className={inputClass} placeholder="Elite Client Name" />
-                  </div>
-                  <div>
-                    <label className={labelClass}>Gmail Address *</label>
-                    <input type="email" name="gmail" value={formData.gmail} required onChange={handleChange} className={inputClass} placeholder="client@studio.com" />
-                  </div>
-                </div>
+                <label htmlFor="ff-type" className={labelClass}> your Work Type *</label>
+                <input id="ff-type" type="text" name="workType" value={formData.workType} required onChange={handleChange} className={fieldClass} placeholder="e.g. Ad Film" />
               </div>
-
-              {/* Contact & Location */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                <div className="space-y-6">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-8 h-8 rounded-xl bg-emerald-100 border border-emerald-200 flex items-center justify-center">
-                      <MessageCircle className="w-4 h-4 text-emerald-400" />
-                    </div>
-                    <h3 className="text-xs font-black uppercase tracking-[0.3em] text-slate-500">Connectivity</h3>
-                  </div>
-                  <div>
-                    <label className={labelClass}>WhatsApp Number *</label>
-                    <input type="tel" name="whatsappNumber" value={formData.whatsappNumber} required onChange={handleChange} className={inputClass} placeholder="+91 00000 00000" />
-                  </div>
-                  <div>
-                    <label className={labelClass}>ImageIcon ID</label>
-                    <input type="text" name="instaId" value={formData.instaId} onChange={handleChange} className={inputClass} placeholder="@brand_handle" />
-                  </div>
-                </div>
-                <div className="space-y-6">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-8 h-8 rounded-xl bg-rose-100 border border-rose-200 flex items-center justify-center">
-                      <MapPin className="w-4 h-4 text-rose-400" />
-                    </div>
-                    <h3 className="text-xs font-black uppercase tracking-[0.3em] text-slate-500">Geography</h3>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className={labelClass}>State *</label>
-                      <input type="text" name="state" value={formData.state} required onChange={handleChange} className={inputClass} placeholder="State" />
-                    </div>
-                    <div>
-                      <label className={labelClass}>District *</label>
-                      <input type="text" name="district" value={formData.district} required onChange={handleChange} className={inputClass} placeholder="District" />
-                    </div>
-                  </div>
-                  <div>
-                    <label className={labelClass}>Exact Venue *</label>
-                    <input type="text" name="exactLocation" value={formData.exactLocation} required onChange={handleChange} className={inputClass} placeholder="Production Location Details" />
-                  </div>
-                </div>
+              <div>
+                <label htmlFor="ff-duration" className={labelClass}>Duration and time  *</label>
+                <input id="ff-duration" type="text" name="workDuration" value={formData.workDuration} required onChange={handleChange} className={fieldClass} placeholder="e.g. 2 Days" />
               </div>
-
-              {/* Project Brief */}
-              <div className="pt-6 border-t border-white/5">
-                <div className="flex items-center gap-3 mb-8">
-                  <div className="w-8 h-8 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center">
-                    <Camera className="w-4 h-4 text-amber-400" />
-                  </div>
-                  <h3 className="text-xs font-black uppercase tracking-[0.3em] text-slate-500">Technical Brief</h3>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                  <div>
-                    <label className={labelClass}> your Work Type *</label>
-                    <input type="text" name="workType" value={formData.workType} required onChange={handleChange} className={inputClass} placeholder="e.g. Ad Film" />
-                  </div>
-                  <div>
-                    <label className={labelClass}>Duration and time  *</label>
-                    <input type="text" name="workDuration" value={formData.workDuration} required onChange={handleChange} className={inputClass} placeholder="e.g. 2 Days" />
-                  </div>
-                  <div>
-                    <label className={labelClass}>Budget (₹) *</label>
-                    <input type="number" name="price" value={formData.price} required onChange={handleChange} className={inputClass} placeholder="Your Allocation" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className={labelClass}>required Gadgets *</label>
-                    <input type="text" name="deviceType" value={formData.deviceType} required onChange={handleChange} className={inputClass} placeholder="e.g. RED, Arri, Drone" />
-                  </div>
-                  <div>
-                    <label className={labelClass}>video Reference Link *</label>
-                    <input type="url" name="referenceVideo" value={formData.referenceVideo} required onChange={handleChange} className={inputClass} placeholder="YouTube/Drive Reference" />
-                  </div>
-                </div>
+              <div>
+                <label htmlFor="ff-budget" className={labelClass}>Budget (₹) *</label>
+                <input id="ff-budget" type="number" name="price" value={formData.price} required onChange={handleChange} className={fieldClass} placeholder="Your Allocation" />
               </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="ff-gadgets" className={labelClass}>required Gadgets *</label>
+                <input id="ff-gadgets" type="text" name="deviceType" value={formData.deviceType} required onChange={handleChange} className={fieldClass} placeholder="e.g. RED, Arri, Drone" />
+              </div>
+              <div>
+                <label htmlFor="ff-reference" className={labelClass}>video Reference Link *</label>
+                <input id="ff-reference" type="url" name="referenceVideo" value={formData.referenceVideo} required onChange={handleChange} className={fieldClass} placeholder="YouTube/Drive Reference" />
+              </div>
+            </div>
+          </fieldset>
 
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full group relative flex items-center justify-center gap-4 bg-slate-900 text-white font-black py-6 rounded-[32px] text-lg uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50"
-              >
-                {isSubmitting ? (
-                  <><Loader2 className="w-6 h-6 animate-spin" /> Archiving...</>
-                ) : (
-                  <><Send className="w-5 h-5 group-hover:translate-x-2 group-hover:-translate-y-2 transition-transform" /> Deploy Request</>
-                )}
-              </button>
-            </form>
-          </motion.div>
-        </div>
-      </section>
-    </main>
+          <button type="submit" disabled={isSubmitting} className={`${btnPrimary} w-full`}>
+            {isSubmitting ? (
+              <><Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" /> Archiving...</>
+            ) : (
+              <><Send className="w-5 h-5 transition-transform duration-500 ease-reveal group-hover:translate-x-1 group-hover:-translate-y-1" aria-hidden="true" /> Deploy Request</>
+            )}
+          </button>
+        </form>
+      </motion.div>
+    </PageShell>
   );
 }

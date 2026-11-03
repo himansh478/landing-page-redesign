@@ -47,11 +47,10 @@ const DEMO_CLIPS: Clip[] = [
 ];
 
 export function RawClipsSection() {
-  const [clips, setClips] = useState<Clip[]>([]);
   const [filtered, setFiltered] = useState<Clip[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showUnlockModal, setShowUnlockModal] = useState(false);
-  const [modalPrice, setModalPrice] = useState(19);
+  const [modalPrice] = useState(19);
 
   useEffect(() => {
     let mounted = true;
@@ -61,12 +60,10 @@ export function RawClipsSection() {
         const data = await getAllClips();
         const clipsToShow = data.length > 0 ? data : DEMO_CLIPS;
         if (mounted) {
-          setClips(clipsToShow);
           setFiltered(clipsToShow);
         }
-      } catch (e) {
+      } catch {
         if (mounted) {
-          setClips(DEMO_CLIPS);
           setFiltered(DEMO_CLIPS);
         }
       } finally {
@@ -80,20 +77,23 @@ export function RawClipsSection() {
   }, []);
 
   return (
-    <div className="bg-slate-950 text-white py-12">
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-black">Raw Clips</h2>
+    <section className="bg-paper border-t border-ink/10 py-16 sm:py-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-end justify-between gap-6 border-t border-ink/20 pt-5 mb-8">
+          <div>
+            <p className="slate text-editorial mb-2">4K RAW library</p>
+            <h2 className="font-display text-3xl font-extrabold text-ink tracking-[-0.03em]">Raw Clips</h2>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {isLoading ? (
             Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="bg-slate-800 rounded-2xl overflow-hidden animate-pulse">
-                <div className="aspect-video bg-slate-700" />
+              <div key={i} className="bg-ivory ring-1 ring-ink/10 rounded-[4px] overflow-hidden animate-pulse motion-reduce:animate-none">
+                <div className="aspect-video bg-sand" />
                 <div className="p-4 space-y-3">
-                  <div className="h-4 bg-slate-700 rounded w-1/3" />
-                  <div className="h-5 bg-slate-700 rounded" />
+                  <div className="h-3 bg-sand rounded w-1/3" />
+                  <div className="h-5 bg-sand rounded" />
                 </div>
               </div>
             ))
@@ -108,6 +108,6 @@ export function RawClipsSection() {
       {showUnlockModal && (
         <UnlockModal onClose={() => setShowUnlockModal(false)} price={modalPrice} />
       )}
-    </div>
+    </section>
   );
 }

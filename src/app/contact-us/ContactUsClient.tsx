@@ -1,8 +1,13 @@
 'use client';
 
 import { motion } from 'motion/react';
-import { Mail, Phone, MapPin, Send, MessageCircle, Instagram, Youtube, Linkedin, Globe } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, MessageCircle, Instagram, Youtube, Linkedin } from 'lucide-react';
 import { useState } from 'react';
+import { PageShell } from '@/components/editorial/PageIntro';
+import { RevealLines } from '@/components/motion/RevealLines';
+import { btnPrimary, fieldClass, labelClass, selectClass, textareaClass } from '@/components/editorial/styles';
+
+const EASE = [0.16, 1, 0.3, 1] as const;
 
 export default function ContactUsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -18,165 +23,147 @@ export default function ContactUsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900 selection:bg-indigo-500/30 overflow-hidden">
-      
-      {/* Background Blobs */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-0 w-[800px] h-[800px] bg-indigo-600/5 blur-[150px] rounded-full" />
-        <div className="absolute bottom-0 right-0 w-[800px] h-[800px] bg-purple-600/5 blur-[150px] rounded-full" />
+    <PageShell>
+      <div className="flex justify-between items-center gap-4 pb-5 mb-10 sm:mb-12 border-b border-ink/15">
+        <p className="slate text-editorial">Global Presence</p>
+        <p className="slate text-ink/50 text-right">Sehore, MP · Pan-India</p>
       </div>
 
-      <section className="relative pt-40 pb-32">
-        <div className="container mx-auto px-6 max-w-7xl relative z-10">
-          
-          <div className="flex flex-col lg:flex-row gap-20">
-            {/* Contact Info Side */}
-            <div className="flex-1">
+      <div className="grid lg:grid-cols-12 gap-14 lg:gap-10">
+        {/* Contact Info Side */}
+        <div className="lg:col-span-6">
+          <RevealLines
+            as="h1"
+            onScroll={false}
+            className="font-display font-extrabold text-ink tracking-[-0.04em] !leading-[0.95] [font-size:clamp(2.6rem,0.9rem+6vw,7rem)]"
+            lines={['Get in', <span key="touch" className="text-editorial">Touch.</span>]}
+          />
+
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.35, ease: EASE }}
+            className="text-lg text-ink/70 leading-relaxed mt-8 max-w-lg"
+          >
+            Have a vision? We have the tools. Let&apos;s collaborate and create something extraordinary together.
+          </motion.p>
+
+          <dl className="mt-12 border-t border-ink/20">
+            {[
+              { icon: <Mail className="w-4 h-4" />, label: "Email Us", value: "Sudhanshugour89@gmail.com", href: "mailto:Sudhanshugour89@gmail.com" },
+              { icon: <Phone className="w-4 h-4" />, label: "Call Us", value: "+91 81203 17074", href: "tel:+918120317074" },
+              { icon: <MapPin className="w-4 h-4" />, label: "Location", value: "Indore-Bhopal Road, Sehore, MP, India", href: "https://maps.google.com" },
+            ].map((item, i) => (
               <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-100 border border-indigo-200 text-indigo-600 text-[10px] font-black uppercase tracking-[0.3em] mb-10"
-              >
-                <Globe className="w-3 h-3" />
-                Global Presence
-              </motion.div>
-              
-              <motion.h1
-                initial={{ opacity: 0, y: 30 }}
+                key={item.label}
+                initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-6xl md:text-8xl font-black mb-10 tracking-tighter leading-none"
+                transition={{ duration: 0.8, delay: 0.45 + i * 0.08, ease: EASE }}
+                className="group flex items-center gap-5 py-5 border-b border-ink/15"
               >
-                Get in <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Touch.</span>
-              </motion.h1>
-
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="text-lg text-slate-500 font-light leading-relaxed mb-16 max-w-lg"
-              >
-                Have a vision? We have the tools. Let's collaborate and create something extraordinary together.
-              </motion.p>
-
-              <div className="space-y-12">
-                {[
-                  { icon: <Mail />, label: "Email Us", value: "Sudhanshugour89@gmail.com", href: "mailto:Sudhanshugour89@gmail.com" },
-                  { icon: <Phone />, label: "Call Us", value: "+91 81203 17074", href: "tel:+918120317074" },
-                  { icon: <MapPin />, label: "Location", value: "Indore-Bhopal Road, Sehore, MP, India", href: "https://maps.google.com" },
-                ].map((item, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 + i * 0.1 }}
-                    className="flex items-start gap-6 group"
-                  >
-                    <div className="w-14 h-14 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-sm">
-                      {item.icon}
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{item.label}</p>
-                      <a href={item.href} className="text-xl font-bold text-slate-900 hover:text-indigo-600 transition-colors">
-                        {item.value}
-                      </a>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-
-              <div className="mt-20 flex gap-4">
-                {[
-                  { icon: <Instagram />, href: "https://www.instagram.com/creative_shiva_01?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" },
-                  { icon: <Youtube />, href: "https://youtube.com/@creativeshivavlogs?si=sIwTtBGWIiB3k7q1" },
-                  { icon: <Linkedin />, href: "https://linkedin.com" },
-                  { icon: <MessageCircle />, href: "https://chat.whatsapp.com/Ftagt0XUzkQI0zSfHZMXxI" },
-                ].map((social, i) => (
-                  <motion.a
-                    key={i}
-                    whileHover={{ scale: 1.1, y: -5 }}
-                    href={social.href}
-                    target="_blank"
-                    className="w-12 h-12 rounded-xl bg-slate-900 text-white flex items-center justify-center hover:bg-indigo-600 transition-all shadow-lg"
-                  >
-                    {social.icon}
-                  </motion.a>
-                ))}
-              </div>
-            </div>
-
-            {/* Form Side */}
-            <div className="flex-1">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="p-10 md:p-14 rounded-[60px] bg-white border border-slate-200 shadow-2xl relative overflow-hidden"
-              >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-bl-full -mr-10 -mt-10" />
-                
-                {submitted ? (
-                  <div className="text-center py-20">
-                    <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-8">
-                      <Send className="w-10 h-10 text-green-600" />
-                    </div>
-                    <h2 className="text-3xl font-bold mb-4">Message Received!</h2>
-                    <p className="text-slate-500 font-light mb-8">Our team will get back to you within 24 hours.</p>
-                    <button 
-                      onClick={() => setSubmitted(false)}
-                      className="text-indigo-600 font-black text-xs uppercase tracking-widest"
-                    >
-                      Send another message
-                    </button>
-                  </div>
-                ) : (
-                  <form onSubmit={handleSubmit} className="space-y-8 relative z-10">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Full Name</label>
-                        <input required type="text" placeholder="John Doe" className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-medium" />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Email Address</label>
-                        <input required type="email" placeholder="john@example.com" className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-medium" />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Service Required</label>
-                      <select className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-medium">
-                        <option>Video Editing</option>
-                        <option>Professional Shoot</option>
-                        <option>Social Media Management</option>
-                        <option>Web Development</option>
-                      </select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-4">Your Message</label>
-                      <textarea required rows={5} placeholder="Tell us about your project vision..." className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-3xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-medium resize-none" />
-                    </div>
-
-                    <button
-                      disabled={isSubmitting}
-                      className="w-full py-6 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-xl hover:shadow-2xl flex items-center justify-center gap-3 disabled:opacity-50"
-                    >
-                      {isSubmitting ? (
-                        <>Processing...</>
-                      ) : (
-                        <>
-                          <Send className="w-4 h-4" />
-                          Book Now
-                        </>
-                      )}
-                    </button>
-                  </form>
-                )}
+                <span
+                  aria-hidden="true"
+                  className="w-11 h-11 flex-shrink-0 rounded-full border border-ink/20 text-ink flex items-center justify-center transition-colors duration-500 group-hover:bg-coral group-hover:border-coral"
+                >
+                  {item.icon}
+                </span>
+                <div className="min-w-0">
+                  <dt className="slate text-ink/50 mb-1">{item.label}</dt>
+                  <dd>
+                    <a href={item.href} className="pencil-link font-display text-lg sm:text-xl font-bold text-ink [overflow-wrap:anywhere]">
+                      {item.value}
+                    </a>
+                  </dd>
+                </div>
               </motion.div>
-            </div>
-          </div>
+            ))}
+          </dl>
+
+          <ul className="mt-10 flex gap-3" aria-label="Social channels">
+            {[
+              { icon: <Instagram className="w-4 h-4" />, label: 'Instagram', href: "https://www.instagram.com/creative_shiva_01?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" },
+              { icon: <Youtube className="w-4 h-4" />, label: 'YouTube', href: "https://youtube.com/@creativeshivavlogs?si=sIwTtBGWIiB3k7q1" },
+              { icon: <Linkedin className="w-4 h-4" />, label: 'LinkedIn', href: "https://linkedin.com" },
+              { icon: <MessageCircle className="w-4 h-4" />, label: 'WhatsApp community', href: "https://chat.whatsapp.com/Ftagt0XUzkQI0zSfHZMXxI" },
+            ].map((social) => (
+              <li key={social.label}>
+                <a
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={social.label}
+                  className="w-11 h-11 rounded-full bg-ink text-ivory flex items-center justify-center transition-colors duration-300 hover:bg-coral hover:text-ink"
+                >
+                  <span aria-hidden="true">{social.icon}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
         </div>
-      </section>
 
-    </main>
+        {/* Form Side */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, delay: 0.3, ease: EASE }}
+          className="lg:col-span-6 self-start bg-paper border border-ink/15 rounded-[4px] overflow-hidden shadow-[0_40px_80px_-50px_rgb(var(--ink-rgb)/0.5)]"
+        >
+          <div className="h-1 bg-coral" aria-hidden="true" />
+          <div className="p-6 sm:p-10">
+            {submitted ? (
+              <div className="text-center py-16" role="status">
+                <div className="w-16 h-16 bg-coral rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Send className="w-7 h-7 text-ink" aria-hidden="true" />
+                </div>
+                <h2 className="font-display text-3xl font-extrabold text-ink tracking-[-0.03em] mb-3">Message Received!</h2>
+                <p className="text-ink/65 mb-8">Our team will get back to you within 24 hours.</p>
+                <button type="button" onClick={() => setSubmitted(false)} className="pencil-link slate text-editorial">
+                  Send another message
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div>
+                    <label htmlFor="cu-name" className={labelClass}>Full Name</label>
+                    <input id="cu-name" required type="text" placeholder="John Doe" className={fieldClass} />
+                  </div>
+                  <div>
+                    <label htmlFor="cu-email" className={labelClass}>Email Address</label>
+                    <input id="cu-email" required type="email" placeholder="john@example.com" className={fieldClass} />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="cu-service" className={labelClass}>Service Required</label>
+                  <select id="cu-service" className={selectClass}>
+                    <option>Video Editing</option>
+                    <option>Professional Shoot</option>
+                    <option>Social Media Management</option>
+                    <option>Web Development</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="cu-message" className={labelClass}>Your Message</label>
+                  <textarea id="cu-message" required rows={5} placeholder="Tell us about your project vision..." className={textareaClass} />
+                </div>
+
+                <button disabled={isSubmitting} className={`${btnPrimary} w-full`}>
+                  {isSubmitting ? (
+                    <>Processing...</>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" aria-hidden="true" />
+                      Book Now
+                    </>
+                  )}
+                </button>
+              </form>
+            )}
+          </div>
+        </motion.div>
+      </div>
+    </PageShell>
   );
 }
