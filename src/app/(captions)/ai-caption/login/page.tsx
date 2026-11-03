@@ -24,17 +24,18 @@ const ACTIONS: Record<Mode, string> = {
 // the address, and announces it, before this page may be listening.
 const cameToReset = typeof location !== 'undefined' && location.hash.includes('type=recovery');
 
-/** Back to where they came from, but only ever within this site. */
-function goBack() {
-  let target = '/ai-caption';
+/** Where they came from, but only ever within this site. */
+function backTarget() {
   try {
     const next = new URL(new URLSearchParams(location.search).get('next') ?? '/ai-caption', location.origin);
-    if (next.origin === location.origin) target = next.pathname + next.search;
+    if (next.origin === location.origin) return next.pathname + next.search;
   } catch {
     // A broken link just goes home.
   }
-  location.assign(target);
+  return '/ai-caption';
 }
+
+const goBack = () => location.assign(backTarget());
 
 export default function LoginPage() {
   const [mode, setMode] = useState<Mode>('signin');
@@ -91,6 +92,19 @@ export default function LoginPage() {
     }
   };
 
+  // Google has already proved the email belongs to them, so there is no password to forget
+  // and no confirmation email to wait for, and the team list can trust the address.
+  const withGoogle = async () => {
+    if (!supabase) return;
+    setBusy(true);
+    setError(null);
+    const { error: failed } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: `${location.origin}${backTarget()}` } });
+    if (failed) {
+      setError(failed.message);
+      setBusy(false);
+    }
+  };
+
   if (!accountsOn) {
     return (
       <main className="auth">
@@ -105,6 +119,14 @@ export default function LoginPage() {
     <main className="auth">
       <h1>{TITLES[mode]}</h1>
       <p className="notice-line">Your Cwaya account works here too.</p>
+      {(mode === 'signin' || mode === 'signup') && (
+        <>
+          <button type="button" id="google" className="primary" onClick={withGoogle} disabled={busy}>
+            Continue with Google
+          </button>
+          <p className="notice-line">New here? Google creates your account in one step. Already have one with a password? Sign in below.</p>
+        </>
+      )}
       <form onSubmit={submit}>
         {mode !== 'reset' && (
           <label>
@@ -132,18 +154,20 @@ export default function LoginPage() {
           </p>
         )}
         {message && <p role="status">{message}</p>}
-        <button id="submit" className="primary" disabled={busy}>
+        <button id="submit" disabled={busy}>
           {busy ? 'One moment…' : ACTIONS[mode]}
         </button>
       </form>
+      {/* Email sign-up waits on a confirmation email, so new accounts come through Google instead. */}
       {mode !== 'reset' && (
         <div className="links">
-          <button className="ghost" onClick={() => change(mode === 'signin' ? 'signup' : 'signin')}>
-            {mode === 'signin' ? 'Create an account' : 'Back to sign in'}
-          </button>
-          {mode === 'signin' && (
+          {mode === 'signin' ? (
             <button className="ghost" onClick={() => change('forgot')}>
               Forgot password?
+            </button>
+          ) : (
+            <button className="ghost" onClick={() => change('signin')}>
+              Back to sign in
             </button>
           )}
         </div>
