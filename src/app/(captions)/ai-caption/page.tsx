@@ -6,7 +6,7 @@ import { useEffect, useState, type DragEvent } from 'react';
 import { AccountBar } from '@/captions/components/AccountBar';
 import { VocabularyField } from '@/captions/components/VocabularyField';
 import { useAccount } from '@/captions/lib/account';
-import { accountsOn } from '@/captions/lib/auth';
+import { accountsOn, supabase } from '@/captions/lib/auth';
 import { browserProblem } from '@/captions/lib/browser';
 import { createProject, OutOfMinutes, type Stage } from '@/captions/lib/ingest';
 import type { Project } from '@/captions/lib/project';
@@ -36,7 +36,7 @@ function edited(time: number) {
 
 export default function Home() {
   const router = useRouter();
-  const { ready, signedIn, account, refresh } = useAccount();
+  const { ready, signedIn, email, account, refused, refresh } = useAccount();
   const [projects, setProjects] = useState<Project[]>([]);
   const [thumbs, setThumbs] = useState<Record<string, string>>({});
   const [cloud, setCloud] = useState<CloudProject[]>([]);
@@ -131,6 +131,15 @@ export default function Home() {
             </Link>
           </section>
         )
+      ) : refused ? (
+        // Turned away before choosing a video, so nobody waits for an upload that will be refused.
+        <section className="progress" id="refused">
+          <strong>{refused}</strong>
+          <p className="notice-line">
+            You&apos;re signed in as {email ?? 'an account that is not on the list'}. Ask Cwaya to add this email, or sign out and use your team account.
+          </p>
+          <button onClick={() => supabase?.auth.signOut()}>Sign out</button>
+        </section>
       ) : stage ? (
         <section className="progress" aria-live="polite">
           <strong>Making your captions</strong>
@@ -165,7 +174,7 @@ export default function Home() {
           <Link href="/ai-caption/account">Get more minutes</Link>
         </p>
       )}
-      {!stage && !locked && <VocabularyField />}
+      {!stage && !locked && !refused && <VocabularyField />}
 
       {projects.length > 0 && (
         <section className="projects">

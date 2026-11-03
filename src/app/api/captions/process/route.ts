@@ -33,13 +33,15 @@ function readHeader<T>(request: Request, name: string, fallback: T): T {
 // Minutes are taken from the audio itself before any work starts, and given back if
 // the job fails, so nobody pays for an upload that produced nothing.
 export async function POST(request: Request) {
-  const viewer = await viewerOf(request);
-  if (!viewer) return signInRequired(request);
   if (Number(request.headers.get('content-length') ?? 0) > LARGEST_AUDIO) {
     return Response.json({ error: TOO_LONG }, { status: 413 });
   }
-
+  // Read before refusing: Safari reports an answer that arrives mid-upload as "Load failed",
+  // so someone not let in would never see why.
   const audio = await request.arrayBuffer();
+  const viewer = await viewerOf(request);
+  if (!viewer) return signInRequired(request);
+
   const vocabulary = readHeader<string[]>(request, 'x-vocabulary', []);
   const label = readHeader<string>(request, 'x-project-name', 'Video').slice(0, 120);
 

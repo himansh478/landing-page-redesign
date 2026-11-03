@@ -14,6 +14,10 @@ import { readVocabulary } from './vocabulary';
 export type Stage = 'reading' | 'transcribing' | 'converting' | 'aligning';
 
 const DEFAULT_MAX_WORDS = 3;
+/** The host refuses bigger uploads outright, and Safari reports that only as a failed load. */
+const LARGEST_UPLOAD = 4 * 1024 * 1024;
+const TOO_BIG = "This video's sound is too large to send from this browser. Please try the latest Chrome.";
+const CONNECTION_LOST = 'The connection to the caption service dropped. Check your internet, keep this screen open, and try again.';
 
 type ProcessResult = {
   language: 'hi' | 'en';
@@ -25,7 +29,13 @@ type ProcessResult = {
 /** The account has too few minutes for this video. */
 export class OutOfMinutes extends Error {}
 
+// A dropped connection surfaces as "Load failed" or "Failed to fetch", which says nothing useful.
+const lost = (): never => {
+  throw new Error(CONNECTION_LOST);
+};
+
 async function runPipeline(audio: ArrayBuffer, name: string, onStage: (stage: Stage, fraction?: number) => void) {
+  if (audio.byteLength > LARGEST_UPLOAD) throw new Error(TOO_BIG);
   const res = await api('/api/captions/process', {
     method: 'POST',
     body: audio,
@@ -33,7 +43,7 @@ async function runPipeline(audio: ArrayBuffer, name: string, onStage: (stage: St
       'x-vocabulary': encodeURIComponent(JSON.stringify(readVocabulary())),
       'x-project-name': encodeURIComponent(JSON.stringify(name)),
     },
-  });
+  }).catch(lost);
   if (!res.ok || !res.body) {
     const { error } = (await res.json().catch(() => ({}))) as { error?: string };
     const message = error ?? 'The caption service could not be reached.';
@@ -44,7 +54,7 @@ async function runPipeline(audio: ArrayBuffer, name: string, onStage: (stage: St
   let buffer = '';
   let result: ProcessResult | null = null;
   for (;;) {
-    const { value, done } = await reader.read();
+    const { value, done } = await reader.read().catch(lost);
     if (done) break;
     buffer += value;
     const lines = buffer.split('\n');

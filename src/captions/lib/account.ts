@@ -13,12 +13,19 @@ export type Account = {
   orders: { plan: string; amountPaise: number; seconds: number; at: string }[];
 };
 
-export async function fetchAccount() {
+/** The account, or why a signed-in person isn't let in yet, such as the team-only notice. */
+async function readAccount(): Promise<{ account: Account | null; refused: string | null }> {
   const res = await api('/api/captions/account');
   // The session is kept on this device, so the server can know first that it has ended.
   if (res.status === 401) await supabase?.auth.signOut({ scope: 'local' });
-  return res.ok ? ((await res.json()) as Account) : null;
+  if (res.status === 403) {
+    const { error } = (await res.json().catch(() => ({}))) as { error?: string };
+    return { account: null, refused: error ?? 'This account is not let in yet.' };
+  }
+  return { account: res.ok ? ((await res.json()) as Account) : null, refused: null };
 }
+
+export const fetchAccount = async () => (await readAccount()).account;
 
 /** The mark goes on unless the account proves it shouldn't, so a failed check can't remove it. */
 export async function currentWatermark() {
@@ -30,13 +37,19 @@ export const minutesLeft = (account: Account) => Math.floor((account.freeLeft + 
 
 /** Who is signed in, and their minutes. Local mode reports ready with nobody signed in. */
 export function useAccount() {
-  const [state, setState] = useState<{ ready: boolean; signedIn: boolean; account: Account | null }>({ ready: !accountsOn, signedIn: false, account: null });
+  const [state, setState] = useState<{ ready: boolean; signedIn: boolean; email: string | null; account: Account | null; refused: string | null }>({
+    ready: !accountsOn,
+    signedIn: false,
+    email: null,
+    account: null,
+    refused: null,
+  });
 
   const refresh = useCallback(async () => {
     if (!supabase) return;
     const { session } = (await supabase.auth.getSession()).data;
-    const account = session ? await fetchAccount() : null;
-    setState({ ready: true, signedIn: !!session, account });
+    const { account, refused } = session ? await readAccount() : { account: null, refused: null };
+    setState({ ready: true, signedIn: !!session, email: session?.user.email ?? null, account, refused });
   }, []);
 
   useEffect(() => {
