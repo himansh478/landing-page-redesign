@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# AI Captions dev tools read local clips from here; never commit them
+/test-clips/
+/work/

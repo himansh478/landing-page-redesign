@@ -12,9 +12,10 @@ import { SHOW_WORK_LINKS } from '@/lib/features';
 
 // Blog / About / Contact / Connect live in the footer's navigation block,
 // and the social icons sit just under the header on the homepage — so the
-// header itself stays a quiet bar: logo, search, Courses, packages, share.
+// header itself stays a quiet bar: logo, search, AI Caption, Courses, packages, share.
 
 const mobileLinks = [
+  { href: '/ai-caption', label: 'AI Caption' },
   { href: '/courses', label: 'Courses' },
   ...(SHOW_WORK_LINKS
     ? [
@@ -75,6 +76,13 @@ export function Header() {
           </div>
 
           <div className="hidden md:flex items-center justify-end gap-2 lg:gap-3">
+            <Link
+              href="/ai-caption"
+              className="pencil-link mr-2 py-1 text-[0.8125rem] font-semibold text-ink/80 hover:text-ink transition-colors"
+            >
+              AI Caption
+            </Link>
+
             <Link
               href="/courses"
               aria-current={isCurrent('/courses')}

@@ -4,6 +4,15 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  experimental: {
+    // The website and AI Captions have separate root layouts, so 404s need their own page.
+    globalNotFound: true,
+  },
+  webpack: (config) => {
+    // canvaskit-wasm's loader references Node modules it never uses in the browser.
+    config.resolve.fallback = { ...config.resolve.fallback, fs: false, path: false };
+    return config;
+  },
   async redirects() {
     return [
       { source: '/editing', destination: '/', permanent: false },
