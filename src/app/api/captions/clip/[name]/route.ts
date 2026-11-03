@@ -2,7 +2,9 @@ import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 // Dev only: hands local test clips and pipeline results to the test page.
-const FOLDERS = ['test-clips', 'work'];
+// The folders are written out in full: a folder name held in a variable made the build
+// pack the whole project, about 1 GB, into this route, and Vercel refused to deploy it.
+const places = (name: string) => [path.join(process.cwd(), 'test-clips', name), path.join(process.cwd(), 'work', name)];
 const TYPES: Record<string, string> = { '.mp4': 'video/mp4', '.m4a': 'audio/mp4', '.mov': 'video/quicktime', '.json': 'application/json' };
 
 const allowed = (name: string) =>
@@ -12,9 +14,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ nam
   const { name } = await params;
   if (!allowed(name)) return new Response('Not found', { status: 404 });
 
-  for (const folder of FOLDERS) {
+  for (const place of places(name)) {
     try {
-      const body = await readFile(path.join(process.cwd(), folder, name));
+      const body = await readFile(place);
       return new Response(body, { headers: { 'Content-Type': TYPES[path.extname(name)] } });
     } catch {
       // Try the next folder.
