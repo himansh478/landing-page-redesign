@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { isAdminSession } from '@/lib/admin-session';
 import cloudinary from '@/lib/cloudinary';
 
 // Signs a Cloudinary upload request server-side so the admin's browser can
@@ -10,7 +11,7 @@ import cloudinary from '@/lib/cloudinary';
 export async function POST(req: Request) {
   const cookieStore = await cookies();
   const adminSession = cookieStore.get('admin_session')?.value;
-  if (adminSession !== 'true') {
+  if (!isAdminSession(adminSession)) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
 

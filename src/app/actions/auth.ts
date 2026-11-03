@@ -1,29 +1,26 @@
 'use server';
 
 import { cookies } from 'next/headers';
+import { isAdminSession, newAdminSession, passwordMatches } from '@/lib/admin-session';
 
 export async function verifyAdminPassword(password: string) {
-  // Pro Coder Approach: Sanitize whitespace
-  const inputPass = (password || '').trim();
-  const envPass = 'gour@1@#$'; // Hardcoded to bypass Vercel ENV overrides
-  
-  if (inputPass === envPass) {
-    const cookieStore = await cookies();
-    cookieStore.set('admin_session', 'true', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 60 * 60 * 24 * 7, // 1 week
-      path: '/',
-    });
-    return { success: true };
-  }
-  return { success: false, error: 'Incorrect password' };
+  if (!passwordMatches((password || '').trim())) return { success: false, error: 'Incorrect password' };
+
+  const { value, maxAge } = newAdminSession();
+  const cookieStore = await cookies();
+  cookieStore.set('admin_session', value, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge,
+    path: '/',
+  });
+  return { success: true };
 }
 
 export async function checkAdminAuth() {
   const cookieStore = await cookies();
-  return cookieStore.get('admin_session')?.value === 'true';
+  return isAdminSession(cookieStore.get('admin_session')?.value);
 }
 
 export async function logoutAdmin() {
