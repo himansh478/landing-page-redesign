@@ -6,7 +6,7 @@ const SAVED = 'cwaya-saved-styles';
 const LAST = 'cwaya-last-look';
 
 /** Everything a look carries from one video to the next. Position stays with the video. */
-export type Look = Pick<Doc, 'templateId' | 'overrides' | 'maxWords'>;
+export type Look = Pick<Doc, 'templateId' | 'overrides' | 'maxWords' | 'sound'>;
 export type SavedStyle = Look & { id: string; name: string };
 
 function read<T>(key: string, fallback: T): T {
@@ -26,11 +26,11 @@ function write(key: string, value: unknown) {
   }
 }
 
-export function lookOf({ templateId, overrides, maxWords }: Doc): Look {
+export function lookOf({ templateId, overrides, maxWords, sound }: Doc): Look {
   const rest = { ...overrides };
   delete rest.anchorX;
   delete rest.anchorY;
-  return { templateId, overrides: rest, maxWords };
+  return { templateId, overrides: rest, maxWords, ...(sound ? { sound } : {}) };
 }
 
 export const readFavourites = () => read<string[]>(FAVOURITES, []);

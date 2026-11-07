@@ -121,7 +121,7 @@ export default function StudioPage({ params }: { params: Promise<{ id: string }>
           <TopBar onExport={setExporting} />
           <CaptionList captions={captions} seek={(t) => previewRef.current?.seek(t)} />
           <Preview key={doc.reframe ? 'vertical' : 'original'} ref={previewRef} video={video} captions={captions} size={size} />
-          <StylePanel seek={(t) => previewRef.current?.seek(t)} />
+          <StylePanel seek={(t) => previewRef.current?.seek(t)} captions={captions} />
           <Timeline captions={captions} seek={(t) => previewRef.current?.seek(t)} />
         </div>
       )}

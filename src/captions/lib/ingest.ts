@@ -114,6 +114,8 @@ export async function createProject(file: File, onStage: (stage: Stage, fraction
       templateId: look.templateId,
       overrides: { ...look.overrides, ...(templates[look.templateId].rows ? {} : { anchorY: width > height ? 0.82 : 0.62 }) },
       maxWords: look.maxWords,
+      // A creator's sound carries over to the next video, like the rest of the look.
+      ...('sound' in look && look.sound ? { sound: look.sound } : {}),
       offset: 0,
     },
   };

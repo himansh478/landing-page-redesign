@@ -9,10 +9,13 @@ import { useEditor } from '@/captions/state/editor';
 const FILTERS = ['All', 'Favourites', ...TEMPLATE_GROUPS] as const;
 type Filter = (typeof FILTERS)[number];
 
-/** The template picker: find a look fast, keep the ones you like, save your own. */
-export function TemplateGallery({ thumbs }: { thumbs: Record<string, string> }) {
+/**
+ * The template picker: find a look fast, keep the ones you like, save your own. Given a
+ * caption, it picks that caption's own template instead of the video's.
+ */
+export function TemplateGallery({ thumbs, captionId }: { thumbs: Record<string, string>; captionId?: string }) {
   const doc = useEditor((s) => s.doc);
-  const { setTemplate, applyLook } = useEditor.getState();
+  const { setTemplate, applyLook, setCaptionTemplate } = useEditor.getState();
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<Filter>('All');
   const [favourites, setFavourites] = useState<string[]>([]);
@@ -26,6 +29,9 @@ export function TemplateGallery({ thumbs }: { thumbs: Record<string, string> }) 
   }, []);
 
   if (!doc) return null;
+  const own = captionId ? doc.tokens.find((t) => t.id === captionId.split('#')[0])?.look?.templateId : undefined;
+  const current = own ?? doc.templateId;
+  const pick = (id: string) => (captionId ? setCaptionTemplate(captionId, id) : setTemplate(id));
 
   const toggleFavourite = (id: string) => {
     const next = favourites.includes(id) ? favourites.filter((f) => f !== id) : [...favourites, id];
@@ -57,6 +63,8 @@ export function TemplateGallery({ thumbs }: { thumbs: Record<string, string> }) 
 
   return (
     <div className="tab-body">
+      {/* Saved styles carry a whole video's look, so they stay with "All captions". */}
+      {!captionId && (
       <div className="saved">
         {saved.map((style) => (
           <div className="saved-row" key={style.id}>
@@ -77,6 +85,7 @@ export function TemplateGallery({ thumbs }: { thumbs: Record<string, string> }) 
           </button>
         )}
       </div>
+      )}
 
       <input id="template-search" type="search" aria-label="Search templates" placeholder="Search templates" value={query} onChange={(e) => setQuery(e.target.value)} />
       <div className="filters" role="group" aria-label="Filter templates">
@@ -92,8 +101,8 @@ export function TemplateGallery({ thumbs }: { thumbs: Record<string, string> }) 
         {shown.map((t) => {
           const liked = favourites.includes(t.id);
           return (
-            <div className={`card ${t.id === doc.templateId ? 'on' : ''}`} key={t.id}>
-              <button className="pick" onClick={() => setTemplate(t.id)}>
+            <div className={`card ${t.id === current ? 'on' : ''}`} key={t.id}>
+              <button className="pick" onClick={() => pick(t.id)}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={thumbs[t.id]} alt="" />
                 <span>{t.name}</span>

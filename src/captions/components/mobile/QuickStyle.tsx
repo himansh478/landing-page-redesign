@@ -1,7 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { DEFAULT_SOUND, SOUNDS, soundVolume } from '@/captions/engine/sounds';
 import { templateList, templates } from '@/captions/engine/templates';
+import type { SoundKind } from '@/captions/engine/types';
+import { playSound } from '@/captions/lib/sound-player';
 import { renderThumbnails } from '@/captions/engine/thumbnails';
 import { SCRIPTS } from '@/captions/lib/project';
 import { readFavourites, readSavedStyles, writeFavourites, type SavedStyle } from '@/captions/lib/styles';
@@ -18,7 +21,7 @@ const PLACES = [
 export function QuickStyle() {
   const doc = useEditor((s) => s.doc);
   const language = useEditor((s) => s.project?.language);
-  const { setTemplate, applyLook, setStyle, setScript } = useEditor.getState();
+  const { setTemplate, applyLook, setStyle, setScript, setSound } = useEditor.getState();
   const [thumbs, setThumbs] = useState<Record<string, string>>({});
   const [favourites, setFavourites] = useState<string[]>([]);
   const [saved, setSaved] = useState<SavedStyle[]>([]);
@@ -44,6 +47,8 @@ export function QuickStyle() {
   const base = templates[doc.templateId]?.fontSize ?? style.fontSize;
   const size = Math.round((style.fontSize / base) * 100);
   const scripts = SCRIPTS[language];
+  const kind = doc.sound?.kind ?? 'none';
+  const volume = soundVolume(doc.sound);
 
   const toggleFavourite = (id: string) => {
     const next = favourites.includes(id) ? favourites.filter((f) => f !== id) : [...favourites, id];
@@ -116,6 +121,32 @@ export function QuickStyle() {
         <input id="quick-size" type="range" min={60} max={160} step={5} value={size} onChange={(e) => setStyle({ fontSize: Math.round((base * Number(e.target.value)) / 100) }, 'size')} />
         <span className="quick-value">{size}%</span>
       </label>
+
+      <div className="quick-row">
+        <span>Sound</span>
+        <div className="filters quick-sounds" role="group" aria-label="Caption sound">
+          {[{ id: 'none', name: 'None' }, ...SOUNDS].map(({ id, name }) => (
+            <button
+              key={id}
+              className={kind === id ? 'on' : ''}
+              aria-pressed={kind === id}
+              onClick={() => {
+                setSound({ ...(doc.sound ? {} : DEFAULT_SOUND), kind: id as SoundKind | 'none' });
+                if (id !== 'none') playSound(id as SoundKind, volume);
+              }}
+            >
+              {name}
+            </button>
+          ))}
+        </div>
+      </div>
+      {kind !== 'none' && (
+        <label className="quick-row">
+          <span>Volume</span>
+          <input type="range" min={0} max={100} step={5} value={Math.round(volume * 100)} onChange={(e) => setSound({ volume: Number(e.target.value) / 100 }, 'sound-volume')} />
+          <span className="quick-value">{Math.round(volume * 100)}%</span>
+        </label>
+      )}
     </>
   );
 }

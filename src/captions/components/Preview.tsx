@@ -7,13 +7,15 @@ import { exportVideo, outputSize, type Crop, type ExportSettings } from '@/capti
 import { cameraPath, cropShare, framedFaces } from '@/captions/engine/framing';
 import { exportOverlay, sourceFrameRate } from '@/captions/engine/overlay';
 import { drawCutout, PersonMask } from '@/captions/engine/segment';
+import { soundEvents, soundVolume } from '@/captions/engine/sounds';
 import { createStudio, type Studio } from '@/captions/engine/studio';
 import { faceTrack } from '@/captions/engine/tracking';
-import type { Caption, Style } from '@/captions/engine/types';
+import { captionEnd, captionStart, type Caption, type Style } from '@/captions/engine/types';
 import { currentWatermark } from '@/captions/lib/account';
 import { api } from '@/captions/lib/auth';
+import { scheduleSounds } from '@/captions/lib/sound-player';
 import { openExport, readExport } from '@/captions/lib/storage';
-import { neededFamilies, resolveStyle, useEditor } from '@/captions/state/editor';
+import { captionStyle, neededFamilies, resolveStyle, useEditor } from '@/captions/state/editor';
 import { playhead } from '@/captions/state/playhead';
 
 const FRAME = 1 / 30;
@@ -69,14 +71,15 @@ export function Preview({
   const cropRef = useRef<{ faces: unknown; crop: Crop } | null>(null);
   const personRef = useRef<PersonMask | null>(null);
   const exportingRef = useRef(false);
+  const stopSoundsRef = useRef<(() => void) | null>(null);
   const [url, setUrl] = useState<string | null>(null);
   const [playing, setPlaying] = useState(false);
   const [safe, setSafe] = useState(size.height > size.width);
   const [centred, setCentred] = useState(false);
 
   const families = useEditor((s) => (s.doc ? neededFamilies(s.doc).join('|') : ''));
-  const behind = useEditor((s) => !!s.doc?.behindPerson);
-  const blend = useEditor((s) => (s.doc ? resolveStyle(s.doc).blend : 'normal'));
+  const soundSettings = useEditor((s) => s.doc?.sound);
+  const behind = useEditor((s) => !!s.doc && (!!s.doc.behindPerson || s.doc.tokens.some((t) => t.look?.behindPerson)));
   const videoWidth = useEditor((s) => (s.doc?.reframe && s.project ? 100 / cropShare(s.project.media.width, s.project.media.height) : null));
 
   useEffect(() => {
@@ -96,34 +99,68 @@ export function Preview({
     return cropRef.current.crop;
   };
 
-  /** The style for a caption at a time, including any move off a face. */
+  /**
+   * The style for a caption at a time: its own look if it has one, and any move along or off
+   * a face. Each caption can follow or avoid faces by itself, or do as the video does.
+   */
   const styler = (): ((caption: Caption, time: number) => Style) => {
     const { doc, project } = useEditor.getState();
     const studio = studioRef.current;
-    const style = resolveStyle(doc!);
+    const own = (caption: Caption) => captionStyle(doc!, caption.look);
     const faces = project?.faces;
-    if (!studio || !faces?.length) return () => style;
+    if (!studio || !faces?.length || !doc) return (caption) => own(caption);
 
     const crop = currentCrop();
-    if (doc?.followFace && !crop) {
-      if (trackRef.current?.faces !== faces) trackRef.current = { faces, at: faceTrack(faces) };
-      const { at } = trackRef.current;
-      return (_caption, time) => {
-        const { dx, dy } = at(time);
+    // The vertical frame already follows the speaker, so a caption doesn't follow it as well.
+    const follows = (caption: Caption) => !crop && (caption.look?.followFace ?? !!doc.followFace);
+    const avoids = (caption: Caption) => !follows(caption) && (caption.look?.avoidFaces ?? !!doc.avoidFaces);
+    const captions = captionsRef.current;
+
+    if (captions.some(follows) && trackRef.current?.faces !== faces) trackRef.current = { faces, at: faceTrack(faces) };
+    if (captions.some(avoids)) {
+      const key = [doc, captions, faces];
+      if (!planRef.current || planRef.current.key.some((part, i) => part !== key[i])) {
+        const measure = (caption: Caption, s: Style) => studio.renderer.measure(caption, s);
+        const seen = crop ? framedFaces(faces, crop.leftAt, crop.share) : faces;
+        planRef.current = { key, at: planPositions(captions, own, seen, measure, size.height > size.width, avoids) };
+      }
+    }
+    const track = trackRef.current?.at;
+    const plan = planRef.current?.at;
+
+    return (caption, time) => {
+      const style = own(caption);
+      if (track && follows(caption)) {
+        const { dx, dy } = track(time);
         return { ...style, anchorX: Math.min(0.92, Math.max(0.08, style.anchorX + dx)), anchorY: Math.min(0.95, Math.max(0.05, style.anchorY + dy)) };
-      };
-    }
+      }
+      if (plan && avoids(caption)) return { ...style, anchorY: plan(caption, time) };
+      return style;
+    };
+  };
 
-    if (!doc?.avoidFaces) return () => style;
+  /** The caption on screen at a time, if any. */
+  const showing = (time: number) => captionsRef.current.find((c) => time >= captionStart(c) && time < captionEnd(c));
 
-    const key = [doc, captionsRef.current, faces];
-    if (!planRef.current || planRef.current.key.some((part, i) => part !== key[i])) {
-      const measure = (caption: Caption, s: Style) => studio.renderer.measure(caption, s);
-      const seen = crop ? framedFaces(faces, crop.leftAt, crop.share) : faces;
-      planRef.current = { key, at: planPositions(captionsRef.current, style, seen, measure, size.height > size.width) };
-    }
-    const { at } = planRef.current;
-    return (caption, time) => ({ ...style, anchorY: at(caption, time) });
+  /** Whether the person is drawn over the caption on screen at a time. */
+  const behindAt = (time: number) => {
+    const { doc } = useEditor.getState();
+    const caption = showing(time);
+    return !!caption && (caption.look?.behindPerson ?? !!doc?.behindPerson);
+  };
+
+  const stopSounds = () => {
+    stopSoundsRef.current?.();
+    stopSoundsRef.current = null;
+  };
+
+  /** Lines up the sounds still to come while the video plays, and calls them off when it stops. */
+  const restartSounds = () => {
+    stopSounds();
+    const el = videoRef.current;
+    const { doc } = useEditor.getState();
+    if (!el || el.paused || !doc || exportingRef.current) return;
+    stopSoundsRef.current = scheduleSounds(soundEvents(captionsRef.current, doc.sound), () => el.currentTime, soundVolume(doc.sound));
   };
 
   const draw = (time: number) => {
@@ -135,13 +172,18 @@ export function Preview({
     const styleAt = styler();
     studio.renderer.draw(canvas, captionsRef.current, time, (caption) => styleAt(caption, time));
 
+    // A blend mixes the captions with the video beneath, so the canvas takes the showing caption's.
+    const current = showing(time);
+    const blend = current ? styleAt(current, time).blend : resolveStyle(doc).blend;
+    if (canvasRef.current) canvasRef.current.style.mixBlendMode = blend === 'normal' ? '' : blend;
+
     const el = videoRef.current;
     const crop = currentCrop();
     const view = { left: crop ? crop.leftAt(time) : 0, share: crop?.share ?? 1 };
     if (crop && el) el.style.left = `${(-view.left / view.share) * 100}%`;
 
     const person = personRef.current;
-    if (doc.behindPerson && person && el && el.readyState >= 2) {
+    if (behindAt(time) && person && el && el.readyState >= 2) {
       const { ck, surface } = studio;
       const frame = surface.makeImageFromTextureSource(el as unknown as TextureSource, { width: el.videoWidth, height: el.videoHeight, alphaType: ck.AlphaType.Premul, colorType: ck.ColorType.RGBA_8888, colorSpace: ck.ColorSpace.SRGB });
       const mask = person.read(ck, el);
@@ -206,6 +248,15 @@ export function Preview({
     };
     return playhead.subscribe(show);
   }, []);
+
+  // Edits made while playing, to the captions or the sound, take effect at once. Playback
+  // itself starts and stops the sounds through the video's own events below.
+  useEffect(() => {
+    restartSounds();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [captions, soundSettings]);
+
+  useEffect(() => stopSounds, []);
 
   // While playing, follow the video's own clock on every display frame.
   useEffect(() => {
@@ -272,10 +323,13 @@ export function Preview({
       canvasEl.height = target.height;
       try {
         const studio = await createStudio(canvasEl, target.width, target.height);
-        const person = doc.behindPerson ? await PersonMask.create() : null;
+        const needsPerson = !!doc.behindPerson || captionsRef.current.some((c) => c.look?.behindPerson);
+        const person = needsPerson ? await PersonMask.create() : null;
         const watermark = await currentWatermark();
         const writable = await openExport(project.id, 'export.mp4');
-        const job = { video, captions: captionsRef.current, styleAt: styler(), writable, settings, person, watermark, crop: currentCrop(), onProgress };
+        const events = soundEvents(captionsRef.current, doc.sound);
+        const sounds = events.length ? { events, volume: soundVolume(doc.sound) } : null;
+        const job = { video, captions: captionsRef.current, styleAt: styler(), behindAt, sounds, writable, settings, person, watermark, crop: currentCrop(), onProgress };
         const result = await exportVideo(studio, canvasEl, job);
         person?.close();
         studio.renderer.dispose();
@@ -375,10 +429,17 @@ export function Preview({
                 redraw();
               }}
               onPlay={() => setPlaying(true)}
-              onPause={() => setPlaying(false)}
+              onPause={() => {
+                setPlaying(false);
+                stopSounds();
+              }}
+              // A stall freezes the picture but not the audio clock, so the sounds wait for it.
+              onWaiting={stopSounds}
+              onPlaying={restartSounds}
               onSeeked={(e) => {
                 playhead.set(e.currentTarget.currentTime);
                 draw(e.currentTarget.currentTime);
+                restartSounds();
               }}
               onTimeUpdate={(e) => {
                 if (!playing) return;
@@ -391,7 +452,6 @@ export function Preview({
             ref={canvasRef}
             width={size.width}
             height={size.height}
-            style={{ mixBlendMode: blend === 'normal' ? undefined : blend }}
             onPointerDown={grab}
             onPointerMove={move}
             onPointerUp={release}

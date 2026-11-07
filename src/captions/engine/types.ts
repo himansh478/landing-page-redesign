@@ -18,10 +18,35 @@ export type Word = {
   style?: WordStyle;
 };
 
+export type SoundKind = 'pop' | 'click' | 'tick' | 'bubble' | 'whoosh' | 'blip';
+
+/** A short sound as captions change, mixed into the export. */
+export type SoundSettings = {
+  kind: SoundKind | 'none';
+  /** 0 to 1 */
+  volume: number;
+  every: 'caption' | 'word';
+  /** Seconds the sound comes before (negative) or after its caption */
+  offset: number;
+};
+
+/** One caption's own look and tools, on top of the video's. Unset fields follow the video. */
+export type CaptionLook = {
+  templateId?: string;
+  overrides?: Partial<Style>;
+  avoidFaces?: boolean;
+  followFace?: boolean;
+  behindPerson?: boolean;
+  sound?: SoundKind | 'none';
+  /** Seconds this caption's sounds move, on top of the video's timing */
+  soundOffset?: number;
+};
+
 export type Caption = {
   /** First token's id, stable while the caption exists */
   id: string;
   words: Word[];
+  look?: CaptionLook;
 };
 
 export type FontWeightName = 'Normal' | 'SemiBold' | 'Bold' | 'ExtraBold' | 'Black';

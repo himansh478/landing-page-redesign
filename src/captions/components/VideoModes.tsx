@@ -6,22 +6,14 @@ import { readMedia, saveProject } from '@/captions/lib/storage';
 import { pushProject } from '@/captions/lib/sync';
 import { useEditor } from '@/captions/state/editor';
 
-/** What the video and its person do: vertical crop, and how text behaves around people. */
-export function VideoModes() {
-  const project = useEditor((s) => s.project);
-  const avoid = useEditor((s) => !!s.doc?.avoidFaces);
-  const follow = useEditor((s) => !!s.doc?.followFace);
-  const behind = useEditor((s) => !!s.doc?.behindPerson);
-  const reframe = useEditor((s) => !!s.doc?.reframe);
-  const { setAvoidFaces, setOption, setReframe, setFaces, setNotice } = useEditor.getState();
+/** Finds the faces in the video once, when a tool that needs them is first turned on. */
+export function useFaceScan() {
+  const { setAvoidFaces, setOption, setFaces, setNotice } = useEditor.getState();
   const [progress, setProgress] = useState<number | null>(null);
-  if (!project) return null;
-
-  const scanning = progress !== null;
-  const wide = project.media.width > project.media.height;
 
   const scan = async () => {
-    if (project.faces) return;
+    const { project } = useEditor.getState();
+    if (!project || project.faces || progress !== null) return;
     try {
       setProgress(0);
       const found = await scanFaces(await readMedia(project.id, 'source'), setProgress);
@@ -37,6 +29,22 @@ export function VideoModes() {
       setProgress(null);
     }
   };
+
+  return { scan, progress, scanning: progress !== null };
+}
+
+/** What the video and its person do: vertical crop, and how text behaves around people. */
+export function VideoModes() {
+  const project = useEditor((s) => s.project);
+  const avoid = useEditor((s) => !!s.doc?.avoidFaces);
+  const follow = useEditor((s) => !!s.doc?.followFace);
+  const behind = useEditor((s) => !!s.doc?.behindPerson);
+  const reframe = useEditor((s) => !!s.doc?.reframe);
+  const { setAvoidFaces, setOption, setReframe } = useEditor.getState();
+  const { scan, progress, scanning } = useFaceScan();
+  if (!project) return null;
+
+  const wide = project.media.width > project.media.height;
 
   const toggle = (label: string, on: boolean, change: (next: boolean) => void, needsFaces = true, id?: string) => (
     <button

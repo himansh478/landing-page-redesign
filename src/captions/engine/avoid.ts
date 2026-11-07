@@ -30,11 +30,20 @@ function bestHeight(wanted: number, height: number, blocked: [number, number][],
   return options.reduce((best, y) => (Math.abs(y - wanted) < Math.abs(best - wanted) ? y : best));
 }
 
-export function planPositions(captions: Caption[], style: Style, faces: FaceSample[], measure: Measure, portrait: boolean) {
+/**
+ * Each caption is measured and placed in its own style, since a caption can have its own look.
+ * A caption that `avoids` says shouldn't move keeps its height, so a glide starts where it really was.
+ */
+export function planPositions(captions: Caption[], styleOf: (caption: Caption) => Style, faces: FaceSample[], measure: Measure, portrait: boolean, avoids: (caption: Caption) => boolean = () => true) {
   const limits = frameLimits(portrait);
   const heights = new Map<string, number>();
 
   for (const caption of captions) {
+    const style = styleOf(caption);
+    if (!avoids(caption)) {
+      heights.set(caption.id, style.anchorY);
+      continue;
+    }
     const size = measure(caption, style);
     const start = captionStart(caption) - WINDOW;
     const end = captionEnd(caption) + WINDOW;
@@ -51,12 +60,12 @@ export function planPositions(captions: Caption[], style: Style, faces: FaceSamp
   }
 
   return (caption: Caption, time: number) => {
-    const target = heights.get(caption.id) ?? style.anchorY;
+    const target = heights.get(caption.id) ?? styleOf(caption).anchorY;
     const index = captions.indexOf(caption);
     const previous = captions[index - 1];
     if (!previous || captionStart(caption) - captionEnd(previous) > CONNECTED) return target;
 
-    const from = heights.get(previous.id) ?? style.anchorY;
+    const from = heights.get(previous.id) ?? styleOf(previous).anchorY;
     const progress = Math.min(1, Math.max(0, (time - captionStart(caption)) / GLIDE));
     const eased = 1 - Math.pow(1 - progress, 3);
     return from + (target - from) * eased;

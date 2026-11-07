@@ -97,7 +97,7 @@ function translatedCaptions({ tokens, offset, maxWords }: Pick<Doc, 'tokens' | '
       const line = chunk.join(' ');
       const from = cursor;
       cursor += ((end - start) * line.length) / total;
-      return { id: `${tokens[first].id}#${part}`, words: spreadWords(line, from + offset, cursor + offset) };
+      return { id: `${tokens[first].id}#${part}`, words: spreadWords(line, from + offset, cursor + offset), look: tokens[first].look };
     });
   });
 }
@@ -123,6 +123,6 @@ export function buildCaptions(doc: Pick<Doc, 'tokens' | 'script' | 'offset' | 'm
         end: (i < last ? tokens[i + 1].start : Math.min(token.hold ?? token.end + LINGER, latest)) + offset,
       });
     }
-    return { id: tokens[first].id, words };
+    return { id: tokens[first].id, words, look: tokens[first].look };
   });
 }

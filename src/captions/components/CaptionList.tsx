@@ -13,21 +13,25 @@ const stamp = (t: number) => {
   return `${m}:${(t % 60).toFixed(2).padStart(5, '0')}`;
 };
 
-type RowProps = { caption: Caption; active: boolean; hasNext: boolean; doubtful: string; seek: (t: number) => void };
+type RowProps = { caption: Caption; active: boolean; chosen: boolean; hasNext: boolean; doubtful: string; seek: (t: number) => void };
 
 const wordsKey = (caption: Caption) => caption.words.map((w) => `${w.text}|${w.start}|${w.end}|${w.style ? 1 : 0}`).join('~');
 
 // A long video has hundreds of rows, so each redraws only when its own caption changes.
-const Row = memo(RowView, (a, b) => a.active === b.active && a.hasNext === b.hasNext && a.doubtful === b.doubtful && a.caption.id === b.caption.id && wordsKey(a.caption) === wordsKey(b.caption));
+const Row = memo(
+  RowView,
+  (a, b) =>
+    a.active === b.active && a.chosen === b.chosen && a.hasNext === b.hasNext && a.doubtful === b.doubtful && a.caption.id === b.caption.id && a.caption.look === b.caption.look && wordsKey(a.caption) === wordsKey(b.caption),
+);
 
 const tokenIds = (caption: Caption) => caption.words.flatMap((w) => (w.tokenId ? [w.tokenId] : []));
 
-function RowView({ caption, active, hasNext, doubtful, seek }: RowProps) {
+function RowView({ caption, active, chosen, hasNext, doubtful, seek }: RowProps) {
   const text = caption.words.map((w) => w.text).join(' ');
   const [draft, setDraft] = useState(text);
   const areaRef = useRef<HTMLTextAreaElement>(null);
   const rowRef = useRef<HTMLDivElement>(null);
-  const { editCaption, splitCaption, mergeWithNext, deleteCaption, selectToken, markChecked } = useEditor.getState();
+  const { editCaption, splitCaption, mergeWithNext, deleteCaption, selectToken, selectCaption, markChecked } = useEditor.getState();
   const selected = useEditor((s) => (active ? s.selectedToken : null));
 
   useEffect(() => setDraft(text), [text]);
@@ -56,11 +60,23 @@ function RowView({ caption, active, hasNext, doubtful, seek }: RowProps) {
   };
 
   return (
-    <div className={`row ${active ? 'active' : ''}`} ref={rowRef}>
+    <div className={`row ${active ? 'active' : ''} ${chosen ? 'chosen' : ''}`} ref={rowRef}>
       <div className="row-head">
-        <button className="time" onClick={() => seek(captionStart(caption) + 0.001)}>
+        <button
+          className="time"
+          title="Select this caption to give it its own style"
+          onClick={() => {
+            seek(captionStart(caption) + 0.001);
+            selectCaption(caption.id);
+          }}
+        >
           {stamp(captionStart(caption))} – {stamp(captionEnd(caption))}
         </button>
+        {caption.look && (
+          <span className="own-look" title="This caption has its own style, face tools or sound">
+            Own look
+          </span>
+        )}
         <div className="row-actions">
           <button className="ghost" onClick={split} disabled={caption.words.length < 2 || !caption.words[0].tokenId} title="Split at the cursor">
             Split
@@ -79,7 +95,10 @@ function RowView({ caption, active, hasNext, doubtful, seek }: RowProps) {
         value={draft}
         aria-label={`Caption at ${stamp(captionStart(caption))}`}
         onChange={(e) => setDraft(e.target.value)}
-        onFocus={() => seek(captionStart(caption) + 0.001)}
+        onFocus={() => {
+          seek(captionStart(caption) + 0.001);
+          selectCaption(caption.id);
+        }}
         onBlur={save}
         onKeyDown={(e) => {
           if (e.key === 'Enter' && !e.shiftKey) {
@@ -122,6 +141,7 @@ export function CaptionList({ captions, seek }: { captions: Caption[]; seek: (t:
   const gaps = useEditor((s) => s.project?.speechGaps ?? []);
   const tokens = useEditor((s) => s.doc?.tokens);
   const script = useEditor((s) => s.doc?.script);
+  const chosenId = useEditor((s) => s.selectedCaption);
 
   const doubts = useMemo(() => {
     const low = new Map<string, string>();
@@ -166,7 +186,7 @@ export function CaptionList({ captions, seek }: { captions: Caption[]; seek: (t:
       ))}
       <div className="rows">
         {captions.map((caption, i) => (
-          <Row key={caption.id} caption={caption} active={caption.id === activeId} hasNext={i < captions.length - 1} doubtful={doubts.get(caption.id) ?? ''} seek={seek} />
+          <Row key={caption.id} caption={caption} active={caption.id === activeId} chosen={caption.id === chosenId} hasNext={i < captions.length - 1} doubtful={doubts.get(caption.id) ?? ''} seek={seek} />
         ))}
       </div>
     </aside>

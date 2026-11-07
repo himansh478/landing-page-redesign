@@ -1,4 +1,4 @@
-import type { Style, WordStyle } from '@/captions/engine/types';
+import type { CaptionLook, SoundSettings, Style, WordStyle } from '@/captions/engine/types';
 
 /** Face positions at one moment, as shares of the frame. */
 export type FaceSample = { time: number; boxes: { x: number; y: number; width: number; height: number }[] };
@@ -29,6 +29,8 @@ export type Token = {
   hold?: number;
   /** This word's own look */
   style?: WordStyle;
+  /** On a caption's first word: that caption's own look and tools */
+  look?: CaptionLook;
   /** On a caption's first word: that caption in English, for Hindi videos */
   english?: string;
   /** Edited in one script; the others still need respelling */
@@ -52,6 +54,8 @@ export type Doc = {
   behindPerson?: boolean;
   /** A landscape video is cropped to 9:16, with the frame following the speaker */
   reframe?: boolean;
+  /** A sound as captions change. Unset means none */
+  sound?: SoundSettings;
 };
 
 export type Project = {

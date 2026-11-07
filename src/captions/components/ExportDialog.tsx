@@ -2,17 +2,18 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { outputSize, type ExportSettings } from '@/captions/engine/export';
+import { soundEvents, soundTrack, soundVolume } from '@/captions/engine/sounds';
 import { toSrt } from '@/captions/engine/srt';
 import type { Caption } from '@/captions/engine/types';
 import { canEncodeVideo } from '@/captions/lib/browser';
 import { useEditor } from '@/captions/state/editor';
 import type { PreviewHandle } from './Preview';
 
-export type ExportKind = 'mp4' | 'srt' | 'overlay';
+export type ExportKind = 'mp4' | 'srt' | 'overlay' | 'sounds';
 
 type Finished = { url: string; fileName: string; summary: string };
 
-const TITLES = { mp4: 'Export video', srt: 'Export subtitles', overlay: 'Export transparent captions' };
+const TITLES = { mp4: 'Export video', srt: 'Export subtitles', overlay: 'Export transparent captions', sounds: 'Export caption sounds' };
 
 /** Server export sends the whole video, more than a hosted request can carry, so it is local only for now. */
 const SERVER_EXPORT = process.env.NODE_ENV === 'development';
@@ -22,6 +23,9 @@ export function ExportDialog({ kind, captions, preview, onClose }: { kind: Expor
   const media = useEditor((s) => s.project?.media);
   const reframe = useEditor((s) => !!s.doc?.reframe);
   const behindPerson = useEditor((s) => !!s.doc?.behindPerson);
+  const sound = useEditor((s) => s.doc?.sound);
+  // These are made at once, with nothing to choose first.
+  const instant = kind === 'srt' || kind === 'sounds';
   const [progress, setProgress] = useState(0);
   const [done, setDone] = useState<Finished | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -32,11 +36,21 @@ export function ExportDialog({ kind, captions, preview, onClose }: { kind: Expor
   const started = useRef(false);
 
   useEffect(() => {
-    if (started.current || kind !== 'srt') return;
+    if (started.current || !instant) return;
     started.current = true;
-    const url = URL.createObjectURL(new Blob([toSrt(captions)], { type: 'application/x-subrip' }));
-    setDone({ url, fileName: `${name}.srt`, summary: `${captions.length} captions` });
-  }, [kind, captions, name]);
+    if (kind === 'srt') {
+      const url = URL.createObjectURL(new Blob([toSrt(captions)], { type: 'application/x-subrip' }));
+      setDone({ url, fileName: `${name}.srt`, summary: `${captions.length} captions` });
+      return;
+    }
+    const events = soundEvents(captions, sound);
+    if (!events.length) {
+      setError('No caption sounds are on. Pick one in the Sound tab first.');
+      return;
+    }
+    const url = URL.createObjectURL(soundTrack(events, soundVolume(sound), media?.duration ?? 0));
+    setDone({ url, fileName: `${name} caption sounds.wav`, summary: `${events.length} sounds, timed to the video. Lay it under your captions in Premiere.` });
+  }, [kind, instant, captions, name, sound, media]);
 
   useEffect(() => {
     if (kind !== 'mp4' || !media) return;
@@ -70,7 +84,7 @@ export function ExportDialog({ kind, captions, preview, onClose }: { kind: Expor
           <p className="error">{error}</p>
         ) : done ? (
           <p id="export-summary">{done.summary}</p>
-        ) : !running && kind !== 'srt' ? (
+        ) : !running && !instant ? (
           <>
             <label className="field">
               Quality
@@ -119,7 +133,7 @@ export function ExportDialog({ kind, captions, preview, onClose }: { kind: Expor
         )}
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 12 }}>
           {(done || error) && <button onClick={onClose}>Close</button>}
-          {!running && !done && !error && kind !== 'srt' && (
+          {!running && !done && !error && !instant && (
             <>
               <button onClick={onClose}>Cancel</button>
               <button id="start-export" className="primary" onClick={start}>

@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import { applyTextEdit } from '@/captions/engine/diff';
 import { autoBreak, captionRanges, editEnglish, sentenceRanges } from '@/captions/engine/group';
 import { familiesOf, templates } from '@/captions/engine/templates';
-import type { Style, WordStyle } from '@/captions/engine/types';
+import type { CaptionLook, SoundSettings, Style, WordStyle } from '@/captions/engine/types';
 import { withTokenText, type Doc, type FaceSample, type Project, type ScriptId, type Token } from '@/captions/lib/project';
 import type { Look } from '@/captions/lib/styles';
 import { findMatches } from '@/captions/lib/review';
@@ -23,6 +23,8 @@ type EditorState = {
   notice: string | null;
   /** The word being styled. Not part of undo. */
   selectedToken: string | null;
+  /** The caption chosen in the list or the timeline, for its own look. Not part of undo. */
+  selectedCaption: string | null;
   /** Free-plan mark on the picture. Comes from the account, not the project. */
   watermark: boolean;
 
@@ -33,6 +35,7 @@ type EditorState = {
   patch(recipe: (doc: Doc) => void): void;
   setNotice(notice: string | null): void;
   selectToken(id: string | null): void;
+  selectCaption(id: string | null): void;
   setWatermark(on: boolean): void;
   setFaces(faces: FaceSample[]): void;
 
@@ -56,6 +59,17 @@ type EditorState = {
   /** Merges into a word's own look; null clears it. */
   setWordStyle(id: string, style: WordStyle | null, key?: string): void;
 
+  /** Merges into one caption's own tools; a field set to undefined follows the video again. */
+  setCaptionLook(captionId: string, look: Partial<CaptionLook>, key?: string): void;
+  /** Merges into one caption's own style. */
+  setCaptionStyle(captionId: string, style: Partial<Style>, key?: string): void;
+  /** Gives one caption its own template, keeping where it was placed. */
+  setCaptionTemplate(captionId: string, templateId: string): void;
+  /** The caption follows the video again in every way. */
+  resetCaption(captionId: string): void;
+  /** Merges into the video's caption sound. */
+  setSound(sound: Partial<SoundSettings>, key?: string): void;
+
   editCaption(id: string, text: string): void;
   splitCaption(id: string, wordIndex: number): void;
   mergeWithNext(id: string): void;
@@ -67,13 +81,43 @@ type EditorState = {
 /** The template with this project's own changes on top. */
 export const resolveStyle = (doc: Doc): Style => ({ ...(templates[doc.templateId] ?? templates['pop-viral']), ...doc.overrides });
 
+const placement = ({ anchorX, anchorY }: Partial<Style>) => ({ ...(anchorX === undefined ? {} : { anchorX }), ...(anchorY === undefined ? {} : { anchorY }) });
+
+/**
+ * One caption's style: the video's, or the caption's own template placed where the video's
+ * captions sit, with the caption's own changes on top.
+ */
+export function captionStyle(doc: Doc, look: CaptionLook | undefined): Style {
+  if (!look?.templateId && !look?.overrides) return resolveStyle(doc);
+  const own = look.templateId ? templates[look.templateId] : undefined;
+  if (!own) return { ...resolveStyle(doc), ...look.overrides };
+  return { ...own, ...(own.rows ? { anchorX: placement(doc.overrides).anchorX ?? own.anchorX } : placement(doc.overrides)), ...look.overrides };
+}
+
 /** Every font this project draws with, so all can be loaded before drawing. */
 export const neededFamilies = (doc: Doc) => {
   const style = resolveStyle(doc);
   const families = new Set(familiesOf(style));
-  for (const token of doc.tokens) if (token.style?.fontFamily) families.add(token.style.fontFamily);
+  for (const token of doc.tokens) {
+    if (token.style?.fontFamily) families.add(token.style.fontFamily);
+    if (token.look) for (const family of familiesOf(captionStyle(doc, token.look))) families.add(family);
+  }
   return [...families];
 };
+
+/** A caption's first word, where its own look is kept. English captions share their sentence's. */
+const firstToken = (doc: Doc, captionId: string) => doc.tokens.find((t) => t.id === captionId.split('#')[0]);
+
+/** Drops fields set back to "follow the video", so an emptied look leaves nothing behind. */
+function tidy(token: Token) {
+  const look = token.look;
+  if (!look) return;
+  for (const key of Object.keys(look) as (keyof CaptionLook)[]) if (look[key] === undefined) delete look[key];
+  const overrides = look.overrides as Record<string, unknown> | undefined;
+  if (overrides) for (const key of Object.keys(overrides)) if (overrides[key] === undefined) delete overrides[key];
+  if (look.overrides && Object.keys(look.overrides).length === 0) delete look.overrides;
+  if (Object.keys(look).length === 0) delete token.look;
+}
 
 /** The words of this sentence are changing, so its translation no longer matches. */
 const dropTranslation = (doc: Doc, index: number) => {
@@ -113,9 +157,10 @@ export const useEditor = create<EditorState>((set, get) => {
     lastAt: 0,
     notice: null,
     selectedToken: null,
+    selectedCaption: null,
     watermark: false,
 
-    load: (project) => set({ project, doc: project.doc, past: [], future: [], lastKey: null, notice: null, selectedToken: null }),
+    load: (project) => set({ project, doc: project.doc, past: [], future: [], lastKey: null, notice: null, selectedToken: null, selectedCaption: null }),
 
     undo() {
       const { doc, past, future } = get();
@@ -140,6 +185,8 @@ export const useEditor = create<EditorState>((set, get) => {
 
     selectToken: (selectedToken) => set({ selectedToken }),
 
+    selectCaption: (selectedCaption) => set({ selectedCaption }),
+
     setWatermark: (watermark) => set({ watermark }),
 
     setFaces(faces) {
@@ -162,13 +209,15 @@ export const useEditor = create<EditorState>((set, get) => {
         }
       }),
 
-    applyLook: ({ templateId, overrides, maxWords }) =>
+    applyLook: ({ templateId, overrides, maxWords, sound }) =>
       commit((doc) => {
         const { anchorX, anchorY } = doc.overrides;
         doc.templateId = templateId;
         doc.overrides = { ...overrides, ...(anchorX === undefined ? {} : { anchorX }), ...(anchorY === undefined || templates[templateId]?.rows ? {} : { anchorY }) };
         doc.maxWords = maxWords;
         doc.tokens = autoBreak(doc.tokens as Token[], maxWords);
+        // Looks saved before sounds existed carry none, and shouldn't silence this video.
+        if (sound) doc.sound = sound;
       }),
 
     markChecked: (ids) =>
@@ -230,6 +279,7 @@ export const useEditor = create<EditorState>((set, get) => {
           dropTranslation(doc, index);
           const next = doc.tokens[index + 1];
           if (doc.tokens[index].breakBefore && next) next.breakBefore = true;
+          if (doc.tokens[index].look && next) next.look ??= doc.tokens[index].look;
           doc.tokens.splice(index, 1);
         }
       });
@@ -256,8 +306,11 @@ export const useEditor = create<EditorState>((set, get) => {
         dropTranslation(doc, range.first);
         const tokens = doc.tokens as Token[];
         const current = tokens.slice(range.first, range.last + 1);
+        const look = tokens[range.first].look;
         const limits = { after: tokens[range.first - 1]?.end ?? 0, before: tokens[range.last + 1]?.start ?? Infinity };
         doc.tokens.splice(range.first, current.length, ...applyTextEdit(current, text, doc.script, limits));
+        // A retyped first word is a new token, and the caption's own look moves onto it.
+        if (look && doc.tokens[range.first]) doc.tokens[range.first].look = look;
       });
     },
 
@@ -267,7 +320,11 @@ export const useEditor = create<EditorState>((set, get) => {
         // English words don't map onto the spoken ones, so there is no word to split at.
         if (!range || doc.script === 'translated') return;
         const at = range.first + wordIndex;
-        if (at > range.first && at <= range.last) doc.tokens[at].breakBefore = true;
+        if (at <= range.first || at > range.last) return;
+        doc.tokens[at].breakBefore = true;
+        // Both halves keep the look, as a cut clip does in a video editor.
+        const look = doc.tokens[range.first].look;
+        if (look) doc.tokens[at].look = JSON.parse(JSON.stringify(look));
       });
     },
 
@@ -275,7 +332,10 @@ export const useEditor = create<EditorState>((set, get) => {
       commit((doc) => {
         const range = rangeOf(doc.tokens, id);
         const next = range && doc.tokens[range.last + 1];
-        if (next) next.breakBefore = false;
+        if (!next) return;
+        next.breakBefore = false;
+        // The joined caption is the first one, so the second's look would only lie in wait.
+        delete next.look;
       });
     },
 
@@ -288,6 +348,42 @@ export const useEditor = create<EditorState>((set, get) => {
         if (doc.tokens[range.first]) doc.tokens[range.first].breakBefore = true;
       });
     },
+
+    setCaptionLook: (captionId, look, key) =>
+      commit((doc) => {
+        const token = firstToken(doc, captionId);
+        if (!token) return;
+        token.look = { ...token.look, ...look };
+        tidy(token);
+      }, key),
+
+    setCaptionStyle: (captionId, style, key) =>
+      commit((doc) => {
+        const token = firstToken(doc, captionId);
+        if (!token) return;
+        token.look = { ...token.look, overrides: { ...token.look?.overrides, ...style } };
+        tidy(token);
+      }, key),
+
+    setCaptionTemplate: (captionId, templateId) =>
+      commit((doc) => {
+        const token = firstToken(doc, captionId);
+        if (!token) return;
+        // A template built from rows is designed for its own height, so only the side is kept.
+        const where = placement(token.look?.overrides ?? {});
+        const kept = templates[templateId]?.rows ? placement({ anchorX: where.anchorX }) : where;
+        // Picking the video's own template just drops the caption's template.
+        token.look = { ...token.look, templateId: templateId === doc.templateId ? undefined : templateId, overrides: kept };
+        tidy(token);
+      }),
+
+    resetCaption: (captionId) =>
+      commit((doc) => {
+        const token = firstToken(doc, captionId);
+        if (token) delete token.look;
+      }),
+
+    setSound: (sound, key) => commit((doc) => void (doc.sound = { kind: 'none', volume: 0.6, every: 'caption', offset: 0, ...doc.sound, ...sound }), key),
 
     retimeCaption(id, from, to, start, end) {
       commit((doc) => {

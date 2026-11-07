@@ -68,6 +68,10 @@ export function TopBar({ onExport }: { onExport: (kind: ExportKind) => void }) {
               Subtitle file
               <small>SRT, for Premiere and YouTube</small>
             </button>
+            <button onClick={() => pick('sounds')}>
+              Caption sounds
+              <small>WAV, to lay under the captions in Premiere</small>
+            </button>
           </div>
         )}
       </div>
