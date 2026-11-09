@@ -1,5 +1,6 @@
 {
   "buildCommand": "next build --webpack",
   "framework": "nextjs",
-  "installCommand": "npm install"
+  "installCommand": "npm install",
+  "crons": [{ "path": "/api/captions/wake", "schedule": "0 3 * * *" }]
 }

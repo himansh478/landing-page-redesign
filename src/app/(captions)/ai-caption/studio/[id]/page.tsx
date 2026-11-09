@@ -53,6 +53,7 @@ export default function StudioPage({ params }: { params: Promise<{ id: string }>
         const latest = newer ? await saveProject({ ...loaded, doc: newer.doc, faces: newer.faces ?? loaded.faces }) : loaded;
         load(latest);
         if (newer) setNotice('Updated with your edits from another device.');
+        else if (latest.roughTiming) setNotice('Word timing is approximate on this video, because our timing service was unavailable. If a caption looks early or late, drag it on the timeline.');
         setVideo(file);
       })
       .catch(() => setFailed(true));

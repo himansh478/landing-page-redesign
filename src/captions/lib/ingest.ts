@@ -24,6 +24,7 @@ type ProcessResult = {
   tokens: (Omit<Token, 'id' | 'breakBefore'> & { endsPhrase: boolean })[];
   envelope: number[];
   speechGaps: { start: number; end: number }[];
+  roughTiming?: boolean;
 };
 
 /** The account has too few minutes for this video. */
@@ -82,7 +83,7 @@ export async function createProject(file: File, onStage: (stage: Stage, fraction
 
   const audio = await speechAudio(file);
   const name = file.name.replace(/\.[^.]+$/, '');
-  const { language, tokens, envelope, speechGaps } = await runPipeline(audio, name, onStage);
+  const { language, tokens, envelope, speechGaps, roughTiming } = await runPipeline(audio, name, onStage);
 
   const id = newId();
   await saveMedia(id, 'source', file);
@@ -108,6 +109,7 @@ export async function createProject(file: File, onStage: (stage: Stage, fraction
     language,
     envelope,
     speechGaps,
+    ...(roughTiming ? { roughTiming } : {}),
     doc: {
       tokens: autoBreak(seeded, look.maxWords),
       script: SCRIPTS[language][0].id,

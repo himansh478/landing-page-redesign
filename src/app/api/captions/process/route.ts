@@ -1,7 +1,7 @@
 import { ALL_FORMATS, BufferSource, Input } from 'mediabunny';
 import { isTooLong, TOO_LONG } from '@/captions/lib/plans';
 import { captionText } from '@/captions/lib/project';
-import { align, loudness } from '@/captions/server/align';
+import { align, loudness, type WordTiming } from '@/captions/server/align';
 import { signInRequired, viewerOf } from '@/captions/server/auth';
 import { refund, spend } from '@/captions/server/billing';
 import { convert } from '@/captions/server/convert';
@@ -22,6 +22,11 @@ export const maxDuration = 300;
 /** How often a silent job tells the phone it is still working. */
 const HEARTBEAT = 5000;
 const TOO_SLOW = 'This is taking too long, so we stopped. Your minutes were given back. Please try again.';
+const NO_SOUND = 'We could not read the sound in this file.';
+const WENT_WRONG = 'Something went wrong while making your captions. Your minutes were given back. Please try again in a few minutes.';
+
+/** An error whose message is written for the person, so it can be shown as it is. */
+class ShownError extends Error {}
 
 function readHeader<T>(request: Request, name: string, fallback: T): T {
   try {
@@ -105,9 +110,17 @@ export async function POST(request: Request) {
       const job = async () => {
         send({ stage: 'transcribing' });
         // Each step starts as soon as it can, so they overlap instead of queueing.
-        const loud = timed('sound', loudness(audio)).then((heard) => {
+        // The loudness comes from the timing worker. Without it the checks that use it are
+        // skipped, so captions are still made while that worker is down.
+        const loud = timed(
+          'sound',
+          loudness(audio).catch((e) => {
+            console.warn(`Loudness unavailable, going on without it: ${e}`);
+            return [] as number[];
+          }),
+        ).then((heard) => {
           // The charge came from the file's own header, so the sound itself has to agree.
-          if (heard.length * LOUDNESS_STEP > length + HEADER_SLACK) throw new Error('We could not read the sound in this file.');
+          if (heard.length * LOUDNESS_STEP > length + HEADER_SLACK) throw new ShownError(NO_SOUND);
           return heard;
         });
         loud.catch(() => {});
@@ -116,7 +129,9 @@ export async function POST(request: Request) {
         const { language, duration, words: found } = await timed('whisper', transcribe(audio, loud, vocabulary, (fraction) => send({ stage: 'transcribing', fraction }), (settled) => {
           listening = timed('gemini', listenTwice(audio, settled, vocabulary));
         }));
-        const raw = chooseWords(await listening, heardWords(found, await loud));
+        const heard = await loud;
+        // With no loudness to check against, every word Whisper heard is kept.
+        const raw = chooseWords(await listening, heard.length ? heardWords(found, heard) : found);
         if (raw.length === 0) {
           await giveBack();
           send({ stage: 'error', message: 'No speech was found in this video.' });
@@ -130,7 +145,17 @@ export async function POST(request: Request) {
         const words = applyVocabulary(raw.map((w, i) => ({ ...w, ...converted[i] })), vocabulary);
 
         send({ stage: 'aligning' });
-        const { timed: exact, envelope } = await timed('timing', align(audio, words.map((w) => w.spoken), words, language));
+        // If the timing worker can't be reached, Whisper's own word times are kept: rougher,
+        // but captions the person can fix beat a failed job.
+        let exact: (WordTiming | null)[] = [];
+        let envelope = heard;
+        let roughTiming = false;
+        try {
+          ({ timed: exact, envelope } = await timed('timing', align(audio, words.map((w) => w.spoken), words, language)));
+        } catch (e) {
+          roughTiming = true;
+          console.warn(`Timing unavailable, keeping Whisper's word times: ${e}`);
+        }
 
         const tokens = words.map((word, i) => ({
           source: language === 'en' ? word.fixed + (word.word.match(/[,.?!]+$/)?.[0] ?? '') : word.fixed,
@@ -152,14 +177,15 @@ export async function POST(request: Request) {
           }
         });
 
-        console.log(`Captions for ${length.toFixed(0)} s of sound took ${seconds(started)} s (${steps.join(', ')})${gone ? ', but the phone had left, so the minutes went back' : ''}`);
-        send({ stage: 'done', result: { language, duration, tokens, envelope, speechGaps: findSpeechGaps(envelope, tokens) } });
+        console.log(`Captions for ${length.toFixed(0)} s of sound took ${seconds(started)} s (${steps.join(', ')})${roughTiming ? ', with Whisper timing' : ''}${gone ? ', but the phone had left, so the minutes went back' : ''}`);
+        send({ stage: 'done', result: { language, duration, tokens, envelope, speechGaps: findSpeechGaps(envelope, tokens), ...(roughTiming ? { roughTiming } : {}) } });
       };
       try {
-        await Promise.race([job(), new Promise<never>((_, reject) => setTimeout(() => reject(new Error(TOO_SLOW)), LONGEST_JOB))]);
+        await Promise.race([job(), new Promise<never>((_, reject) => setTimeout(() => reject(new ShownError(TOO_SLOW)), LONGEST_JOB))]);
       } catch (e) {
         await giveBack();
-        send({ stage: 'error', message: e instanceof Error ? e.message : 'Something went wrong.' });
+        // A service's own error means nothing to the person, and can show its account details.
+        send({ stage: 'error', message: e instanceof ShownError ? e.message : WENT_WRONG });
         // Last, and as plain text: logging an Error object threw here and lost a refund.
         console.warn(`Captions failed after ${seconds(started)} s (${steps.join(', ')}): ${e}`);
       } finally {

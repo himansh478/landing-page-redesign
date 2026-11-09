@@ -72,6 +72,8 @@ export type Project = {
   speechGaps: { start: number; end: number }[];
   /** Where faces are over time, once the video has been scanned */
   faces?: FaceSample[];
+  /** Word times are Whisper's, because the timing worker couldn't be reached */
+  roughTiming?: boolean;
 };
 
 export const SCRIPTS: Record<'hi' | 'en', { id: ScriptId; label: string }[]> = {
