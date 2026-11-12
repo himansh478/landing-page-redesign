@@ -162,16 +162,16 @@ function HeroSection() {
           onScroll={false}
           delay={0.15}
           className="font-display font-extrabold text-ink tracking-[-0.045em] !leading-[0.95] [font-size:clamp(2.5rem,0.4rem+8.4vw,8.75rem)]"
-          lines={['Stop overpaying', <span key="l2">for <CutWord>mediocrity.</CutWord></span>]}
+          lines={['Every moment,', <span key="l2">perfectly <span className="text-coral italic">captured.</span></span>]}
         />
 
         <div className="grid lg:grid-cols-12 gap-12 lg:gap-10 mt-12 sm:mt-16 items-start">
           <div className="lg:col-span-5 lg:pr-4">
             <motion.p {...fadeUp(0.55)} className="text-xl sm:text-2xl text-ink/80 leading-snug max-w-md">
-              Everything your brand needs, under one{' '}
+              Cinematic shoots, viral edits, and{' '}
               {/* Coral highlighter behind ink text (coral text on ivory would fail contrast) */}
               <span className="text-ink font-semibold px-1 -mx-1 [box-decoration-break:clone] bg-[linear-gradient(transparent_55%,rgb(var(--coral-rgb)/0.55)_55%)]">
-                creative roof.
+                memories that last forever.
               </span>
             </motion.p>
 
