@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, useAnimationFrame, useReducedMotion } from 'motion/react';
-import { ArrowRight, ArrowUpRight, Camera, Clapperboard } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, Camera, Clapperboard, Film } from 'lucide-react';
 import Link from 'next/link';
 import { useRef } from 'react';
 import { RevealLines } from './motion/RevealLines';
@@ -209,6 +209,36 @@ function HeroSection() {
               ))}
             </motion.ul>
 
+            {/* RAW clips CTA button — placed directly below Viral edits / Cinematic logic / Agency quality */}
+            <motion.div {...fadeUp(0.72)} className="mt-7">
+              <Link
+                href="/raw-clips"
+                className="group relative flex items-center justify-between gap-4 p-4 rounded-lg border border-ink/20 bg-paper/90 shadow-[0_8px_24px_rgb(var(--ink-rgb)/0.04)] transition-all duration-300 hover:border-coral hover:bg-coral/5 hover:shadow-[0_12px_32px_rgb(var(--coral-rgb)/0.15)] hover:-translate-y-0.5"
+              >
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <span className="w-10 h-10 rounded-md bg-coral/20 border border-coral/40 text-ink flex items-center justify-center flex-shrink-0 group-hover:bg-coral transition-colors duration-300">
+                    <Film className="w-5 h-5 text-ink" aria-hidden="true" />
+                  </span>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-display font-bold text-base sm:text-lg text-ink tracking-tight group-hover:text-editorial transition-colors">
+                        Get 4K RAW Clips
+                      </span>
+                      <span className="slate !text-[10px] bg-coral text-ink font-bold px-2 py-0.5 rounded-[3px] uppercase tracking-wider">
+                        Practice
+                      </span>
+                    </div>
+                    <p className="text-xs sm:text-sm text-ink/65 mt-0.5 truncate">
+                      Free &amp; paid cinema camera raw footage for editors
+                    </p>
+                  </div>
+                </div>
+                <div className="w-9 h-9 rounded-md border border-ink/15 text-ink flex items-center justify-center flex-shrink-0 transition-all duration-300 group-hover:bg-coral group-hover:border-coral group-hover:text-ink">
+                  <ArrowUpRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden="true" />
+                </div>
+              </Link>
+            </motion.div>
+
             {SHOW_WORK_LINKS && (
             <motion.div {...fadeUp(0.75)} className="flex flex-col sm:flex-row gap-3 mt-10">
               <Magnetic>
@@ -241,22 +271,6 @@ function HeroSection() {
               transition={{ duration: 1.2, delay: 0.45, ease: EASE }}
             >
               <Monitor />
-            </motion.div>
-
-            {/* Sits under the monitor's "Fig. 01" caption */}
-            <motion.div {...fadeUp(1.1)} className="mt-6">
-              <Link
-                href="/raw-clips"
-                className="group flex items-center gap-3 py-3.5 border-y border-ink/15 text-ink transition-colors hover:bg-sand/40"
-              >
-                <span aria-hidden="true" className="rec-dot w-2 h-2 rounded-full bg-coral flex-shrink-0 ml-1" />
-                <span className="font-semibold text-sm">Get 4K RAW clips for practice</span>
-                <span className="text-sm text-ink/55 hidden sm:inline">Free &amp; paid downloads</span>
-                <ArrowUpRight
-                  className="w-4 h-4 ml-auto mr-1 text-ink/60 transition-transform duration-500 ease-reveal group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-ink"
-                  aria-hidden="true"
-                />
-              </Link>
             </motion.div>
           </div>
         </div>
