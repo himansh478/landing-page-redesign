@@ -9,6 +9,7 @@ const services: { title: string; description: string; href?: string; features: s
   {
     title: 'Shoot and Editing',
     description: 'High-end production and cinematic storytelling with elite color grading, sound design, and ad films.',
+    href: '/shoot-and-editing',
     features: ['4K Production', 'Viral Reels', 'Commercials', 'Color Grading'],
   },
   {
