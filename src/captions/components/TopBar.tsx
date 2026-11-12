@@ -56,6 +56,10 @@ export function TopBar({ onExport }: { onExport: (kind: ExportKind) => void }) {
         </button>
         {open && (
           <div className="menu-list">
+            <button onClick={() => pick('srt')} style={{ background: 'var(--coral, #f97316)', color: '#fff', fontWeight: 700, borderRadius: 6 }}>
+              ⬇ SRT Subtitle File
+              <small style={{ color: 'rgba(255,255,255,0.8)' }}>Zero quality loss · Best for CapCut / Reels</small>
+            </button>
             <button onClick={() => pick('mp4')}>
               Video with captions
               <small>MP4, up to 4K</small>
@@ -63,10 +67,6 @@ export function TopBar({ onExport }: { onExport: (kind: ExportKind) => void }) {
             <button onClick={() => pick('overlay')}>
               Transparent captions
               <small>MOV with alpha, for Premiere</small>
-            </button>
-            <button onClick={() => pick('srt')}>
-              Subtitle file
-              <small>SRT, for Premiere and YouTube</small>
             </button>
             <button onClick={() => pick('sounds')}>
               Caption sounds

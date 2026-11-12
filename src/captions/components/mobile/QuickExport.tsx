@@ -98,9 +98,16 @@ export function QuickExport({ captions, preview }: { captions: Caption[]; previe
       )}
       {error && <p className="error">{error}</p>}
 
-      <button className="ghost" onClick={saveSubtitles}>
-        Subtitle file (SRT)
+      <button
+        className="primary big"
+        onClick={saveSubtitles}
+        style={{ marginTop: 12, background: 'var(--coral, #f97316)', border: 'none' }}
+      >
+        ⬇ SRT Export — Zero Quality Loss
       </button>
+      <p className="hint" style={{ marginTop: 4, textAlign: 'center', fontSize: '0.78rem' }}>
+        Import this in CapCut / Premiere — original video quality stays intact.
+      </p>
       <p className="hint">
         Export not working? <Link href="/ai-caption/phone-check">Run a phone check</Link> and send us the report.
       </p>
