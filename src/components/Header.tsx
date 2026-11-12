@@ -5,7 +5,6 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { SearchBar } from './SearchBar';
 import { CwayaMark } from './brand/CwayaMark';
 import { ScrollTimecode } from './motion/ScrollTimecode';
 import { SHOW_WORK_LINKS } from '@/lib/features';
@@ -71,10 +70,6 @@ export function Header() {
             <span className="font-display text-ink text-xl sm:text-2xl font-extrabold tracking-[-0.04em]">Cwaya</span>
           </Link>
 
-          <div className="hidden md:flex flex-1 max-w-md">
-            <SearchBar />
-          </div>
-
           <div className="hidden md:flex items-center justify-end gap-2 lg:gap-3">
             <Link
               href="/ai-caption"
@@ -134,10 +129,6 @@ export function Header() {
             className="md:hidden overflow-hidden bg-ivory border-t border-ink/10"
           >
             <div className="px-4 pt-5 pb-8 max-w-md mx-auto">
-              <div className="mb-5">
-                <SearchBar />
-              </div>
-
               <ul className="border-t border-ink/10">
                 {mobileLinks.map((link, i) => (
                   <li key={link.href} className="border-b border-ink/10">
