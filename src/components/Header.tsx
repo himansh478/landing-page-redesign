@@ -1,6 +1,6 @@
 'use client';
 
-import { Menu, X, Share2, Package, ArrowUpRight } from 'lucide-react';
+import { Menu, X, Share2, Package, ArrowUpRight, Film } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { usePathname } from 'next/navigation';
@@ -16,6 +16,8 @@ import { SHOW_WORK_LINKS } from '@/lib/features';
 const mobileLinks = [
   { href: '/ai-caption', label: 'AI Caption' },
   { href: '/courses', label: 'Courses' },
+  { href: '/packages', label: 'My Packages' },
+  { href: '/shoot-and-editing', label: 'Portfolio' },
   ...(SHOW_WORK_LINKS
     ? [
         { href: '/find-to-fill', label: 'I have work' },
@@ -92,6 +94,14 @@ export function Header() {
             >
               <Package className="w-4 h-4 transition-transform duration-500 ease-reveal group-hover:-rotate-12" aria-hidden="true" />
               My Packages
+            </Link>
+
+            <Link
+              href="/shoot-and-editing"
+              className="group inline-flex items-center gap-2 border border-ink/20 text-ink pl-3.5 pr-4 h-10 rounded-md text-[0.8125rem] font-semibold transition-colors duration-300 hover:bg-ink hover:text-ivory hover:border-ink"
+            >
+              <Film className="w-4 h-4 transition-transform duration-500 ease-reveal group-hover:scale-110" aria-hidden="true" />
+              Portfolio
             </Link>
 
             <button
