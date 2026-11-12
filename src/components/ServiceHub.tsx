@@ -7,14 +7,9 @@ import { RevealLines } from './motion/RevealLines';
 // Services without an href are shown as plain text (their pages were removed).
 const services: { title: string; description: string; href?: string; features: string[] }[] = [
   {
-    title: 'Editing Types',
-    description: 'Cinematic storytelling with elite color grading and sound design.',
-    features: ['Viral Reels', 'YouTube Systems', '3D Animation'],
-  },
-  {
-    title: 'Precision Shoots',
-    description: 'High-end production for products, weddings, and commercial ad films.',
-    features: ['4K Production', 'Product Macro', 'Event Elite'],
+    title: 'Shoot and Editing',
+    description: 'High-end production and cinematic storytelling with elite color grading, sound design, and ad films.',
+    features: ['4K Production', 'Viral Reels', 'Commercials', 'Color Grading'],
   },
   {
     title: 'Digital Authority',
