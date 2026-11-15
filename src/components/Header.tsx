@@ -14,7 +14,6 @@ import { SHOW_WORK_LINKS } from '@/lib/features';
 // header itself stays a quiet bar: logo, search, AI Caption, Courses, packages, share.
 
 const mobileLinks = [
-  { href: '/ai-caption', label: 'AI Caption' },
   { href: '/courses', label: 'Courses' },
   { href: '/packages', label: 'My Packages' },
   { href: '/portfolio', label: 'Portfolio' },
@@ -73,13 +72,6 @@ export function Header() {
           </Link>
 
           <div className="hidden md:flex items-center justify-end gap-2 lg:gap-3">
-            <Link
-              href="/ai-caption"
-              className="pencil-link mr-2 py-1 text-[0.8125rem] font-semibold text-ink/80 hover:text-ink transition-colors"
-            >
-              AI Caption
-            </Link>
-
             <Link
               href="/courses"
               aria-current={isCurrent('/courses')}
